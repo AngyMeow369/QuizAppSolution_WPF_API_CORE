@@ -1,14 +1,15 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using QuizApp.API.Data;
-using QuizApp.API.DTOs;
+//using QuizApp.API.DTOs;
 using QuizApp.API.Models;
+using QuizApp.Shared.DTOs;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace QuizApp.API.Controllers
 {
@@ -26,10 +27,10 @@ namespace QuizApp.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto request)
+        public async Task<ActionResult<ApiResponse<object>>> Register([FromBody] RegisterRequest request)
         {
             if (await _context.Users.AnyAsync(u => u.Username == request.Username))
-                return BadRequest("Username already exists.");
+                return BadRequest(ApiResponse<object>.CreateFailure("Username already exists."));
 
             var user = new User
             {
@@ -41,23 +42,35 @@ namespace QuizApp.API.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "User registered successfully" });
+            return Ok(ApiResponse<object>.CreateSuccess(null, "User registered successfully."));
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto request)
+        public async Task<ActionResult<ApiResponse<object>>> Login([FromBody] LoginRequest request)
         {
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Username == request.Username);
             if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-                return Unauthorized("Invalid username or password.");
+                return Unauthorized(ApiResponse<object>.CreateFailure("Invalid username or password."));
 
             string token = GenerateJwtToken(user);
-            return Ok(new { token, role = user.Role, username = user.Username });
+
+            var data = new
+            {
+                token,
+                role = user.Role,
+                username = user.Username
+            };
+
+            return Ok(ApiResponse<object>.CreateSuccess(data, "Login successful."));
         }
 
         private string GenerateJwtToken(User user)
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
+            var jwtKey = _config["Jwt:Key"];
+            if (string.IsNullOrWhiteSpace(jwtKey))
+                throw new InvalidOperationException("JWT key is not configured in appsettings.json.");
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha512);
 
             var claims = new[]
