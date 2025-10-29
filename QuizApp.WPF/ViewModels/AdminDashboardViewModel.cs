@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using QuizApp.API.Models;
+using QuizApp.WPF.Services;
+using QuizApp.WPF.Views.Admin;
+using QuizApp.WPF.Views.Auth;
+using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
-using QuizApp.API.Models;
-using QuizApp.WPF.Services;
-using QuizApp.WPF.Views.Auth;
 
 namespace QuizApp.WPF.ViewModels
 {
@@ -76,6 +77,7 @@ namespace QuizApp.WPF.ViewModels
         }
 
         // Commands
+        public ICommand AddCategoryCommand { get; } // ADDED THIS
         public ICommand ManageCategoriesCommand { get; }
         public ICommand ManageQuestionsCommand { get; }
         public ICommand ManageQuizzesCommand { get; }
@@ -101,13 +103,8 @@ namespace QuizApp.WPF.ViewModels
             _questions = new ObservableCollection<Question>();
             _quizzes = new ObservableCollection<Quiz>();
 
-            // Remove duplicate initialization lines
-            // _users = new ObservableCollection<User>(); // ❌ DELETE THIS DUPLICATE
-            // _categories = new ObservableCollection<Category>(); // ❌ DELETE THIS DUPLICATE
-            // _questions = new ObservableCollection<Question>(); // ❌ DELETE THIS DUPLICATE
-            // _quizzes = new ObservableCollection<Quiz>(); // ❌ DELETE THIS DUPLICATE
-
             // Initialize commands
+            AddCategoryCommand = new RelayCommand(async () => await AddCategoryAsync()); // ADDED THIS
             ManageCategoriesCommand = new RelayCommand(async () => await ManageCategoriesAsync());
             ManageQuestionsCommand = new RelayCommand(async () => await ManageQuestionsAsync());
             ManageQuizzesCommand = new RelayCommand(async () => await ManageQuizzesAsync());
@@ -188,13 +185,55 @@ namespace QuizApp.WPF.ViewModels
                           MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
+        // ADDED THIS METHOD: For Add Category button
+        private async Task AddCategoryAsync()
+        {
+            // Open AddCategoryView (simple dialog)
+            var addCategoryView = new AddCategoryView();
+            var result = addCategoryView.ShowDialog();
+
+            if (result == true && addCategoryView.IsSaved)
+            {
+                try
+                {
+                    var newCategory = new Category
+                    {
+                        Name = addCategoryView.CategoryName
+                    };
+
+                    var createdCategory = await _categoryService.CreateCategoryAsync(newCategory);
+
+                    // Refresh categories to update the count
+                    await LoadCategoriesAsync();
+
+                    MessageBox.Show($"Category '{createdCategory.Name}' created successfully!",
+                                  "Success",
+                                  MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"Error creating category: {ex.Message}",
+                                  "Error",
+                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+        }
+
+        // UPDATED THIS METHOD: For Manage Categories button
         private async Task ManageCategoriesAsync()
         {
             await LoadCategoriesAsync();
-            MessageBox.Show($"Loaded {Categories.Count} categories from database!\n\n" +
-                          "Next: We'll build a proper category management UI.",
-                          "Category Management",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+
+            // Open CategoriesManagementView (full CRUD)
+            var categoriesView = new CategoriesManagementView(_categoryService);
+            categoriesView.Owner = Application.Current.MainWindow;
+            var result = categoriesView.ShowDialog();
+
+            // Refresh categories after management window closes
+            if (result == true)
+            {
+                await LoadCategoriesAsync();
+            }
         }
 
         private async Task ManageQuestionsAsync()

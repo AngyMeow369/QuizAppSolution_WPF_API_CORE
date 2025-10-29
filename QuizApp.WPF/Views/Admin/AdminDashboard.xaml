@@ -70,6 +70,33 @@
             <Setter Property="HorizontalAlignment" Value="Center"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
+
+        <!-- Quick Action Button Style -->
+        <Style x:Key="QuickActionButton" TargetType="Button">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.9"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -187,6 +214,32 @@
                                 </StackPanel>
                             </Border>
                         </StackPanel>
+
+                        <!-- Quick Actions Section -->
+                        <Border Background="{StaticResource PrimaryLightBrush}" 
+                                CornerRadius="8" 
+                                Padding="15"
+                                Margin="0,15,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Quick Actions" 
+                                           FontSize="14" 
+                                           FontWeight="SemiBold" 
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Margin="0,0,0,10"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <Button Content="➕ Add Category" 
+                                            Command="{Binding AddCategoryCommand}"
+                                            Style="{StaticResource QuickActionButton}"
+                                            Background="{StaticResource SuccessBrush}"
+                                            Margin="0,0,10,0"/>
+
+                                    <Button Content="📋 Manage Categories" 
+                                            Command="{Binding ManageCategoriesCommand}"
+                                            Style="{StaticResource QuickActionButton}"
+                                            Background="{StaticResource PrimaryBrush}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
 
                     <!-- User Info -->
