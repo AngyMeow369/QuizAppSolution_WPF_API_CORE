@@ -1,7 +1,6 @@
 ﻿using QuizApp.Shared.DTOs;
 using Refit;
 
-
 namespace QuizApp.WPF.Services
 {
     public class AuthService
