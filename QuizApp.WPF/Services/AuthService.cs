@@ -1,9 +1,10 @@
 ﻿using QuizApp.Shared.DTOs;
+using QuizApp.WPF.Services.Interfaces;
 using Refit;
 
 namespace QuizApp.WPF.Services
 {
-    public class AuthService
+    public class AuthService : IAuthService
     {
         private readonly IAuthApi _authApi;
         private string _jwtToken = string.Empty;
@@ -19,7 +20,19 @@ namespace QuizApp.WPF.Services
         public string Role => _role;
         public string Username => _username;
 
-        public async Task<QuizApp.Shared.DTOs.ApiResponse<QuizApp.Shared.DTOs.LoginResponse>> LoginAsync(string username, string password)
+        // ADD THESE MISSING METHODS:
+        public string GetToken()
+        {
+            return _jwtToken;
+        }
+
+        public bool IsAuthenticated()
+        {
+            return !string.IsNullOrEmpty(_jwtToken);
+        }
+
+        // FIX RETURN TYPES - Remove the namespace prefixes since we have using statement
+        public async Task<Shared.DTOs.ApiResponse<LoginResponse>> LoginAsync(string username, string password)
         {
             try
             {
@@ -38,19 +51,19 @@ namespace QuizApp.WPF.Services
                     _username = response.Data.Username;
                 }
 
-                return response ?? QuizApp.Shared.DTOs.ApiResponse<QuizApp.Shared.DTOs.LoginResponse>.CreateFailure("Null response from API.");
+                return response ?? Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure("Null response from API.");
             }
             catch (ApiException ex)
             {
-                return QuizApp.Shared.DTOs.ApiResponse<QuizApp.Shared.DTOs.LoginResponse>.CreateFailure($"Login failed: {ex.Message}");
+                return Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure($"Login failed: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return QuizApp.Shared.DTOs.ApiResponse<QuizApp.Shared.DTOs.LoginResponse>.CreateFailure($"Unexpected error: {ex.Message}");
+                return Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure($"Unexpected error: {ex.Message}");
             }
         }
 
-        public async Task<QuizApp.Shared.DTOs.ApiResponse<object>> RegisterAsync(string username, string password, string role = "User")
+        public async Task<Shared.DTOs.ApiResponse<object>> RegisterAsync(string username, string password, string role = "User")
         {
             try
             {
@@ -66,12 +79,17 @@ namespace QuizApp.WPF.Services
             }
             catch (ApiException ex)
             {
-                return QuizApp.Shared.DTOs.ApiResponse<object>.CreateFailure($"Registration failed: {ex.Message}");
+                return Shared.DTOs.ApiResponse<object>.CreateFailure($"Registration failed: {ex.Message}");
             }
             catch (Exception ex)
             {
-                return QuizApp.Shared.DTOs.ApiResponse<object>.CreateFailure($"Unexpected error: {ex.Message}");
+                return Shared.DTOs.ApiResponse<object>.CreateFailure($"Unexpected error: {ex.Message}");
             }
+        }
+
+        Task<Shared.DTOs.ApiResponse<LoginResponse>> IAuthService.LoginAsync(string username, string password)
+        {
+            throw new NotImplementedException();
         }
     }
 }

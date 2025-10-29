@@ -1,6 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using QuizApp.API.Models;
 using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Auth;
 
@@ -9,12 +10,72 @@ namespace QuizApp.WPF.ViewModels
     public class AdminDashboardViewModel : ObservableObject
     {
         private readonly AuthService _authService;
+        private readonly UserService _userService;
+        private readonly CategoryService _categoryService;
+        private readonly QuestionService _questionService;
+        private readonly QuizService _quizService;
+
+        private ObservableCollection<User> _users;
+        private ObservableCollection<Category> _categories;
+        private ObservableCollection<Question> _questions;
+        private ObservableCollection<Quiz> _quizzes;
+        private bool _isLoading;
 
         public string Username => _authService.Username;
         public string Role => _authService.Role;
 
-        public ObservableCollection<FeatureCard> FeatureCards { get; }
+        // Data Collections
+        public ObservableCollection<User> Users
+        {
+            get => _users;
+            private set
+            {
+                _users = value;
+                OnPropertyChanged();
+            }
+        }
 
+        public ObservableCollection<Category> Categories
+        {
+            get => _categories;
+            private set
+            {
+                _categories = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<Question> Questions
+        {
+            get => _questions;
+            private set
+            {
+                _questions = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public ObservableCollection<Quiz> Quizzes
+        {
+            get => _quizzes;
+            private set
+            {
+                _quizzes = value;
+                OnPropertyChanged();
+            }
+        }
+
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set
+            {
+                _isLoading = value;
+                OnPropertyChanged();
+            }
+        }
+
+        // Commands
         public ICommand ManageCategoriesCommand { get; }
         public ICommand ManageQuestionsCommand { get; }
         public ICommand ManageQuizzesCommand { get; }
@@ -22,19 +83,39 @@ namespace QuizApp.WPF.ViewModels
         public ICommand ViewAnalyticsCommand { get; }
         public ICommand SettingsCommand { get; }
         public ICommand LogoutCommand { get; }
+        public ICommand LoadDataCommand { get; }
 
-        public AdminDashboardViewModel()
+        public ObservableCollection<FeatureCard> FeatureCards { get; }
+
+        // Updated constructor that accepts AuthService parameter
+        public AdminDashboardViewModel(AuthService authService)
         {
-            _authService = new AuthService();
+            _authService = authService; // Use the instance passed from login (has token)
+            _userService = new UserService(_authService);
+            _categoryService = new CategoryService(_authService);
+            _questionService = new QuestionService(_authService);
+            _quizService = new QuizService(_authService);
+
+            _users = new ObservableCollection<User>();
+            _categories = new ObservableCollection<Category>();
+            _questions = new ObservableCollection<Question>();
+            _quizzes = new ObservableCollection<Quiz>();
+
+            // Remove duplicate initialization lines
+            // _users = new ObservableCollection<User>(); // ❌ DELETE THIS DUPLICATE
+            // _categories = new ObservableCollection<Category>(); // ❌ DELETE THIS DUPLICATE
+            // _questions = new ObservableCollection<Question>(); // ❌ DELETE THIS DUPLICATE
+            // _quizzes = new ObservableCollection<Quiz>(); // ❌ DELETE THIS DUPLICATE
 
             // Initialize commands
-            ManageCategoriesCommand = new RelayCommand(ManageCategories);
-            ManageQuestionsCommand = new RelayCommand(ManageQuestions);
-            ManageQuizzesCommand = new RelayCommand(ManageQuizzes);
-            ManageUsersCommand = new RelayCommand(ManageUsers);
+            ManageCategoriesCommand = new RelayCommand(async () => await ManageCategoriesAsync());
+            ManageQuestionsCommand = new RelayCommand(async () => await ManageQuestionsAsync());
+            ManageQuizzesCommand = new RelayCommand(async () => await ManageQuizzesAsync());
+            ManageUsersCommand = new RelayCommand(async () => await ManageUsersAsync());
             ViewAnalyticsCommand = new RelayCommand(ViewAnalytics);
             SettingsCommand = new RelayCommand(Settings);
             LogoutCommand = new RelayCommand(Logout);
+            LoadDataCommand = new RelayCommand(async () => await LoadAllDataAsync());
 
             // Initialize feature cards
             FeatureCards = new ObservableCollection<FeatureCard>
@@ -46,35 +127,108 @@ namespace QuizApp.WPF.ViewModels
                 new FeatureCard { Icon = "📈", Title = "View Analytics", Description = "Platform insights and metrics", Command = ViewAnalyticsCommand },
                 new FeatureCard { Icon = "⚙️", Title = "Settings", Description = "System configuration", Command = SettingsCommand }
             };
+
+            // Load initial data
+            LoadDataCommand.Execute(null);
         }
 
-        private void ManageCategories()
+        private async Task LoadAllDataAsync()
         {
-            MessageBox.Show("Categories management feature coming soon!", "Feature",
+            IsLoading = true;
+            try
+            {
+                await Task.WhenAll(
+                    LoadUsersAsync(),
+                    LoadCategoriesAsync(),
+                    LoadQuestionsAsync(),
+                    LoadQuizzesAsync()
+                );
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading data: {ex.Message}", "Error",
+                              MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private async Task LoadUsersAsync()
+        {
+            var users = await _userService.GetUsersAsync();
+            Users = new ObservableCollection<User>(users);
+        }
+
+        private async Task LoadCategoriesAsync()
+        {
+            var categories = await _categoryService.GetCategoriesAsync();
+            Categories = new ObservableCollection<Category>(categories);
+        }
+
+        private async Task LoadQuestionsAsync()
+        {
+            var questions = await _questionService.GetQuestionsAsync();
+            Questions = new ObservableCollection<Question>(questions);
+        }
+
+        private async Task LoadQuizzesAsync()
+        {
+            var quizzes = await _quizService.GetQuizzesAsync();
+            Quizzes = new ObservableCollection<Quiz>(quizzes);
+        }
+
+        private async Task ManageUsersAsync()
+        {
+            await LoadUsersAsync();
+            MessageBox.Show($"Loaded {Users.Count} users from database!\n\n" +
+                          "Next: We'll build a proper user management UI.",
+                          "User Management",
                           MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ManageQuestions()
+        private async Task ManageCategoriesAsync()
         {
-            MessageBox.Show("Questions management feature coming soon!", "Feature",
+            await LoadCategoriesAsync();
+            MessageBox.Show($"Loaded {Categories.Count} categories from database!\n\n" +
+                          "Next: We'll build a proper category management UI.",
+                          "Category Management",
                           MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ManageQuizzes()
+        private async Task ManageQuestionsAsync()
         {
-            MessageBox.Show("Quizzes management feature coming soon!", "Feature",
+            await LoadQuestionsAsync();
+            MessageBox.Show($"Loaded {Questions.Count} questions from database!\n\n" +
+                          "Next: We'll build a proper question management UI.",
+                          "Question Management",
                           MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        private void ManageUsers()
+        private async Task ManageQuizzesAsync()
         {
-            MessageBox.Show("User management feature coming soon!", "Feature",
+            await LoadQuizzesAsync();
+            MessageBox.Show($"Loaded {Quizzes.Count} quizzes from database!\n\n" +
+                          "Next: We'll build a proper quiz management UI.",
+                          "Quiz Management",
                           MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ViewAnalytics()
         {
-            MessageBox.Show("Analytics dashboard coming soon!", "Feature",
+            var userCount = Users.Count;
+            var categoryCount = Categories.Count;
+            var questionCount = Questions.Count;
+            var quizCount = Quizzes.Count;
+
+            MessageBox.Show($"📊 Platform Analytics:\n\n" +
+                          $"👥 Users: {userCount}\n" +
+                          $"📚 Categories: {categoryCount}\n" +
+                          $"❓ Questions: {questionCount}\n" +
+                          $"📝 Quizzes: {quizCount}\n\n" +
+                          "Real analytics dashboard coming soon!",
+                          "Analytics",
                           MessageBoxButton.OK, MessageBoxImage.Information);
         }
 

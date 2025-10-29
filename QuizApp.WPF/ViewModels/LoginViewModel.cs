@@ -85,10 +85,13 @@ namespace QuizApp.WPF.ViewModels
 
                 if (response.Success)
                 {
-                    // Success - navigate to dashboard
+                    // Success - navigate to dashboard WITH the authenticated AuthService
                     Application.Current.Dispatcher.Invoke(() =>
                     {
+                        // Pass the SAME AuthService instance that has the token
+                        var adminVM = new AdminDashboardViewModel(_authService);
                         var adminDashboard = new AdminDashboard();
+                        adminDashboard.DataContext = adminVM; // Set the ViewModel with AuthService
                         adminDashboard.Show();
 
                         // Close current window

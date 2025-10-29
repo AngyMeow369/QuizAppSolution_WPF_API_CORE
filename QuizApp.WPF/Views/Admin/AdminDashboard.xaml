@@ -11,11 +11,10 @@
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI">
 
-    <Window.DataContext>
-        <viewModels:AdminDashboardViewModel />
-    </Window.DataContext>
-
     <Window.Resources>
+        <!-- Converters -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
         <!-- Clean Color Palette -->
         <SolidColorBrush x:Key="PrimaryBrush">#2563EB</SolidColorBrush>
         <SolidColorBrush x:Key="PrimaryLightBrush">#DBEAFE</SolidColorBrush>
@@ -63,9 +62,27 @@
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Padding" Value="15,10"/>
         </Style>
+
+        <!-- Loading Style -->
+        <Style x:Key="LoadingText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Center"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
     </Window.Resources>
 
     <Grid>
+        <!-- Loading Overlay -->
+        <Border Background="#F8FAFC" Opacity="0.8" 
+                Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                Panel.ZIndex="1000">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="🔄 Loading dashboard data..." Style="{StaticResource LoadingText}"/>
+                <TextBlock Text="Please wait..." Style="{StaticResource LoadingText}" Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
+
         <!-- Main Layout -->
         <Grid Margin="20">
             <Grid.RowDefinitions>
@@ -97,7 +114,7 @@
                                    Foreground="{StaticResource TextSecondaryBrush}" 
                                    Margin="0,0,0,20"/>
 
-                        <!-- Stats Cards -->
+                        <!-- Stats Cards - REAL DATA -->
                         <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
                             <Border Background="{StaticResource PrimaryLightBrush}" 
                                     CornerRadius="8" 
@@ -106,11 +123,47 @@
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                                     <TextBlock Text="👥" FontSize="16" Margin="0,0,8,0"/>
                                     <StackPanel>
-                                        <TextBlock Text="1,234" 
+                                        <TextBlock Text="{Binding Users.Count}" 
                                                    FontSize="16" 
                                                    FontWeight="SemiBold" 
                                                    Foreground="{StaticResource PrimaryBrush}"/>
-                                        <TextBlock Text="Active Users" 
+                                        <TextBlock Text="Total Users" 
+                                                   FontSize="12" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{StaticResource PrimaryLightBrush}" 
+                                    CornerRadius="8" 
+                                    Padding="15,10"
+                                    Margin="0,0,15,0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="📚" FontSize="16" Margin="0,0,8,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Categories.Count}" 
+                                                   FontSize="16" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                        <TextBlock Text="Categories" 
+                                                   FontSize="12" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{StaticResource PrimaryLightBrush}" 
+                                    CornerRadius="8" 
+                                    Padding="15,10"
+                                    Margin="0,0,15,0">
+                                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                    <TextBlock Text="❓" FontSize="16" Margin="0,0,8,0"/>
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Questions.Count}" 
+                                                   FontSize="16" 
+                                                   FontWeight="SemiBold" 
+                                                   Foreground="{StaticResource PrimaryBrush}"/>
+                                        <TextBlock Text="Questions" 
                                                    FontSize="12" 
                                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                                     </StackPanel>
@@ -121,13 +174,13 @@
                                     CornerRadius="8" 
                                     Padding="15,10">
                                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                                    <TextBlock Text="📊" FontSize="16" Margin="0,0,8,0"/>
+                                    <TextBlock Text="📝" FontSize="16" Margin="0,0,8,0"/>
                                     <StackPanel>
-                                        <TextBlock Text="56" 
+                                        <TextBlock Text="{Binding Quizzes.Count}" 
                                                    FontSize="16" 
                                                    FontWeight="SemiBold" 
                                                    Foreground="{StaticResource PrimaryBrush}"/>
-                                        <TextBlock Text="Active Quizzes" 
+                                        <TextBlock Text="Quizzes" 
                                                    FontSize="12" 
                                                    Foreground="{StaticResource TextSecondaryBrush}"/>
                                     </StackPanel>
@@ -221,6 +274,10 @@
                     Style="{StaticResource ModernCard}"
                     Padding="20">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="🔄 Refresh Data" 
+                            Style="{StaticResource ActionButton}"
+                            Command="{Binding LoadDataCommand}"/>
+                    <Rectangle Width="1" Height="20" Fill="{StaticResource BorderBrush}" Margin="20,0"/>
                     <Button Content="📊 View Analytics" 
                             Style="{StaticResource ActionButton}"
                             Command="{Binding ViewAnalyticsCommand}"/>
