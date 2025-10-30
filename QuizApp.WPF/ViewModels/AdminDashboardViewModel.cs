@@ -126,8 +126,10 @@ namespace QuizApp.WPF.ViewModels
             };
 
             // Load initial data
-            LoadDataCommand.Execute(null);
+            
         }
+
+
 
         private async Task LoadAllDataAsync()
         {
@@ -304,6 +306,6 @@ namespace QuizApp.WPF.ViewModels
         public string Icon { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public ICommand Command { get; set; }
+        public ICommand? Command { get; set; } // Made nullable
     }
 }

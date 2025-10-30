@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuizApp.API.Data;
 using QuizApp.API.Models;
+using QuizApp.Shared.DTOs;
 
 namespace QuizApp.API.Controllers
 {
@@ -22,70 +23,134 @@ namespace QuizApp.API.Controllers
         // GET: api/categories
         // -----------------------------
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<ActionResult<ApiResponse<List<Category>>>> GetAll()
         {
-            var categories = await _context.Categories
-                                           .Include(c => c.Questions)
-                                           .ToListAsync();
-            return Ok(categories);
+            try
+            {
+                var categories = await _context.Categories
+                                               .Include(c => c.Questions)
+                                               .ToListAsync();
+                return Ok(ApiResponse<List<Category>>.CreateSuccess(categories, "Categories retrieved successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<List<Category>>.CreateFailure($"Error retrieving categories: {ex.Message}"));
+            }
         }
 
         // -----------------------------
         // GET: api/categories/{id}
         // -----------------------------
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        public async Task<ActionResult<ApiResponse<Category>>> GetById(int id)
         {
-            var category = await _context.Categories
-                                         .Include(c => c.Questions)
-                                         .FirstOrDefaultAsync(c => c.Id == id);
-            if (category == null) return NotFound();
-            return Ok(category);
+            try
+            {
+                var category = await _context.Categories
+                                             .Include(c => c.Questions)
+                                             .FirstOrDefaultAsync(c => c.Id == id);
+
+                if (category == null)
+                    return NotFound(ApiResponse<Category>.CreateFailure("Category not found."));
+
+                return Ok(ApiResponse<Category>.CreateSuccess(category, "Category retrieved successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<Category>.CreateFailure($"Error retrieving category: {ex.Message}"));
+            }
         }
 
         // -----------------------------
         // POST: api/categories
         // -----------------------------
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Category category)
+        public async Task<ActionResult<ApiResponse<Category>>> Create([FromBody] Category category)
         {
-            if (string.IsNullOrWhiteSpace(category.Name))
-                return BadRequest("Category name is required.");
+            try
+            {
+                if (string.IsNullOrWhiteSpace(category.Name))
+                    return BadRequest(ApiResponse<Category>.CreateFailure("Category name is required."));
 
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
-            return CreatedAtAction(nameof(GetById), new { id = category.Id }, category);
+                // Check for duplicate category name
+                if (await _context.Categories.AnyAsync(c => c.Name.ToLower() == category.Name.ToLower()))
+                    return BadRequest(ApiResponse<Category>.CreateFailure("Category name already exists."));
+
+                _context.Categories.Add(category);
+                await _context.SaveChangesAsync();
+
+                // Reload the category with related data
+                var createdCategory = await _context.Categories
+                                                    .Include(c => c.Questions)
+                                                    .FirstOrDefaultAsync(c => c.Id == category.Id);
+
+                return CreatedAtAction(nameof(GetById), new { id = category.Id },
+                    ApiResponse<Category>.CreateSuccess(createdCategory, "Category created successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<Category>.CreateFailure($"Error creating category: {ex.Message}"));
+            }
         }
 
         // -----------------------------
         // PUT: api/categories/{id}
         // -----------------------------
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Category updatedCategory)
+        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] Category updatedCategory)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null) return NotFound();
+            try
+            {
+                var category = await _context.Categories.FindAsync(id);
+                if (category == null)
+                    return NotFound(ApiResponse<object>.CreateFailure("Category not found."));
 
-            if (string.IsNullOrWhiteSpace(updatedCategory.Name))
-                return BadRequest("Category name is required.");
+                if (string.IsNullOrWhiteSpace(updatedCategory.Name))
+                    return BadRequest(ApiResponse<object>.CreateFailure("Category name is required."));
 
-            category.Name = updatedCategory.Name;
-            await _context.SaveChangesAsync();
-            return NoContent();
+                // Check for duplicate category name (excluding current category)
+                if (await _context.Categories.AnyAsync(c => c.Name.ToLower() == updatedCategory.Name.ToLower() && c.Id != id))
+                    return BadRequest(ApiResponse<object>.CreateFailure("Category name already exists."));
+
+                category.Name = updatedCategory.Name;
+                await _context.SaveChangesAsync();
+
+                return Ok(ApiResponse<object>.CreateSuccess(null, "Category updated successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<object>.CreateFailure($"Error updating category: {ex.Message}"));
+            }
         }
 
         // -----------------------------
         // DELETE: api/categories/{id}
         // -----------------------------
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<ActionResult<ApiResponse<object>>> Delete(int id)
         {
-            var category = await _context.Categories.FindAsync(id);
-            if (category == null) return NotFound();
+            try
+            {
+                var category = await _context.Categories
+                                             .Include(c => c.Questions)
+                                             .FirstOrDefaultAsync(c => c.Id == id);
 
-            _context.Categories.Remove(category);
-            await _context.SaveChangesAsync();
-            return NoContent();
+                if (category == null)
+                    return NotFound(ApiResponse<object>.CreateFailure("Category not found."));
+
+                // Check if category has questions
+                if (category.Questions.Any())
+                    return BadRequest(ApiResponse<object>.CreateFailure("Cannot delete category that has questions. Remove or reassign questions first."));
+
+                _context.Categories.Remove(category);
+                await _context.SaveChangesAsync();
+
+                return Ok(ApiResponse<object>.CreateSuccess(null, "Category deleted successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<object>.CreateFailure($"Error deleting category: {ex.Message}"));
+            }
         }
     }
 }

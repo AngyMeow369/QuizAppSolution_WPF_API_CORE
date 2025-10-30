@@ -1,0 +1,268 @@
+﻿<Window x:Class="QuizApp.WPF.Views.Admin.QuestionsManagementView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="Manage Questions"
+        Height="700"
+        Width="900"
+        WindowStartupLocation="CenterOwner"
+        Background="#F8FAFC"
+        FontFamily="Segoe UI">
+
+	<Window.Resources>
+		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+		<Style x:Key="PrimaryButton" TargetType="Button">
+			<Setter Property="Background" Value="#2563EB"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding" Value="15,10"/>
+			<Setter Property="FontSize" Value="12"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+							<ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="border" Property="Background" Value="#1D4ED8"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+
+		<Style x:Key="DangerButton" TargetType="Button">
+			<Setter Property="Background" Value="#EF4444"/>
+			<Setter Property="Foreground" Value="White"/>
+			<Setter Property="BorderThickness" Value="0"/>
+			<Setter Property="Padding" Value="12,8"/>
+			<Setter Property="FontSize" Value="11"/>
+			<Setter Property="FontWeight" Value="SemiBold"/>
+			<Setter Property="Cursor" Value="Hand"/>
+			<Setter Property="Template">
+				<Setter.Value>
+					<ControlTemplate TargetType="Button">
+						<Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                Padding="{TemplateBinding Padding}">
+							<ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+						</Border>
+						<ControlTemplate.Triggers>
+							<Trigger Property="IsMouseOver" Value="True">
+								<Setter TargetName="border" Property="Background" Value="#DC2626"/>
+							</Trigger>
+						</ControlTemplate.Triggers>
+					</ControlTemplate>
+				</Setter.Value>
+			</Setter>
+		</Style>
+	</Window.Resources>
+
+	<Border Background="White" CornerRadius="12" Margin="20">
+		<Border.Effect>
+			<DropShadowEffect Color="#000000"
+                              ShadowDepth="0"
+                              Opacity="0.1"
+                              BlurRadius="20"/>
+		</Border.Effect>
+
+		<Grid Margin="25">
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+
+			<!-- Header -->
+			<StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,20">
+				<Border Width="40" Height="40" Background="#DBEAFE" CornerRadius="10">
+					<TextBlock Text="❓"
+                               FontSize="16"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+				</Border>
+				<StackPanel Margin="15,0,0,0">
+					<TextBlock Text="Manage Questions"
+                               FontSize="22"
+                               FontWeight="SemiBold"
+                               Foreground="#1F2937"/>
+					<TextBlock Text="Create, edit, and organize quiz questions"
+                               FontSize="13"
+                               Foreground="#6B7280"/>
+				</StackPanel>
+			</StackPanel>
+
+			<!-- Add Question Section -->
+			<Border Grid.Row="1"
+                    Background="#F8FAFC"
+                    CornerRadius="8"
+                    Padding="15"
+                    Margin="0,0,0,20">
+				<StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+					<Button Content="➕ Add New Question"
+                            Style="{StaticResource PrimaryButton}"
+                            Command="{Binding AddQuestionCommand}"/>
+				</StackPanel>
+			</Border>
+
+			<!-- Questions List -->
+			<Border Grid.Row="2"
+                    Background="White"
+                    BorderThickness="1"
+                    BorderBrush="#E5E7EB"
+                    CornerRadius="8">
+				<Grid>
+					<Grid.RowDefinitions>
+						<RowDefinition Height="Auto"/>
+						<RowDefinition Height="*"/>
+					</Grid.RowDefinitions>
+
+					<!-- List Header -->
+					<Border Grid.Row="0"
+                            Background="#F8FAFC"
+                            CornerRadius="8,8,0,0"
+                            BorderThickness="0,0,0,1"
+                            BorderBrush="#E5E7EB"
+                            Padding="15">
+						<Grid>
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="50"/>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="200"/>
+								<ColumnDefinition Width="100"/>
+								<ColumnDefinition Width="150"/>
+							</Grid.ColumnDefinitions>
+
+							<TextBlock Text="ID"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#374151"/>
+							<TextBlock Grid.Column="1"
+                                       Text="Question Text"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#374151"/>
+							<TextBlock Grid.Column="2"
+                                       Text="Category"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"/>
+							<TextBlock Grid.Column="3"
+                                       Text="Options"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"/>
+							<TextBlock Grid.Column="4"
+                                       Text="Actions"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="#374151"
+                                       HorizontalAlignment="Center"/>
+						</Grid>
+					</Border>
+
+					<!-- Questions List -->
+					<ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+						<ItemsControl ItemsSource="{Binding Questions}">
+							<ItemsControl.ItemTemplate>
+								<DataTemplate>
+									<Border BorderThickness="0,0,0,1"
+                                            BorderBrush="#F3F4F6"
+                                            Padding="15">
+										<Grid>
+											<Grid.ColumnDefinitions>
+												<ColumnDefinition Width="50"/>
+												<ColumnDefinition Width="*"/>
+												<ColumnDefinition Width="200"/>
+												<ColumnDefinition Width="100"/>
+												<ColumnDefinition Width="150"/>
+											</Grid.ColumnDefinitions>
+
+											<TextBlock Text="{Binding Id}"
+                                                       FontSize="12"
+                                                       Foreground="#6B7280"
+                                                       VerticalAlignment="Center"/>
+
+											<TextBlock Grid.Column="1"
+                                                       Text="{Binding Text}"
+                                                       FontSize="13"
+                                                       Foreground="#1F2937"
+                                                       VerticalAlignment="Center"
+                                                       TextWrapping="Wrap"/>
+
+											<TextBlock Grid.Column="2"
+                                                       Text="{Binding Category.Name}"
+                                                       FontSize="12"
+                                                       Foreground="#6B7280"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+
+											<TextBlock Grid.Column="3"
+                                                       Text="{Binding Options.Count}"
+                                                       FontSize="12"
+                                                       Foreground="#6B7280"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"/>
+
+											<StackPanel Grid.Column="4"
+                                                        Orientation="Horizontal"
+                                                        HorizontalAlignment="Center">
+												<Button Content="Edit"
+                                                        Style="{StaticResource PrimaryButton}"
+                                                        Command="{Binding DataContext.EditQuestionCommand,
+                                                                          RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Padding="10,6"
+                                                        Margin="0,0,5,0"/>
+
+												<Button Content="Delete"
+                                                        Style="{StaticResource DangerButton}"
+                                                        Command="{Binding DataContext.DeleteQuestionCommand,
+                                                                          RelativeSource={RelativeSource AncestorType=Window}}"
+                                                        CommandParameter="{Binding}"
+                                                        Padding="10,6"/>
+											</StackPanel>
+										</Grid>
+									</Border>
+								</DataTemplate>
+							</ItemsControl.ItemTemplate>
+						</ItemsControl>
+					</ScrollViewer>
+				</Grid>
+			</Border>
+
+			<!-- Footer -->
+			<StackPanel Grid.Row="3"
+                        Orientation="Horizontal"
+                        HorizontalAlignment="Right"
+                        Margin="0,20,0,0">
+				<Button Content="Close"
+                        Command="{Binding CloseCommand}"
+                        Background="Transparent"
+                        Foreground="#6B7280"
+                        BorderThickness="1"
+                        BorderBrush="#E5E7EB"
+                        Padding="15,10"
+                        FontSize="12"
+                        FontWeight="SemiBold"
+                        Cursor="Hand"/>
+			</StackPanel>
+		</Grid>
+	</Border>
+</Window>

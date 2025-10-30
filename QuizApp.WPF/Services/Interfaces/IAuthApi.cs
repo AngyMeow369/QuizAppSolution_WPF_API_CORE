@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using QuizApp.Shared.DTOs;
+﻿using QuizApp.Shared.DTOs;
 using Refit;
 
 namespace QuizApp.WPF.Services.Interfaces

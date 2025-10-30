@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using QuizApp.API.Data;
-//using QuizApp.API.DTOs;
-using QuizApp.API.Models;
 using QuizApp.Shared.DTOs;
+using QuizApp.API.Models;
+using QuizApp.API.DTOs;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -75,15 +75,18 @@ namespace QuizApp.API.Controllers
 
             var claims = new[]
             {
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Role, user.Role)
-            };
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Role, user.Role)
+    };
+
+            // Read expiration from config, default to 60 minutes if not set
+            var expireMinutes = _config.GetValue<int>("Jwt:ExpireMinutes", 60);
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
                 audience: _config["Jwt:Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddHours(1),
+                expires: DateTime.UtcNow.AddMinutes(expireMinutes), // Use config value
                 signingCredentials: creds
             );
 

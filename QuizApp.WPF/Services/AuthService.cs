@@ -1,5 +1,6 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services.Interfaces;
+
 using Refit;
 
 namespace QuizApp.WPF.Services
@@ -20,31 +21,18 @@ namespace QuizApp.WPF.Services
         public string Role => _role;
         public string Username => _username;
 
-        // ADD THESE MISSING METHODS:
-        public string GetToken()
-        {
-            return _jwtToken;
-        }
+        public string GetToken() => _jwtToken;
 
-        public bool IsAuthenticated()
-        {
-            return !string.IsNullOrEmpty(_jwtToken);
-        }
+        public bool IsAuthenticated() => !string.IsNullOrEmpty(_jwtToken);
 
-        // FIX RETURN TYPES - Remove the namespace prefixes since we have using statement
         public async Task<Shared.DTOs.ApiResponse<LoginResponse>> LoginAsync(string username, string password)
         {
             try
             {
-                var request = new LoginRequest
-                {
-                    Username = username,
-                    Password = password
-                };
-
+                var request = new LoginRequest { Username = username, Password = password };
                 var response = await _authApi.LoginAsync(request);
 
-                if (response?.Success == true && response.Data is not null)
+                if (response?.Success == true && response.Data != null)
                 {
                     _jwtToken = response.Data.Token;
                     _role = response.Data.Role;
@@ -67,13 +55,7 @@ namespace QuizApp.WPF.Services
         {
             try
             {
-                var request = new RegisterRequest
-                {
-                    Username = username,
-                    Password = password,
-                    Role = role
-                };
-
+                var request = new RegisterRequest { Username = username, Password = password, Role = role };
                 var response = await _authApi.RegisterAsync(request);
                 return response;
             }
@@ -85,11 +67,6 @@ namespace QuizApp.WPF.Services
             {
                 return Shared.DTOs.ApiResponse<object>.CreateFailure($"Unexpected error: {ex.Message}");
             }
-        }
-
-        Task<Shared.DTOs.ApiResponse<LoginResponse>> IAuthService.LoginAsync(string username, string password)
-        {
-            throw new NotImplementedException();
         }
     }
 }

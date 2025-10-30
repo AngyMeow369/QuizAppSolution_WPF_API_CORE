@@ -18,6 +18,7 @@ namespace QuizApp.WPF.ViewModels
         {
             _authService = new AuthService();
             LoginCommand = new RelayCommand(async () => await LoginAsync(), CanLogin);
+            RegisterCommand = new RelayCommand(() => { /* Register logic here */ }); // Initialize RegisterCommand
         }
 
         public string Username
@@ -66,7 +67,7 @@ namespace QuizApp.WPF.ViewModels
         public string LoginButtonText => IsLoading ? "Please wait..." : "Sign In";
 
         public ICommand LoginCommand { get; }
-        public ICommand RegisterCommand { get; }
+        public ICommand RegisterCommand { get; } // Now properly initialized
 
         private bool CanLogin()
         {
