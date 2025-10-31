@@ -190,9 +190,15 @@ namespace QuizApp.WPF.ViewModels
         private async Task ManageQuestionsAsync()
         {
             await LoadQuestionsAsync();
-            MessageBox.Show($"Loaded {Questions.Count} questions!", "Questions",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+            var questionsView = new QuestionsManagementView(_questionService, _authService);
+            questionsView.Owner = Application.Current.MainWindow;
+            var result = questionsView.ShowDialog();
+
+            if (result == true)
+                await LoadQuestionsAsync();
         }
+
+
 
         private async Task ManageQuizzesAsync()
         {
