@@ -1,6 +1,7 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
-using QuizApp.WPF.ViewModels;
+using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -15,7 +16,7 @@ namespace QuizApp.WPF.ViewModels
         {
             _categoryService = categoryService;
             SaveCommand = new RelayCommand(async () => await SaveCategoryAsync(), CanSave);
-            CancelCommand = new RelayCommand(() => Cancel());
+            CancelCommand = new RelayCommand(Cancel);
         }
 
         public string CategoryName
@@ -32,7 +33,7 @@ namespace QuizApp.WPF.ViewModels
         public ICommand CancelCommand { get; }
 
         public bool IsSaved { get; private set; }
-        public Action<bool?>? CloseAction { get; set; } // Made nullable
+        public Action<bool?>? CloseAction { get; set; }
 
         private bool CanSave() => !string.IsNullOrWhiteSpace(CategoryName);
 
@@ -40,29 +41,26 @@ namespace QuizApp.WPF.ViewModels
         {
             try
             {
-                var newCategory = new Category
+                var newCategory = new CategoryDto
                 {
                     Name = CategoryName.Trim()
                 };
 
-                var createdCategory = await _categoryService.CreateCategoryAsync(newCategory);
+                var createdCategory = await _categoryService.CreateAsync(newCategory);
                 IsSaved = true;
 
                 MessageBox.Show($"Category '{createdCategory.Name}' created successfully!",
-                              "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                                "Success", MessageBoxButton.OK, MessageBoxImage.Information);
 
                 CloseAction?.Invoke(true);
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error creating category: {ex.Message}",
-                              "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void Cancel()
-        {
-            CloseAction?.Invoke(false);
-        }
+        private void Cancel() => CloseAction?.Invoke(false);
     }
 }

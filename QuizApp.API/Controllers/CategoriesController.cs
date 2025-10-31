@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuizApp.API.Data;
+using QuizApp.API.DTOs;
 using QuizApp.API.Models;
 using QuizApp.Shared.DTOs;
 
@@ -65,21 +66,22 @@ namespace QuizApp.API.Controllers
         // POST: api/categories
         // -----------------------------
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<Category>>> Create([FromBody] Category category)
+        public async Task<ActionResult<ApiResponse<Category>>> Create([FromBody] CreateCategoryDto dto)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(category.Name))
+                if (string.IsNullOrWhiteSpace(dto.Name))
                     return BadRequest(ApiResponse<Category>.CreateFailure("Category name is required."));
 
                 // Check for duplicate category name
-                if (await _context.Categories.AnyAsync(c => c.Name.ToLower() == category.Name.ToLower()))
+                if (await _context.Categories.AnyAsync(c => c.Name.ToLower() == dto.Name.ToLower()))
                     return BadRequest(ApiResponse<Category>.CreateFailure("Category name already exists."));
 
+                var category = new Category { Name = dto.Name };
                 _context.Categories.Add(category);
                 await _context.SaveChangesAsync();
 
-                // Reload the category with related data
+                // Reload with related data
                 var createdCategory = await _context.Categories
                                                     .Include(c => c.Questions)
                                                     .FirstOrDefaultAsync(c => c.Id == category.Id);
@@ -93,11 +95,12 @@ namespace QuizApp.API.Controllers
             }
         }
 
+
         // -----------------------------
         // PUT: api/categories/{id}
         // -----------------------------
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] Category updatedCategory)
+        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] UpdateCategoryDto dto)
         {
             try
             {
@@ -105,14 +108,14 @@ namespace QuizApp.API.Controllers
                 if (category == null)
                     return NotFound(ApiResponse<object>.CreateFailure("Category not found."));
 
-                if (string.IsNullOrWhiteSpace(updatedCategory.Name))
+                if (string.IsNullOrWhiteSpace(dto.Name))
                     return BadRequest(ApiResponse<object>.CreateFailure("Category name is required."));
 
-                // Check for duplicate category name (excluding current category)
-                if (await _context.Categories.AnyAsync(c => c.Name.ToLower() == updatedCategory.Name.ToLower() && c.Id != id))
+                // Check for duplicate name
+                if (await _context.Categories.AnyAsync(c => c.Name.ToLower() == dto.Name.ToLower() && c.Id != id))
                     return BadRequest(ApiResponse<object>.CreateFailure("Category name already exists."));
 
-                category.Name = updatedCategory.Name;
+                category.Name = dto.Name;
                 await _context.SaveChangesAsync();
 
                 return Ok(ApiResponse<object>.CreateSuccess(null, "Category updated successfully."));
@@ -122,6 +125,7 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<object>.CreateFailure($"Error updating category: {ex.Message}"));
             }
         }
+
 
         // -----------------------------
         // DELETE: api/categories/{id}

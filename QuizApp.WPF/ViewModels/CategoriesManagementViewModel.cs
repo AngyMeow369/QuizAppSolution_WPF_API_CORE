@@ -1,4 +1,4 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using System;
 using System.Collections.ObjectModel;
@@ -11,24 +11,24 @@ namespace QuizApp.WPF.ViewModels
     public class CategoriesManagementViewModel : ObservableObject
     {
         private readonly CategoryService _categoryService;
-        private ObservableCollection<Category> _categories = [];
+        private ObservableCollection<CategoryDto> _categories = [];
         private string _newCategoryName = string.Empty;
         private bool _isLoading;
 
         public CategoriesManagementViewModel(CategoryService categoryService)
         {
-            _categoryService = categoryService;
+            _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
 
             LoadCategoriesCommand = new RelayCommand(async () => await LoadCategoriesAsync());
             AddCategoryCommand = new RelayCommand(async () => await AddCategoryAsync(), CanAddCategory);
-            EditCategoryCommand = new RelayCommand<Category>(async c => await EditCategoryAsync(c));
-            DeleteCategoryCommand = new RelayCommand<Category>(async c => await DeleteCategoryAsync(c));
+            EditCategoryCommand = new RelayCommand<CategoryDto>(async c => await EditCategoryAsync(c));
+            DeleteCategoryCommand = new RelayCommand<CategoryDto>(async c => await DeleteCategoryAsync(c));
             CloseCommand = new RelayCommand(() => CloseAction?.Invoke(true));
 
-            LoadCategoriesCommand.Execute(null);
+            _ = LoadCategoriesAsync();
         }
 
-        public ObservableCollection<Category> Categories
+        public ObservableCollection<CategoryDto> Categories
         {
             get => _categories;
             private set => SetProperty(ref _categories, value);
@@ -65,13 +65,13 @@ namespace QuizApp.WPF.ViewModels
             IsLoading = true;
             try
             {
-                var categories = await _categoryService.GetCategoriesAsync();
-                Categories = new ObservableCollection<Category>(categories);
+                var categories = await _categoryService.GetAllAsync();
+                Categories = new ObservableCollection<CategoryDto>(categories);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading categories: {ex.Message}", "Error",
-                                MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading categories: {ex.Message}",
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -86,8 +86,8 @@ namespace QuizApp.WPF.ViewModels
 
             try
             {
-                var newCategory = new Category { Name = NewCategoryName.Trim() };
-                var created = await _categoryService.CreateCategoryAsync(newCategory);
+                var newCategory = new CategoryDto { Name = NewCategoryName.Trim() };
+                var created = await _categoryService.CreateAsync(newCategory);
                 Categories.Add(created);
                 NewCategoryName = string.Empty;
             }
@@ -98,19 +98,21 @@ namespace QuizApp.WPF.ViewModels
             }
         }
 
-        private async Task EditCategoryAsync(Category? category)
+        private async Task EditCategoryAsync(CategoryDto? category)
         {
-            if (category == null) return;
+            if (category == null)
+                return;
 
             var newName = Microsoft.VisualBasic.Interaction.InputBox(
                 "Enter new category name:", "Edit Category", category.Name);
 
-            if (string.IsNullOrWhiteSpace(newName)) return;
+            if (string.IsNullOrWhiteSpace(newName))
+                return;
 
             try
             {
-                var updated = new Category { Id = category.Id, Name = newName.Trim() };
-                await _categoryService.UpdateCategoryAsync(updated);
+                var updated = new CategoryDto { Id = category.Id, Name = newName.Trim() };
+                await _categoryService.UpdateAsync(updated);
                 await LoadCategoriesAsync();
             }
             catch (Exception ex)
@@ -120,19 +122,21 @@ namespace QuizApp.WPF.ViewModels
             }
         }
 
-        private async Task DeleteCategoryAsync(Category? category)
+        private async Task DeleteCategoryAsync(CategoryDto? category)
         {
-            if (category == null) return;
+            if (category == null)
+                return;
 
             var result = MessageBox.Show(
                 $"Are you sure you want to delete category '{category.Name}'?",
                 "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
-            if (result != MessageBoxResult.Yes) return;
+            if (result != MessageBoxResult.Yes)
+                return;
 
             try
             {
-                await _categoryService.DeleteCategoryAsync(category.Id);
+                await _categoryService.DeleteAsync(category.Id);
                 Categories.Remove(category);
             }
             catch (Exception ex)

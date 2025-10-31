@@ -1,83 +1,64 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Admin;
 using QuizApp.WPF.Views.Auth;
 using System.Collections.ObjectModel;
 using System.Windows;
 using System.Windows.Input;
+using System;
+using System.Threading.Tasks;
 
 namespace QuizApp.WPF.ViewModels
 {
     public class AdminDashboardViewModel : ObservableObject
     {
         private readonly AuthService _authService;
-        private readonly UserService _userService;
         private readonly CategoryService _categoryService;
         private readonly QuestionService _questionService;
         private readonly QuizService _quizService;
+        private readonly UserService _userService;
 
-        private ObservableCollection<User> _users;
-        private ObservableCollection<Category> _categories;
-        private ObservableCollection<Question> _questions;
-        private ObservableCollection<Quiz> _quizzes;
+        private ObservableCollection<UserDto> _users = new();
+        private ObservableCollection<CategoryDto> _categories = new();
+        private ObservableCollection<QuestionDto> _questions = new();
+        private ObservableCollection<QuizDto> _quizzes = new();
         private bool _isLoading;
 
         public string Username => _authService.Username;
         public string Role => _authService.Role;
 
-        // Data Collections
-        public ObservableCollection<User> Users
+        public ObservableCollection<UserDto> Users
         {
             get => _users;
-            private set
-            {
-                _users = value;
-                OnPropertyChanged();
-            }
+            private set => SetProperty(ref _users, value);
         }
 
-        public ObservableCollection<Category> Categories
+        public ObservableCollection<CategoryDto> Categories
         {
             get => _categories;
-            private set
-            {
-                _categories = value;
-                OnPropertyChanged();
-            }
+            private set => SetProperty(ref _categories, value);
         }
 
-        public ObservableCollection<Question> Questions
+        public ObservableCollection<QuestionDto> Questions
         {
             get => _questions;
-            private set
-            {
-                _questions = value;
-                OnPropertyChanged();
-            }
+            private set => SetProperty(ref _questions, value);
         }
 
-        public ObservableCollection<Quiz> Quizzes
+        public ObservableCollection<QuizDto> Quizzes
         {
             get => _quizzes;
-            private set
-            {
-                _quizzes = value;
-                OnPropertyChanged();
-            }
+            private set => SetProperty(ref _quizzes, value);
         }
 
         public bool IsLoading
         {
             get => _isLoading;
-            set
-            {
-                _isLoading = value;
-                OnPropertyChanged();
-            }
+            set => SetProperty(ref _isLoading, value);
         }
 
         // Commands
-        public ICommand AddCategoryCommand { get; } // ADDED THIS
+        public ICommand AddCategoryCommand { get; }
         public ICommand ManageCategoriesCommand { get; }
         public ICommand ManageQuestionsCommand { get; }
         public ICommand ManageQuizzesCommand { get; }
@@ -89,22 +70,16 @@ namespace QuizApp.WPF.ViewModels
 
         public ObservableCollection<FeatureCard> FeatureCards { get; }
 
-        // Updated constructor that accepts AuthService parameter
         public AdminDashboardViewModel(AuthService authService)
         {
-            _authService = authService; // Use the instance passed from login (has token)
+            _authService = authService ?? throw new ArgumentNullException(nameof(authService));
+
             _userService = new UserService(_authService);
             _categoryService = new CategoryService(_authService);
             _questionService = new QuestionService(_authService);
             _quizService = new QuizService(_authService);
 
-            _users = new ObservableCollection<User>();
-            _categories = new ObservableCollection<Category>();
-            _questions = new ObservableCollection<Question>();
-            _quizzes = new ObservableCollection<Quiz>();
-
-            // Initialize commands
-            AddCategoryCommand = new RelayCommand(async () => await AddCategoryAsync()); // ADDED THIS
+            AddCategoryCommand = new RelayCommand(async () => await AddCategoryAsync());
             ManageCategoriesCommand = new RelayCommand(async () => await ManageCategoriesAsync());
             ManageQuestionsCommand = new RelayCommand(async () => await ManageQuestionsAsync());
             ManageQuizzesCommand = new RelayCommand(async () => await ManageQuizzesAsync());
@@ -114,7 +89,6 @@ namespace QuizApp.WPF.ViewModels
             LogoutCommand = new RelayCommand(Logout);
             LoadDataCommand = new RelayCommand(async () => await LoadAllDataAsync());
 
-            // Initialize feature cards
             FeatureCards = new ObservableCollection<FeatureCard>
             {
                 new FeatureCard { Icon = "📚", Title = "Manage Categories", Description = "Create and organize quiz categories", Command = ManageCategoriesCommand },
@@ -124,12 +98,7 @@ namespace QuizApp.WPF.ViewModels
                 new FeatureCard { Icon = "📈", Title = "View Analytics", Description = "Platform insights and metrics", Command = ViewAnalyticsCommand },
                 new FeatureCard { Icon = "⚙️", Title = "Settings", Description = "System configuration", Command = SettingsCommand }
             };
-
-            // Load initial data
-            
         }
-
-
 
         private async Task LoadAllDataAsync()
         {
@@ -145,8 +114,7 @@ namespace QuizApp.WPF.ViewModels
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading data: {ex.Message}", "Error",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -157,40 +125,35 @@ namespace QuizApp.WPF.ViewModels
         private async Task LoadUsersAsync()
         {
             var users = await _userService.GetUsersAsync();
-            Users = new ObservableCollection<User>(users);
         }
 
         private async Task LoadCategoriesAsync()
         {
-            var categories = await _categoryService.GetCategoriesAsync();
-            Categories = new ObservableCollection<Category>(categories);
+            var categories = await _categoryService.GetAllAsync();
+            Categories = new ObservableCollection<CategoryDto>(categories);
         }
 
         private async Task LoadQuestionsAsync()
         {
-            var questions = await _questionService.GetQuestionsAsync();
-            Questions = new ObservableCollection<Question>(questions);
+            var questions = await _questionService.GetAllAsync();
+            Questions = new ObservableCollection<QuestionDto>(questions);
         }
+
 
         private async Task LoadQuizzesAsync()
         {
             var quizzes = await _quizService.GetQuizzesAsync();
-            Quizzes = new ObservableCollection<Quiz>(quizzes);
         }
 
         private async Task ManageUsersAsync()
         {
             await LoadUsersAsync();
-            MessageBox.Show($"Loaded {Users.Count} users from database!\n\n" +
-                          "Next: We'll build a proper user management UI.",
-                          "User Management",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Loaded {Users.Count} users from database!", "User Management",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
-        // ADDED THIS METHOD: For Add Category button
         private async Task AddCategoryAsync()
         {
-            // Open AddCategoryView (simple dialog)
             var addCategoryView = new AddCategoryView();
             var result = addCategoryView.ShowDialog();
 
@@ -198,105 +161,76 @@ namespace QuizApp.WPF.ViewModels
             {
                 try
                 {
-                    var newCategory = new Category
-                    {
-                        Name = addCategoryView.CategoryName
-                    };
-
-                    var createdCategory = await _categoryService.CreateCategoryAsync(newCategory);
-
-                    // Refresh categories to update the count
+                    var newCategory = new CategoryDto { Name = addCategoryView.CategoryName };
+                    var createdCategory = await _categoryService.CreateAsync(newCategory);
                     await LoadCategoriesAsync();
 
                     MessageBox.Show($"Category '{createdCategory.Name}' created successfully!",
-                                  "Success",
-                                  MessageBoxButton.OK, MessageBoxImage.Information);
+                                    "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show($"Error creating category: {ex.Message}",
-                                  "Error",
-                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
         }
 
-        // UPDATED THIS METHOD: For Manage Categories button
         private async Task ManageCategoriesAsync()
         {
             await LoadCategoriesAsync();
-
-            // Open CategoriesManagementView (full CRUD)
             var categoriesView = new CategoriesManagementView(_categoryService);
             categoriesView.Owner = Application.Current.MainWindow;
             var result = categoriesView.ShowDialog();
 
-            // Refresh categories after management window closes
             if (result == true)
-            {
                 await LoadCategoriesAsync();
-            }
         }
 
         private async Task ManageQuestionsAsync()
         {
             await LoadQuestionsAsync();
-            MessageBox.Show($"Loaded {Questions.Count} questions from database!\n\n" +
-                          "Next: We'll build a proper question management UI.",
-                          "Question Management",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Loaded {Questions.Count} questions!", "Questions",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private async Task ManageQuizzesAsync()
         {
             await LoadQuizzesAsync();
-            MessageBox.Show($"Loaded {Quizzes.Count} quizzes from database!\n\n" +
-                          "Next: We'll build a proper quiz management UI.",
-                          "Quiz Management",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show($"Loaded {Quizzes.Count} quizzes!", "Quizzes",
+                            MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         private void ViewAnalytics()
         {
-            var userCount = Users.Count;
-            var categoryCount = Categories.Count;
-            var questionCount = Questions.Count;
-            var quizCount = Quizzes.Count;
-
-            MessageBox.Show($"📊 Platform Analytics:\n\n" +
-                          $"👥 Users: {userCount}\n" +
-                          $"📚 Categories: {categoryCount}\n" +
-                          $"❓ Questions: {questionCount}\n" +
-                          $"📝 Quizzes: {quizCount}\n\n" +
-                          "Real analytics dashboard coming soon!",
-                          "Analytics",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
+            MessageBox.Show(
+                $"📊 Analytics:\n" +
+                $"👥 Users: {Users.Count}\n" +
+                $"📚 Categories: {Categories.Count}\n" +
+                $"❓ Questions: {Questions.Count}\n" +
+                $"📝 Quizzes: {Quizzes.Count}",
+                "Analytics",
+                MessageBoxButton.OK,
+                MessageBoxImage.Information
+            );
         }
 
-        private void Settings()
-        {
-            MessageBox.Show("Settings panel coming soon!", "Feature",
-                          MessageBoxButton.OK, MessageBoxImage.Information);
-        }
+        private void Settings() =>
+            MessageBox.Show("Settings coming soon!", "Settings", MessageBoxButton.OK, MessageBoxImage.Information);
 
         private void Logout()
         {
-            var result = MessageBox.Show("Are you sure you want to logout?", "Logout",
-                                       MessageBoxButton.YesNo, MessageBoxImage.Question);
-
-            if (result == MessageBoxResult.Yes)
+            if (MessageBox.Show("Are you sure you want to logout?", "Logout",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             {
-                Application.Current.Dispatcher.Invoke(() =>
-                {
-                    var loginView = new LoginView();
-                    loginView.Show();
+                var loginView = new LoginView();
+                loginView.Show();
 
-                    foreach (Window window in Application.Current.Windows)
-                    {
-                        if (window.DataContext == this)
-                            window.Close();
-                    }
-                });
+                foreach (Window window in Application.Current.Windows)
+                {
+                    if (window.DataContext == this)
+                        window.Close();
+                }
             }
         }
     }
@@ -306,6 +240,6 @@ namespace QuizApp.WPF.ViewModels
         public string Icon { get; set; } = string.Empty;
         public string Title { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
-        public ICommand? Command { get; set; } // Made nullable
+        public ICommand? Command { get; set; }
     }
 }

@@ -1,10 +1,7 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
-using System;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Windows;
-using System.Threading.Tasks;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
@@ -13,19 +10,19 @@ namespace QuizApp.WPF.ViewModels.Admin
         private readonly CategoryService _categoryService;
 
         private string _questionText = string.Empty;
-        private Category? _selectedCategory;
+        private CategoryDto? _selectedCategory;
         private string _headerTitle = string.Empty;
         private string _validationMessage = string.Empty;
         private bool _isValidationVisible;
         private bool _isEditMode;
         private bool _isLoading;
 
-        public AddQuestionViewModel(CategoryService categoryService, Question? existingQuestion = null)
+        public AddQuestionViewModel(CategoryService categoryService, QuestionDto? existingQuestion = null)
         {
             _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
-            Categories = new ObservableCollection<Category>();
-            Options = new ObservableCollection<Option>();
-            Question = existingQuestion ?? new Question();
+            Categories = new ObservableCollection<CategoryDto>();
+            Options = new ObservableCollection<OptionDto>();
+            Question = existingQuestion ?? new QuestionDto();
             _isEditMode = existingQuestion != null;
 
             InitializeCommands();
@@ -35,9 +32,9 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         #region Properties
 
-        public ObservableCollection<Category> Categories { get; }
-        public ObservableCollection<Option> Options { get; }
-        public Question Question { get; }
+        public ObservableCollection<CategoryDto> Categories { get; }
+        public ObservableCollection<OptionDto> Options { get; }
+        public QuestionDto Question { get; }
 
         public string QuestionText
         {
@@ -52,7 +49,7 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         public int QuestionTextLength => QuestionText.Length;
 
-        public Category? SelectedCategory
+        public CategoryDto? SelectedCategory
         {
             get => _selectedCategory;
             set
@@ -109,14 +106,14 @@ namespace QuizApp.WPF.ViewModels.Admin
         #region Commands
 
         public RelayCommand AddOptionCommand { get; private set; } = null!;
-        public RelayCommand<Option> RemoveOptionCommand { get; private set; } = null!;
+        public RelayCommand<OptionDto> RemoveOptionCommand { get; private set; } = null!;
         public RelayCommand SaveCommand { get; private set; } = null!;
         public RelayCommand CancelCommand { get; private set; } = null!;
 
         private void InitializeCommands()
         {
             AddOptionCommand = new RelayCommand(AddOption);
-            RemoveOptionCommand = new RelayCommand<Option>(RemoveOption);
+            RemoveOptionCommand = new RelayCommand<OptionDto>(RemoveOption);
             SaveCommand = new RelayCommand(SaveQuestion);
             CancelCommand = new RelayCommand(() => CloseAction?.Invoke(false));
         }
@@ -130,22 +127,26 @@ namespace QuizApp.WPF.ViewModels.Admin
             IsLoading = true;
             try
             {
-                var categories = await _categoryService.GetCategoriesAsync();
+                var categories = await _categoryService.GetAllAsync();
                 Categories.Clear();
+
+                // ensure CategoryDto conversion if service still returns API models
                 foreach (var category in categories)
                 {
-                    Categories.Add(category);
+                    Categories.Add(new CategoryDto
+                    {
+                        Id = category.Id,
+                        Name = category.Name
+                    });
                 }
 
                 if (_isEditMode && Question.CategoryId > 0)
-                {
                     SelectedCategory = Categories.FirstOrDefault(c => c.Id == Question.CategoryId);
-                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Error loading categories: {ex.Message}", "Error",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -158,11 +159,13 @@ namespace QuizApp.WPF.ViewModels.Admin
             HeaderTitle = _isEditMode ? "Edit Question" : "Add New Question";
             QuestionText = Question.Text ?? string.Empty;
 
+            Options.Clear();
+
             if (_isEditMode && Question.Options != null && Question.Options.Any())
             {
                 foreach (var option in Question.Options)
                 {
-                    Options.Add(new Option
+                    Options.Add(new OptionDto
                     {
                         Id = option.Id,
                         Text = option.Text,
@@ -173,29 +176,26 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
             else
             {
-                Options.Add(new Option { Text = "", IsCorrect = false });
-                Options.Add(new Option { Text = "", IsCorrect = true });
+                // default: one correct and one incorrect
+                Options.Add(new OptionDto { Text = "", IsCorrect = false });
+                Options.Add(new OptionDto { Text = "", IsCorrect = true });
             }
         }
 
         private void AddOption()
         {
-            Options.Add(new Option { Text = "", IsCorrect = false });
+            Options.Add(new OptionDto { Text = "", IsCorrect = false });
         }
 
-        private void RemoveOption(Option? option)
+        private void RemoveOption(OptionDto? option)
         {
             if (option == null) return;
 
             if (Options.Count > 2)
-            {
                 Options.Remove(option);
-            }
             else
-            {
-                MessageBox.Show("A question must have at least two options.", "Validation Error",
-                              MessageBoxButton.OK, MessageBoxImage.Warning);
-            }
+                MessageBox.Show("A question must have at least two options.",
+                    "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
         }
 
         private void SaveQuestion()
@@ -205,14 +205,14 @@ namespace QuizApp.WPF.ViewModels.Admin
             if (string.IsNullOrWhiteSpace(QuestionText))
             {
                 MessageBox.Show("Please enter question text.", "Validation Error",
-                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             if (SelectedCategory == null)
             {
                 MessageBox.Show("Please select a category.", "Validation Error",
-                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
@@ -223,23 +223,22 @@ namespace QuizApp.WPF.ViewModels.Admin
                 ValidationMessage = "⚠️ Please add at least 2 options with text";
                 IsValidationVisible = true;
                 MessageBox.Show("Please add at least two options with text.", "Validation Error",
-                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
-            var hasCorrectOption = validOptions.Any(o => o.IsCorrect);
-            if (!hasCorrectOption)
+            if (!validOptions.Any(o => o.IsCorrect))
             {
                 ValidationMessage = "⚠️ Please mark at least one option as correct";
                 IsValidationVisible = true;
                 MessageBox.Show("Please mark at least one option as correct.", "Validation Error",
-                              MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBoxButton.OK, MessageBoxImage.Warning);
                 return;
             }
 
             Question.Text = QuestionText.Trim();
             Question.CategoryId = SelectedCategory.Id;
-            Question.Options = Options.ToList();
+            Question.Options = validOptions;
 
             IsSaved = true;
             CloseAction?.Invoke(true);

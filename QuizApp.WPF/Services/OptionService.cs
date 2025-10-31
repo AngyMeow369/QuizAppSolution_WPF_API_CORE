@@ -1,6 +1,5 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services.Interfaces;
-using QuizApp.Shared.DTOs;
 using Refit;
 
 namespace QuizApp.WPF.Services
@@ -16,39 +15,42 @@ namespace QuizApp.WPF.Services
             _optionApi = RestService.For<IOptionApi>("https://localhost:7016");
         }
 
-        public async Task<List<Option>> GetOptionsAsync()
+        private string GetToken()
         {
             var token = _authService.GetToken();
-            var response = await _optionApi.GetAllOptionsAsync($"Bearer {token}");
-            return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to load options");
+            if (string.IsNullOrWhiteSpace(token))
+                throw new UnauthorizedAccessException("User is not authenticated");
+            return $"Bearer {token}";
         }
 
-        public async Task<Option> GetOptionByIdAsync(int id)
+        public async Task<List<OptionDto>> GetAllAsync()
         {
-            var token = _authService.GetToken();
-            var response = await _optionApi.GetOptionByIdAsync(id, $"Bearer {token}");
-            return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to load option");
+            var response = await _optionApi.GetAllOptionsAsync(GetToken());
+            if (!response.Success || response.Data == null)
+                throw new Exception(response.Message);
+            return response.Data;
         }
 
-        public async Task<Option> CreateOptionAsync(Option option)
+        public async Task<OptionDto> CreateAsync(OptionDto option)
         {
-            var token = _authService.GetToken();
-            var response = await _optionApi.CreateOptionAsync(option, $"Bearer {token}");
-            return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to create option");
+            var response = await _optionApi.CreateOptionAsync(option, GetToken());
+            if (!response.Success || response.Data == null)
+                throw new Exception(response.Message);
+            return response.Data;
         }
 
-        public async Task UpdateOptionAsync(Option option)
+        public async Task UpdateAsync(OptionDto option)
         {
-            var token = _authService.GetToken();
-            var response = await _optionApi.UpdateOptionAsync(option.Id, option, $"Bearer {token}");
-            if (!response.Success) throw new Exception(response.Message ?? "Failed to update option");
+            var response = await _optionApi.UpdateOptionAsync(option.Id, option, GetToken());
+            if (!response.Success)
+                throw new Exception(response.Message);
         }
 
-        public async Task DeleteOptionAsync(int optionId)
+        public async Task DeleteAsync(int id)
         {
-            var token = _authService.GetToken();
-            var response = await _optionApi.DeleteOptionAsync(optionId, $"Bearer {token}");
-            if (!response.Success) throw new Exception(response.Message ?? "Failed to delete option");
+            var response = await _optionApi.DeleteOptionAsync(id, GetToken());
+            if (!response.Success)
+                throw new Exception(response.Message);
         }
     }
 }

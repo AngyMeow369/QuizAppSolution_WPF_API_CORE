@@ -1,12 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuizApp.API.Data;
 using QuizApp.API.Models;
-using QuizApp.Shared.DTOs; 
-
-
+using QuizApp.Shared.DTOs;
 
 namespace QuizApp.API.Controllers
 {
@@ -26,19 +23,34 @@ namespace QuizApp.API.Controllers
         // GET: api/questions
         // -----------------------------
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<Question>>>> GetAll()
+        public async Task<ActionResult<ApiResponse<List<QuestionDto>>>> GetAll()
         {
             try
             {
                 var questions = await _context.Questions
-                                              .Include(q => q.Category)
-                                              .Include(q => q.Options)
-                                              .ToListAsync();
-                return Ok(ApiResponse<List<Question>>.CreateSuccess(questions, "Questions retrieved successfully."));
+                    .Include(q => q.Category)
+                    .Include(q => q.Options)
+                    .Select(q => new QuestionDto
+                    {
+                        Id = q.Id,
+                        Text = q.Text,
+                        CategoryId = q.CategoryId,
+                        CategoryName = q.Category.Name,
+                        Options = q.Options.Select(o => new OptionDto
+                        {
+                            Id = o.Id,
+                            Text = o.Text,
+                            IsCorrect = o.IsCorrect,
+                            QuestionId = o.QuestionId
+                        }).ToList()
+                    })
+                    .ToListAsync();
+
+                return Ok(ApiResponse<List<QuestionDto>>.CreateSuccess(questions, "Questions retrieved successfully."));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<List<Question>>.CreateFailure($"Error retrieving questions: {ex.Message}"));
+                return StatusCode(500, ApiResponse<List<QuestionDto>>.CreateFailure($"Error retrieving questions: {ex.Message}"));
             }
         }
 
@@ -46,23 +58,38 @@ namespace QuizApp.API.Controllers
         // GET: api/questions/{id}
         // -----------------------------
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<Question>>> GetById(int id)
+        public async Task<ActionResult<ApiResponse<QuestionDto>>> GetById(int id)
         {
             try
             {
                 var question = await _context.Questions
-                                             .Include(q => q.Category)
-                                             .Include(q => q.Options)
-                                             .FirstOrDefaultAsync(q => q.Id == id);
+                    .Include(q => q.Category)
+                    .Include(q => q.Options)
+                    .Where(q => q.Id == id)
+                    .Select(q => new QuestionDto
+                    {
+                        Id = q.Id,
+                        Text = q.Text,
+                        CategoryId = q.CategoryId,
+                        CategoryName = q.Category.Name,
+                        Options = q.Options.Select(o => new OptionDto
+                        {
+                            Id = o.Id,
+                            Text = o.Text,
+                            IsCorrect = o.IsCorrect,
+                            QuestionId = o.QuestionId
+                        }).ToList()
+                    })
+                    .FirstOrDefaultAsync();
 
                 if (question == null)
-                    return NotFound(ApiResponse<Question>.CreateFailure("Question not found."));
+                    return NotFound(ApiResponse<QuestionDto>.CreateFailure("Question not found."));
 
-                return Ok(ApiResponse<Question>.CreateSuccess(question, "Question retrieved successfully."));
+                return Ok(ApiResponse<QuestionDto>.CreateSuccess(question, "Question retrieved successfully."));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<Question>.CreateFailure($"Error retrieving question: {ex.Message}"));
+                return StatusCode(500, ApiResponse<QuestionDto>.CreateFailure($"Error retrieving question: {ex.Message}"));
             }
         }
 
@@ -70,40 +97,46 @@ namespace QuizApp.API.Controllers
         // POST: api/questions
         // -----------------------------
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<Question>>> Create([FromBody] Question question)
+        public async Task<ActionResult<ApiResponse<QuestionDto>>> Create([FromBody] QuestionDto dto)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(question.Text))
-                    return BadRequest(ApiResponse<Question>.CreateFailure("Question text is required."));
+                if (string.IsNullOrWhiteSpace(dto.Text))
+                    return BadRequest(ApiResponse<QuestionDto>.CreateFailure("Question text is required."));
 
-                var category = await _context.Categories.FindAsync(question.CategoryId);
+                var category = await _context.Categories.FindAsync(dto.CategoryId);
                 if (category == null)
-                    return BadRequest(ApiResponse<Question>.CreateFailure("Invalid category ID."));
+                    return BadRequest(ApiResponse<QuestionDto>.CreateFailure("Invalid category ID."));
 
-                // Validate that at least one option is marked as correct
-                if (question.Options != null && question.Options.Any())
+                if (dto.Options == null || dto.Options.Count < 2)
+                    return BadRequest(ApiResponse<QuestionDto>.CreateFailure("At least two options are required."));
+
+                if (!dto.Options.Any(o => o.IsCorrect))
+                    return BadRequest(ApiResponse<QuestionDto>.CreateFailure("At least one correct option is required."));
+
+                var question = new Question
                 {
-                    var hasCorrectOption = question.Options.Any(o => o.IsCorrect);
-                    if (!hasCorrectOption)
-                        return BadRequest(ApiResponse<Question>.CreateFailure("At least one option must be marked as correct."));
-                }
+                    Text = dto.Text,
+                    CategoryId = dto.CategoryId,
+                    Options = dto.Options.Select(o => new Option
+                    {
+                        Text = o.Text,
+                        IsCorrect = o.IsCorrect
+                    }).ToList()
+                };
 
                 _context.Questions.Add(question);
                 await _context.SaveChangesAsync();
 
-                // Reload the question with related data
-                var createdQuestion = await _context.Questions
-                                                    .Include(q => q.Category)
-                                                    .Include(q => q.Options)
-                                                    .FirstOrDefaultAsync(q => q.Id == question.Id);
+                dto.Id = question.Id;
+                dto.CategoryName = category.Name;
 
                 return CreatedAtAction(nameof(GetById), new { id = question.Id },
-                    ApiResponse<Question>.CreateSuccess(createdQuestion, "Question created successfully."));
+                    ApiResponse<QuestionDto>.CreateSuccess(dto, "Question created successfully."));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<Question>.CreateFailure($"Error creating question: {ex.Message}"));
+                return StatusCode(500, ApiResponse<QuestionDto>.CreateFailure($"Error creating question: {ex.Message}"));
             }
         }
 
@@ -111,26 +144,41 @@ namespace QuizApp.API.Controllers
         // PUT: api/questions/{id}
         // -----------------------------
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] Question updatedQuestion)
+        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] QuestionDto dto)
         {
             try
             {
                 var question = await _context.Questions
-                                             .Include(q => q.Options)
-                                             .FirstOrDefaultAsync(q => q.Id == id);
+                    .Include(q => q.Options)
+                    .FirstOrDefaultAsync(q => q.Id == id);
 
                 if (question == null)
                     return NotFound(ApiResponse<object>.CreateFailure("Question not found."));
 
-                if (string.IsNullOrWhiteSpace(updatedQuestion.Text))
+                if (string.IsNullOrWhiteSpace(dto.Text))
                     return BadRequest(ApiResponse<object>.CreateFailure("Question text is required."));
 
-                var category = await _context.Categories.FindAsync(updatedQuestion.CategoryId);
+                var category = await _context.Categories.FindAsync(dto.CategoryId);
                 if (category == null)
                     return BadRequest(ApiResponse<object>.CreateFailure("Invalid category ID."));
 
-                question.Text = updatedQuestion.Text;
-                question.CategoryId = updatedQuestion.CategoryId;
+                if (dto.Options == null || dto.Options.Count < 2)
+                    return BadRequest(ApiResponse<object>.CreateFailure("At least two options are required."));
+
+                if (!dto.Options.Any(o => o.IsCorrect))
+                    return BadRequest(ApiResponse<object>.CreateFailure("At least one correct option is required."));
+
+                // Update main question
+                question.Text = dto.Text;
+                question.CategoryId = dto.CategoryId;
+
+                // Replace options
+                _context.Options.RemoveRange(question.Options);
+                question.Options = dto.Options.Select(o => new Option
+                {
+                    Text = o.Text,
+                    IsCorrect = o.IsCorrect
+                }).ToList();
 
                 await _context.SaveChangesAsync();
 
@@ -151,18 +199,16 @@ namespace QuizApp.API.Controllers
             try
             {
                 var question = await _context.Questions
-                                             .Include(q => q.Options)
-                                             .Include(q => q.QuizQuestions)
-                                             .FirstOrDefaultAsync(q => q.Id == id);
+                    .Include(q => q.Options)
+                    .Include(q => q.QuizQuestions)
+                    .FirstOrDefaultAsync(q => q.Id == id);
 
                 if (question == null)
                     return NotFound(ApiResponse<object>.CreateFailure("Question not found."));
 
-                // Check if question is used in any quizzes
                 if (question.QuizQuestions.Any())
                     return BadRequest(ApiResponse<object>.CreateFailure("Cannot delete question that is assigned to quizzes. Remove from quizzes first."));
 
-                // Remove related options first
                 _context.Options.RemoveRange(question.Options);
                 _context.Questions.Remove(question);
                 await _context.SaveChangesAsync();

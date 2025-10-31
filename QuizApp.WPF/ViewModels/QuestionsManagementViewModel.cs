@@ -1,4 +1,4 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Admin;
 using System;
@@ -13,7 +13,7 @@ namespace QuizApp.WPF.ViewModels.Admin
     {
         private readonly QuestionService _questionService;
         private readonly CategoryService _categoryService;
-        private ObservableCollection<Question> _questions = new();
+        private ObservableCollection<QuestionDto> _questions = new();
         private bool _isLoading;
 
         public QuestionsManagementViewModel(QuestionService questionService, CategoryService categoryService)
@@ -22,90 +22,52 @@ namespace QuizApp.WPF.ViewModels.Admin
             _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
 
             InitializeCommands();
-
-            // Run async safely on load
             _ = LoadQuestionsAsync();
         }
 
         #region Properties
-
-        public ObservableCollection<Question> Questions
+        public ObservableCollection<QuestionDto> Questions
         {
             get => _questions;
-            private set
-            {
-                _questions = value;
-                OnPropertyChanged();
-            }
+            private set { _questions = value; OnPropertyChanged(); }
         }
 
         public bool IsLoading
         {
             get => _isLoading;
-            set
-            {
-                _isLoading = value;
-                OnPropertyChanged();
-            }
+            set { _isLoading = value; OnPropertyChanged(); }
         }
-
         #endregion
 
         #region Commands
-
         public RelayCommand LoadQuestionsCommand { get; private set; } = null!;
         public RelayCommand AddQuestionCommand { get; private set; } = null!;
-        public RelayCommand<Question?> EditQuestionCommand { get; private set; } = null!;
-        public RelayCommand<Question?> DeleteQuestionCommand { get; private set; } = null!;
+        public RelayCommand<QuestionDto?> EditQuestionCommand { get; private set; } = null!;
+        public RelayCommand<QuestionDto?> DeleteQuestionCommand { get; private set; } = null!;
         public RelayCommand CloseCommand { get; private set; } = null!;
 
         private void InitializeCommands()
         {
             LoadQuestionsCommand = new RelayCommand(async () => await LoadQuestionsAsync());
             AddQuestionCommand = new RelayCommand(async () => await AddQuestionAsync());
-            EditQuestionCommand = new RelayCommand<Question?>(async (question) =>
-            {
-                if (question != null)
-                    await EditQuestionAsync(question);
-            });
-            DeleteQuestionCommand = new RelayCommand<Question?>(async (question) =>
-            {
-                if (question != null)
-                    await DeleteQuestionAsync(question);
-            });
+            EditQuestionCommand = new RelayCommand<QuestionDto?>(async (q) => { if (q != null) await EditQuestionAsync(q); });
+            DeleteQuestionCommand = new RelayCommand<QuestionDto?>(async (q) => { if (q != null) await DeleteQuestionAsync(q); });
             CloseCommand = new RelayCommand(() => CloseAction?.Invoke(true));
         }
-
         #endregion
 
         #region Methods
-
         private async Task LoadQuestionsAsync()
         {
             IsLoading = true;
             try
             {
-                var questions = await _questionService.GetQuestionsAsync();
-                Questions.Clear();
-
-                foreach (var question in questions)
-                {
-                    var options = await _questionService.GetOptionsForQuestionAsync(question.Id);
-
-                    Questions.Add(new Question
-                    {
-                        Id = question.Id,
-                        Text = question.Text,
-                        CategoryId = question.CategoryId,
-                        Category = question.Category,
-                        Options = options
-                    });
-                }
+                var questions = await _questionService.GetAllAsync();
+                Questions = new ObservableCollection<QuestionDto>(questions);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading questions: {ex.Message}", "Error",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading questions: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -117,92 +79,70 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             try
             {
-                var addQuestionView = new AddQuestionView(_categoryService)
+                var view = new AddQuestionView(_categoryService)
                 {
                     Owner = Application.Current.MainWindow
                 };
 
-                var result = addQuestionView.ShowDialog();
+                var result = view.ShowDialog();
+                if (result != true || !view.IsSaved) return;
 
-                if (result == true && addQuestionView.IsSaved)
-                {
-                    await _questionService.CreateQuestionWithOptionsAsync(
-                        addQuestionView.Question,
-                        addQuestionView.Options.ToList()
-                    );
+                var newQuestion = view.Question as QuestionDto;
+                var newOptions = view.Options.Cast<OptionDto>().ToList();
 
-                    MessageBox.Show("Question created successfully!", "Success",
-                                  MessageBoxButton.OK, MessageBoxImage.Information);
+                await _questionService.CreateAsync(newQuestion);
+                // optional: handle options separately if needed
 
-                    await LoadQuestionsAsync();
-                }
+                MessageBox.Show("Question created successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadQuestionsAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error creating question: {ex.Message}", "Error",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error creating question: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private async Task EditQuestionAsync(Question question)
+        private async Task EditQuestionAsync(QuestionDto question)
         {
             try
             {
-                var editQuestionView = new AddQuestionView(_categoryService, question)
+                var view = new AddQuestionView(_categoryService, question)
                 {
                     Owner = Application.Current.MainWindow
                 };
 
-                var result = editQuestionView.ShowDialog();
+                var result = view.ShowDialog();
+                if (result != true || !view.IsSaved) return;
 
-                if (result == true && editQuestionView.IsSaved)
-                {
-                    await _questionService.UpdateQuestionWithOptionsAsync(
-                        editQuestionView.Question,
-                        editQuestionView.Options.ToList()
-                    );
+                var updatedQuestion = view.Question as QuestionDto;
+                await _questionService.UpdateAsync(updatedQuestion);
 
-                    MessageBox.Show("Question updated successfully!", "Success",
-                                  MessageBoxButton.OK, MessageBoxImage.Information);
-
-                    await LoadQuestionsAsync();
-                }
+                MessageBox.Show("Question updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                await LoadQuestionsAsync();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error updating question: {ex.Message}", "Error",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error updating question: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private async Task DeleteQuestionAsync(Question question)
+        private async Task DeleteQuestionAsync(QuestionDto question)
         {
-            var result = MessageBox.Show(
-                $"Are you sure you want to delete this question?\n\n\"{question.Text}\"",
-                "Confirm Delete",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result != MessageBoxResult.Yes)
+            if (MessageBox.Show($"Delete this question?\n\n\"{question.Text}\"",
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning) != MessageBoxResult.Yes)
                 return;
 
             try
             {
-                await _questionService.DeleteQuestionAsync(question.Id);
+                await _questionService.DeleteAsync(question.Id);
                 Questions.Remove(question);
-
-                MessageBox.Show("Question deleted successfully!",
-                              "Success",
-                              MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Question deleted successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting question: {ex.Message}",
-                              "Error",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error deleting question: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
         #endregion
 
         public Action<bool?>? CloseAction { get; set; }
