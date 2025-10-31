@@ -50,7 +50,11 @@ namespace QuizApp.WPF.ViewModels
                 if (response?.Success == true && response.Data != null)
                 {
                     foreach (var user in response.Data)
-                        Users.Add(user);
+                        if (!string.Equals(user.Role, "Admin", StringComparison.OrdinalIgnoreCase))
+                        {
+                            Users.Add(user);
+                        }
+
                 }
                 else
                 {

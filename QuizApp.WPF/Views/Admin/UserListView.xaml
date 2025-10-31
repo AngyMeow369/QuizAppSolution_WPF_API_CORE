@@ -68,7 +68,6 @@
                     </DataGrid.Resources>
 
                     <DataGrid.Columns>
-                        <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="60"/>
                         <DataGridTextColumn Header="Username" Binding="{Binding Username}" Width="*"/>
                         <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="2*"/>
                         <DataGridTextColumn Header="Role" Binding="{Binding Role}" Width="Auto"/>
