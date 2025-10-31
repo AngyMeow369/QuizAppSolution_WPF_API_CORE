@@ -124,14 +124,65 @@ namespace QuizApp.WPF.ViewModels
 
         private async Task LoadUsersAsync()
         {
-            var users = await _userService.GetUsersAsync();
+            try
+            {
+                // I saw your UserService returns List<User> (API model). Map to UserDto here.
+                var usersFromService = await _userService.GetUsersAsync(); // List<User> or List<UserDto>
+
+                // if they are already UserDto, this will still work
+                var userDtos = usersFromService.Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    Username = u.Username,
+                    Role = (u.Role ?? string.Empty),
+
+                }).ToList();
+
+                Users = new ObservableCollection<UserDto>(userDtos);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading users: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
 
         private async Task LoadCategoriesAsync()
         {
-            var categories = await _categoryService.GetAllAsync();
-            Categories = new ObservableCollection<CategoryDto>(categories);
+            IsLoading = true;
+            try
+            {
+                // Fetch both sets of data
+                var categories = await _categoryService.GetAllAsync();   // List<CategoryDto>
+                var questions = await _questionService.GetAllAsync();    // List<QuestionDto>
+
+                // Group questions by category
+                var questionsByCategory = questions
+                    .GroupBy(q => q.CategoryId)
+                    .ToDictionary(g => g.Key, g => g.ToList());
+
+                // Attach question lists to each category
+                foreach (var cat in categories)
+                {
+                    if (questionsByCategory.TryGetValue(cat.Id, out var catQuestions))
+                        cat.Questions = catQuestions;
+                    else
+                        cat.Questions = new List<QuestionDto>();
+                }
+
+                Categories = new ObservableCollection<CategoryDto>(categories);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading categories: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
+
+
 
         private async Task LoadQuestionsAsync()
         {
@@ -147,10 +198,42 @@ namespace QuizApp.WPF.ViewModels
 
         private async Task ManageUsersAsync()
         {
-            await LoadUsersAsync();
-            MessageBox.Show($"Loaded {Users.Count} users from database!", "User Management",
-                            MessageBoxButton.OK, MessageBoxImage.Information);
+            try
+            {
+                await LoadUsersAsync();
+
+                var userListWindow = new Window
+                {
+                    Title = "User Management",
+                    Content = new QuizApp.WPF.Views.UserListView(),
+                    Width = 900,
+                    Height = 600,
+                    WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                    Owner = Application.Current.MainWindow
+                };
+
+                // use AuthService’s token
+                var httpClient = new System.Net.Http.HttpClient
+                {
+                    BaseAddress = new Uri("https://localhost:7016/")
+                };
+                httpClient.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", _authService.JwtToken);
+
+                var userListViewModel = new UserListViewModel(httpClient);
+                ((QuizApp.WPF.Views.UserListView)userListWindow.Content).DataContext = userListViewModel;
+
+                userListWindow.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening user management: {ex.Message}",
+                                "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
+
+
+
 
         private async Task AddCategoryAsync()
         {

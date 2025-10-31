@@ -161,5 +161,53 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<object>.CreateFailure($"Error deleting user: {ex.Message}"));
             }
         }
+
+        [HttpGet("summary")]
+        public async Task<ActionResult<ApiResponse<List<UserDto>>>> GetUserSummaries()
+        {
+            try
+            {
+                var users = await _context.Users
+                    .Include(u => u.QuizAssignments)
+                    .Include(u => u.QuizResults)
+                    .Select(u => new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username,
+                        Role = u.Role,
+                        Email = u.Username + "@example.com", // placeholder if email isn’t in model
+                        AssignedQuizCount = u.QuizAssignments.Count,
+                        AttemptedQuizCount = u.QuizResults.Count
+                    })
+                    .ToListAsync();
+
+                return Ok(ApiResponse<List<UserDto>>.CreateSuccess(users, "User summaries retrieved successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<List<UserDto>>.CreateFailure($"Error retrieving user summaries: {ex.Message}"));
+            }
+        }
+
+        [HttpGet("{id}/assigned-quizzes")]
+        public async Task<ActionResult<ApiResponse<List<Quiz>>>> GetAssignedQuizzes(int id)
+        {
+            try
+            {
+                var quizzes = await _context.QuizAssignments
+                    .Where(a => a.UserId == id)
+                    .Include(a => a.Quiz)
+                    .Select(a => a.Quiz)
+                    .ToListAsync();
+
+                return Ok(ApiResponse<List<Quiz>>.CreateSuccess(quizzes, "Assigned quizzes retrieved successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<List<Quiz>>.CreateFailure($"Error retrieving assigned quizzes: {ex.Message}"));
+            }
+        }
+
+
     }
 }
