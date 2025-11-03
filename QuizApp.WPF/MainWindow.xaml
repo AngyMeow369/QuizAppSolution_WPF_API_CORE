@@ -39,8 +39,10 @@
 
         <!-- Navigation Button Style -->
         <Style x:Key="NavButton" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="#2C3E50"/>
+            <Setter Property="Background" Value="#34495E"/>
+            <!-- Add default background -->
+            <Setter Property="Foreground" Value="White"/>
+            <!-- Light text for dark background -->
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,15"/>
             <Setter Property="FontSize" Value="14"/>
@@ -49,10 +51,10 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
-                                CornerRadius="8">
+                        CornerRadius="8">
                             <ContentPresenter HorizontalAlignment="Left" 
-                                              VerticalAlignment="Center"
-                                              Margin="15,0,0,0"/>
+                                      VerticalAlignment="Center"
+                                      Margin="15,0,0,0"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -60,10 +62,11 @@
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#E8F5E8"/>
+                    <Setter Property="Foreground" Value="#2C3E50"/>
+                    <!-- Dark text on light background -->
                 </Trigger>
             </Style.Triggers>
         </Style>
-
         <!-- Card Style -->
         <Style x:Key="DashboardCard" TargetType="Border">
             <Setter Property="Background" Value="White"/>
@@ -111,9 +114,9 @@
                 <!-- Navigation -->
                 <StackPanel Grid.Row="1" Margin="15,30,15,0">
                     <Button Content="📊 Dashboard" 
-                            Style="{StaticResource NavButton}"
-                            Command="{Binding NavigateToDashboardCommand}"
-                            Background="#E8F5E8" Foreground="#2C3E50"/>
+                    Style="{StaticResource NavButton}"
+                    Command="{Binding NavigateToDashboardCommand}"/>
+                    <!-- Remove: Background="#E8F5E8" Foreground="#2C3E50" -->
 
                     <Button Content="📝 My Quizzes" 
                             Style="{StaticResource NavButton}"
