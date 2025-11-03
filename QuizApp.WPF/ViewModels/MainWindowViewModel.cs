@@ -1,4 +1,6 @@
 ﻿using QuizApp.WPF.Services;
+using QuizApp.WPF.Services.User;
+using QuizApp.WPF.Views.User;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -9,7 +11,11 @@ namespace QuizApp.WPF.ViewModels
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private readonly Services.NavigationService _navigationService;
+        private readonly AuthService _authService;
+        private readonly UserDashboardService _dashboardService;
+        private readonly UserQuizService _quizService;
+        private readonly UserResultsService _resultsService;
+
         private object _currentView;
         private string _currentUsername;
         private string _userRole = "User";
@@ -17,12 +23,16 @@ namespace QuizApp.WPF.ViewModels
         public MainWindowViewModel(string username, string token)
         {
             _currentUsername = username;
-            _navigationService = new Services.NavigationService();
 
-            // Initialize with a default placeholder
-            _currentView = CreatePlaceholderView("Loading Dashboard...");
+            // Initialize services
+            _authService = new AuthService();
+            _authService.SetToken(token); // You'll need to add this method to AuthService
 
-            // Then navigate to dashboard
+            _dashboardService = new UserDashboardService(_authService);
+            _quizService = new UserQuizService(_authService);
+            _resultsService = new UserResultsService(_authService);
+
+            // Set initial view to dashboard
             NavigateToDashboard();
         }
 
@@ -65,21 +75,25 @@ namespace QuizApp.WPF.ViewModels
 
         private void NavigateToDashboard()
         {
-            CurrentView = CreatePlaceholderView($"Dashboard - Welcome {_currentUsername}!");
+            var viewModel = new User.UserDashboardViewModel(_dashboardService);
+            CurrentView = new UserDashboardView { DataContext = viewModel };
         }
 
         private void NavigateToQuizzes()
         {
-            CurrentView = CreatePlaceholderView("My Quizzes - Coming Soon");
+            var viewModel = new User.UserQuizzesViewModel(_quizService);
+            CurrentView = new UserQuizzesView { DataContext = viewModel };
         }
 
         private void NavigateToResults()
         {
-            CurrentView = CreatePlaceholderView("Results - Coming Soon");
+            var viewModel = new User.UserResultsViewModel(_resultsService);
+            CurrentView = new UserResultsView { DataContext = viewModel };
         }
 
         private void NavigateToProfile()
         {
+            // Placeholder for profile view
             CurrentView = CreatePlaceholderView("Profile - Coming Soon");
         }
 

@@ -16,7 +16,7 @@ namespace QuizApp.WPF.Services
             _userApi = RestService.For<IUserApi>("https://localhost:7016");
         }
 
-        public async Task<List<User>> GetUsersAsync()
+        public async Task<List<UserDto>> GetUsersAsync()
         {
             try
             {
@@ -47,7 +47,7 @@ namespace QuizApp.WPF.Services
                 }
 
                 Console.WriteLine($"✅ Successfully loaded {response.Data?.Count} users");
-                return response.Data ?? new List<User>();
+                return response.Data ?? new List<UserDto>();
             }
             catch (ApiException ex)
             {
@@ -64,21 +64,21 @@ namespace QuizApp.WPF.Services
             }
         }
 
-        public async Task<User> GetUserByIdAsync(int id)
+        public async Task<UserDto> GetUserByIdAsync(int id)
         {
             var token = _authService.GetToken();
             var response = await _userApi.GetUserByIdAsync(id, $"Bearer {token}");
             return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to load user");
         }
 
-        public async Task<User> CreateUserAsync(User user)
+        public async Task<UserDto> CreateUserAsync(UserDto user)
         {
             var token = _authService.GetToken();
             var response = await _userApi.CreateUserAsync(user, $"Bearer {token}");
             return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to create user");
         }
 
-        public async Task UpdateUserAsync(User user)
+        public async Task UpdateUserAsync(UserDto user)
         {
             var token = _authService.GetToken();
             var response = await _userApi.UpdateUserAsync(user.Id, user, $"Bearer {token}");
