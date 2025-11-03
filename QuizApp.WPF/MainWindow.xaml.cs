@@ -1,4 +1,5 @@
-﻿using System;
+﻿using QuizApp.WPF.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,14 +16,15 @@ using System.Windows.Shapes;
 
 namespace QuizApp.WPF
 {
-    /// <summary>
+ 
     /// Interaction logic for MainWindow.xaml
-    /// </summary>
+    
     public partial class MainWindow : Window
     {
-        public MainWindow()
+        public MainWindow(string username, string token)
         {
             InitializeComponent();
+            this.DataContext = new MainWindowViewModel(username, token);
         }
     }
 }

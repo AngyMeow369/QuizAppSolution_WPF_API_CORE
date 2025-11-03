@@ -84,18 +84,35 @@ namespace QuizApp.WPF.ViewModels
             {
                 var response = await _authService.LoginAsync(Username, Password);
 
-                if (response.Success)
+                if (response.Success && response.Data != null)
                 {
-                    // Success - navigate to dashboard WITH the authenticated AuthService
+                    var loginData = response.Data;
+
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        // Pass the SAME AuthService instance that has the token
-                        var adminVM = new AdminDashboardViewModel(_authService);
-                        var adminDashboard = new AdminDashboard();
-                        adminDashboard.DataContext = adminVM; // Set the ViewModel with AuthService
-                        adminDashboard.Show();
+                        // Check user role and redirect accordingly
+                        if (loginData.Role == "Admin")
+                        {
+                            // Redirect to Admin Dashboard
+                            var adminVM = new AdminDashboardViewModel(_authService);
+                            var adminDashboard = new AdminDashboard();
+                            adminDashboard.DataContext = adminVM;
+                            adminDashboard.Show();
+                        }
+                        else if (loginData.Role == "User")
+                        {
+                            // Redirect to User Dashboard (MainWindow)
+                            var userDashboard = new MainWindow(loginData.Username, loginData.Token);
+                            userDashboard.Show();
+                        }
+                        else
+                        {
+                            MessageBox.Show($"Unknown role: {loginData.Role}", "Error",
+                                          MessageBoxButton.OK, MessageBoxImage.Error);
+                            return;
+                        }
 
-                        // Close current window
+                        // Close login window
                         foreach (Window window in Application.Current.Windows)
                         {
                             if (window.DataContext == this)
