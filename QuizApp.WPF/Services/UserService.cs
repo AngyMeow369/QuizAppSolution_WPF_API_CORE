@@ -18,9 +18,50 @@ namespace QuizApp.WPF.Services
 
         public async Task<List<User>> GetUsersAsync()
         {
-            var token = _authService.GetToken();
-            var response = await _userApi.GetAllUsersAsync($"Bearer {token}");
-            return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to load users");
+            try
+            {
+                Console.WriteLine("=== USER SERVICE DEBUG ===");
+
+                var token = _authService.GetToken();
+                Console.WriteLine($"🔑 Token exists: {!string.IsNullOrEmpty(token)}");
+                Console.WriteLine($"🔑 Token: {token}");
+
+                if (string.IsNullOrEmpty(token))
+                {
+                    Console.WriteLine("❌ NO TOKEN - Cannot call API");
+                    throw new UnauthorizedAccessException("User is not authenticated");
+                }
+
+                Console.WriteLine($"🌐 Calling API: /api/users");
+
+                var response = await _userApi.GetAllUsersAsync($"Bearer {token}");
+
+                Console.WriteLine($"📡 API Response - Success: {response.Success}");
+                Console.WriteLine($"📡 API Response - Message: {response.Message}");
+                Console.WriteLine($"📡 API Response - Data Count: {response.Data?.Count}");
+
+                if (!response.Success)
+                {
+                    Console.WriteLine($"❌ API Error: {response.Message}");
+                    throw new Exception(response.Message ?? "Failed to load users");
+                }
+
+                Console.WriteLine($"✅ Successfully loaded {response.Data?.Count} users");
+                return response.Data ?? new List<User>();
+            }
+            catch (ApiException ex)
+            {
+                Console.WriteLine($"❌ REFIT API Exception:");
+                Console.WriteLine($"   Status: {ex.StatusCode}");
+                Console.WriteLine($"   Message: {ex.Message}");
+                Console.WriteLine($"   Content: {ex.Content}");
+                throw new Exception($"API Error: {ex.Message}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"❌ UserService Exception: {ex}");
+                throw;
+            }
         }
 
         public async Task<User> GetUserByIdAsync(int id)

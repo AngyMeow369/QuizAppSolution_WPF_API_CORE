@@ -1,4 +1,5 @@
-﻿using QuizApp.Shared.DTOs;
+﻿using System.Linq;
+using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Admin;
 using QuizApp.WPF.Views.Auth;
@@ -126,16 +127,18 @@ namespace QuizApp.WPF.ViewModels
         {
             try
             {
-                // I saw your UserService returns List<User> (API model). Map to UserDto here.
-                var usersFromService = await _userService.GetUsersAsync(); // List<User> or List<UserDto>
+                // UserService returns List<User> (API models)
+                var usersFromService = await _userService.GetUsersAsync();
 
-                // if they are already UserDto, this will still work
+                // Convert API models to DTOs
                 var userDtos = usersFromService.Select(u => new UserDto
                 {
                     Id = u.Id,
                     Username = u.Username,
-                    Role = (u.Role ?? string.Empty),
-
+                    Role = u.Role,
+                    Email = u.Username + "@example.com",
+                    AssignedQuizCount = u.QuizAssignments?.Count ?? 0,
+                    AttemptedQuizCount = u.QuizResults?.Count ?? 0
                 }).ToList();
 
                 Users = new ObservableCollection<UserDto>(userDtos);
