@@ -86,13 +86,5 @@ namespace QuizApp.WPF.Services
                 return Shared.DTOs.ApiResponse<object>.CreateFailure($"Unexpected error: {ex.Message}");
             }
         }
-
-        // Add to AuthService.cs
-        public void SetToken(string token)
-        {
-            _jwtToken = token;
-            // You might need to parse the token to get role and username
-            // For now, we'll set them from the constructor
-        }
     }
 }

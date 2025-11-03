@@ -127,16 +127,18 @@ namespace QuizApp.WPF.ViewModels
         {
             try
             {
+                // UserService returns List<User> (API models)
                 var usersFromService = await _userService.GetUsersAsync();
 
+                // Convert API models to DTOs
                 var userDtos = usersFromService.Select(u => new UserDto
                 {
                     Id = u.Id,
                     Username = u.Username,
                     Role = u.Role,
                     Email = u.Username + "@example.com",
-                    AssignedQuizCount = 0,  // Set to 0 for now
-                    AttemptedQuizCount = 0   // Set to 0 for now
+                    AssignedQuizCount = u.QuizAssignments?.Count ?? 0,
+                    AttemptedQuizCount = u.QuizResults?.Count ?? 0
                 }).ToList();
 
                 Users = new ObservableCollection<UserDto>(userDtos);
@@ -194,26 +196,7 @@ namespace QuizApp.WPF.ViewModels
 
         private async Task LoadQuizzesAsync()
         {
-            try
-            {
-                var quizzesFromService = await _quizService.GetQuizzesAsync();
-
-                // Convert API Quiz models to QuizDto
-                var quizDtos = quizzesFromService.Select(q => new QuizDto
-                {
-                    Id = q.Id,
-                    Title = q.Title,
-                    StartTime = q.StartTime,
-                    EndTime = q.EndTime
-                    // Add other properties as needed from your QuizDto
-                }).ToList();
-
-                Quizzes = new ObservableCollection<QuizDto>(quizDtos);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading quizzes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
+            var quizzes = await _quizService.GetQuizzesAsync();
         }
 
         private async Task ManageUsersAsync()
