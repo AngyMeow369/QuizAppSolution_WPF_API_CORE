@@ -29,24 +29,42 @@ namespace QuizApp.WPF.Services
         {
             try
             {
+                Console.WriteLine($"🔐 LOGIN ATTEMPT - Username: {username}");
+
                 var request = new LoginRequest { Username = username, Password = password };
+                Console.WriteLine($"🌐 Calling API: https://localhost:7016/api/auth/login");
+
                 var response = await _authApi.LoginAsync(request);
 
-                if (response?.Success == true && response.Data != null)
+                Console.WriteLine($"✅ API Response - Success: {response.Success}");
+                Console.WriteLine($"📝 API Response - Message: {response.Message}");
+
+                if (response.Success && response.Data != null)
                 {
                     _jwtToken = response.Data.Token;
                     _role = response.Data.Role;
                     _username = response.Data.Username;
+                    Console.WriteLine($"🎉 Login Successful - Role: {_role}, Token length: {_jwtToken.Length}");
+                }
+                else
+                {
+                    Console.WriteLine($"❌ Login Failed: {response.Message}");
                 }
 
-                return response ?? Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure("Null response from API.");
+                return response;
             }
             catch (ApiException ex)
             {
+                Console.WriteLine($"🔥 REFIT API EXCEPTION:");
+                Console.WriteLine($"   Status Code: {ex.StatusCode}");
+                Console.WriteLine($"   Message: {ex.Message}");
+                Console.WriteLine($"   Content: {ex.Content}");
+                Console.WriteLine($"   Headers: {ex.Headers}");
                 return Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure($"Login failed: {ex.Message}");
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"💥 UNEXPECTED ERROR: {ex}");
                 return Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure($"Unexpected error: {ex.Message}");
             }
         }
