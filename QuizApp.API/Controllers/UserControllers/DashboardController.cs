@@ -26,25 +26,55 @@ namespace QuizApp.API.Controllers.UserControllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var username = User.FindFirst(ClaimTypes.Name)?.Value;
+                Console.WriteLine($"🔍 DEBUG API: Looking up user: {username}");
+
+                if (string.IsNullOrEmpty(username))
+                    return Unauthorized(ApiResponse<UserDashboardDto>.CreateFailure("User not authenticated."));
 
                 var user = await _context.Users
                     .Include(u => u.QuizAssignments)
                     .Include(u => u.QuizResults)
-                    .FirstOrDefaultAsync(u => u.Id == userId);
+                    .FirstOrDefaultAsync(u => u.Username == username);
 
                 if (user == null)
-                    return NotFound(ApiResponse<UserDashboardDto>.CreateFailure("User not found."));
+                {
+                    Console.WriteLine($"❌ DEBUG API: User '{username}' not found in database");
+                    return NotFound(ApiResponse<UserDashboardDto>.CreateFailure($"User '{username}' not found in database."));
+                }
 
-                var totalAssigned = user.QuizAssignments.Count;
-                var totalCompleted = user.QuizResults.Count;
-                var averageScore = totalCompleted > 0
-                    ? user.QuizResults.Average(r => (double)r.Score / r.TotalQuestions * 100)
-                    : 0;
+                var userId = user.Id;
+                Console.WriteLine($"✅ DEBUG API: Found user ID: {userId}");
+
+                // DEBUG: Check what's being loaded
+                Console.WriteLine($"📊 DEBUG API: User QuizAssignments Count: {user.QuizAssignments?.Count}");
+                Console.WriteLine($"📊 DEBUG API: User QuizResults Count: {user.QuizResults?.Count}");
+
+                var totalAssigned = user.QuizAssignments?.Count ?? 0;
+                var totalCompleted = user.QuizResults?.Count ?? 0;
+
+                Console.WriteLine($"📊 DEBUG API: Calculated - Assignments: {totalAssigned}, Completed: {totalCompleted}");
+
+                // Fix the null reference issue
+                double averageScore = 0;
+                if (totalCompleted > 0 && user.QuizResults != null)
+                {
+                    averageScore = user.QuizResults.Average(r => (double)r.Score / r.TotalQuestions * 100);
+                }
+
+                // DEBUG: Check individual results
+                if (user.QuizResults != null && user.QuizResults.Any())
+                {
+                    foreach (var result in user.QuizResults)
+                    {
+                        Console.WriteLine($"🎯 DEBUG API: Result - Quiz: {result.QuizId}, Score: {result.Score}/{result.TotalQuestions}");
+                    }
+                }
 
                 var recentResults = await _context.QuizResults
                     .Where(r => r.UserId == userId)
                     .Include(r => r.Quiz)
+                        .ThenInclude(q => q.Category) // Add category for recent results
                     .OrderByDescending(r => r.TakenAt)
                     .Take(5)
                     .Select(r => new QuizResultDto
@@ -54,13 +84,15 @@ namespace QuizApp.API.Controllers.UserControllers
                         QuizTitle = r.Quiz.Title,
                         Score = r.Score,
                         TotalQuestions = r.TotalQuestions,
-                        TakenAt = r.TakenAt
+                        TakenAt = r.TakenAt,
+                        CategoryName = r.Quiz.Category.Name // Add category name
                     })
                     .ToListAsync();
 
                 var upcomingQuizzes = await _context.QuizAssignments
                     .Where(a => a.UserId == userId && !a.Completed && a.Quiz.StartTime > DateTime.UtcNow)
                     .Include(a => a.Quiz)
+                        .ThenInclude(q => q.Category) // Add category for upcoming quizzes
                     .OrderBy(a => a.Quiz.StartTime)
                     .Take(5)
                     .Select(a => new QuizDto
@@ -68,7 +100,9 @@ namespace QuizApp.API.Controllers.UserControllers
                         Id = a.Quiz.Id,
                         Title = a.Quiz.Title,
                         StartTime = a.Quiz.StartTime,
-                        EndTime = a.Quiz.EndTime
+                        EndTime = a.Quiz.EndTime,
+                        CategoryId = a.Quiz.CategoryId,
+                        CategoryName = a.Quiz.Category.Name // Add category name
                     })
                     .ToListAsync();
 
@@ -81,10 +115,16 @@ namespace QuizApp.API.Controllers.UserControllers
                     UpcomingQuizzes = upcomingQuizzes
                 };
 
+                Console.WriteLine($"🎯 DEBUG API: Final Dashboard - Assigned: {dashboard.TotalAssignedQuizzes}, Completed: {dashboard.TotalCompletedQuizzes}, Avg: {dashboard.AverageScore}");
+                Console.WriteLine($"🎯 DEBUG API: Recent Results Count: {dashboard.RecentResults?.Count}");
+                Console.WriteLine($"🎯 DEBUG API: Upcoming Quizzes Count: {dashboard.UpcomingQuizzes?.Count}");
+
                 return Ok(ApiResponse<UserDashboardDto>.CreateSuccess(dashboard, "Dashboard data retrieved successfully."));
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"💥 DEBUG API: Exception: {ex.Message}");
+                Console.WriteLine($"💥 DEBUG API: Stack: {ex.StackTrace}");
                 return StatusCode(500, ApiResponse<UserDashboardDto>.CreateFailure($"Error retrieving dashboard data: {ex.Message}"));
             }
         }

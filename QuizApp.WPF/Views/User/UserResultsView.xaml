@@ -58,13 +58,12 @@
                                         <StackPanel Grid.Column="0">
                                             <TextBlock Text="{Binding QuizTitle}" FontSize="16" FontWeight="SemiBold"/>
                                             <TextBlock Text="{Binding TakenAt, StringFormat='Completed: {0:MMM dd, yyyy - h:mm tt}'}" 
-                                                       FontSize="11" Foreground="#7F8C8D"/>
+                                   FontSize="11" Foreground="#7F8C8D"/>
                                         </StackPanel>
 
                                         <TextBlock Grid.Column="1" 
-                                                   Text="{Binding StringFormat='{}{0}/{1}'}" 
-                                                   FontSize="18" FontWeight="Bold" 
-                                                   VerticalAlignment="Center" Margin="0,0,20,0">
+                               FontSize="18" FontWeight="Bold" 
+                               VerticalAlignment="Center" Margin="0,0,20,0">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="{}{0}/{1}">
                                                     <Binding Path="Score"/>
@@ -74,15 +73,14 @@
                                         </TextBlock>
 
                                         <TextBlock Grid.Column="2" 
-                                                   Text="{Binding Score, Converter={StaticResource ScoreToPercentageConverter}, ConverterParameter={Binding TotalQuestions}, StringFormat='{}{0}%'}" 
-                                                   FontSize="16" FontWeight="SemiBold" 
-                                                   VerticalAlignment="Center"/>
+                               Text="{Binding Score, Converter={StaticResource ScoreToPercentageConverter}, ConverterParameter={Binding TotalQuestions}, StringFormat='{}{0}%'}" 
+                               FontSize="16" FontWeight="SemiBold" 
+                               VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
-
                     <!-- Empty State -->
                     <TextBlock Text="No quiz results yet" 
                                Visibility="{Binding QuizResults.Count, Converter={StaticResource CountToVisibilityConverter}}"

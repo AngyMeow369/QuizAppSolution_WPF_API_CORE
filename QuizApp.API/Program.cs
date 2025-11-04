@@ -30,7 +30,10 @@ builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo { Title = "QuizApp API", Version = "v1" });
 
-    // Add JWT Authentication support in Swagger
+    // Add this to include controllers from all namespaces:
+    options.CustomSchemaIds(x => x.FullName);
+
+    // Your existing JWT configuration...
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -56,7 +59,6 @@ builder.Services.AddSwaggerGen(options =>
         }
     });
 });
-
 // Configure CORS for WPF (adjust origin if needed)
 builder.Services.AddCors(options =>
 {

@@ -150,6 +150,9 @@ namespace QuizApp.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("EndTime")
                         .HasColumnType("datetime2");
 
@@ -162,12 +165,15 @@ namespace QuizApp.API.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.ToTable("Quizzes");
 
                     b.HasData(
                         new
                         {
                             Id = 1,
+                            CategoryId = 0,
                             EndTime = new DateTime(2025, 10, 22, 11, 0, 0, 0, DateTimeKind.Unspecified),
                             StartTime = new DateTime(2025, 10, 22, 10, 0, 0, 0, DateTimeKind.Unspecified),
                             Title = "Sample Quiz"
@@ -320,6 +326,17 @@ namespace QuizApp.API.Migrations
                 {
                     b.HasOne("QuizApp.API.Models.Category", "Category")
                         .WithMany("Questions")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
+            modelBuilder.Entity("QuizApp.API.Models.Quiz", b =>
+                {
+                    b.HasOne("QuizApp.API.Models.Category", "Category")
+                        .WithMany()
                         .HasForeignKey("CategoryId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();

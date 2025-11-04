@@ -39,6 +39,7 @@
         public int Id { get; set; }
         public int QuizId { get; set; }
         public string QuizTitle { get; set; } = string.Empty;
+        public string CategoryName { get; set; } = string.Empty; // ADD THIS LINE
         public int Score { get; set; }
         public int TotalQuestions { get; set; }
         public DateTime TakenAt { get; set; }

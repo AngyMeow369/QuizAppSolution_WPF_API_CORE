@@ -1,4 +1,5 @@
-﻿using QuizApp.Shared.DTOs;
+﻿using QuizApp.API.Models;
+using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services.Interfaces;
 using Refit;
 
@@ -29,6 +30,7 @@ namespace QuizApp.WPF.Services.User
             if (!response.Success || response.Data == null)
                 throw new Exception(response.Message ?? "Failed to load dashboard data");
             return response.Data;
+
         }
     }
 }

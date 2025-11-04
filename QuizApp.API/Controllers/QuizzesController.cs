@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuizApp.API.Data;
+using System.Security.Claims;
 using QuizApp.API.Models;
 using QuizApp.Shared.DTOs; 
 
@@ -239,6 +240,69 @@ namespace QuizApp.API.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, ApiResponse<object>.CreateFailure($"Error removing assignment: {ex.Message}"));
+            }
+        }
+
+        // GET: api/user/quizzes/all-assigned
+        [HttpGet("all-assigned")]
+        public async Task<ActionResult<ApiResponse<List<AssignedQuizDetailDto>>>> GetAllAssignedQuizzes()
+        {
+            try
+            {
+                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                var now = DateTime.UtcNow;
+
+                var assignments = await _context.QuizAssignments
+                    .Where(a => a.UserId == userId)
+                    .Include(a => a.Quiz)
+                        .ThenInclude(q => q.Category)
+                    .Select(a => new
+                    {
+                        a.QuizId,
+                        a.Quiz.Title,
+                        CategoryName = a.Quiz.Category.Name,
+                        a.Quiz.StartTime,
+                        a.Quiz.EndTime,
+                        a.Completed,
+                        Result = _context.QuizResults
+                            .Where(r => r.UserId == userId && r.QuizId == a.QuizId)
+                            .Select(r => new { r.Score, r.TotalQuestions, r.TakenAt })
+                            .FirstOrDefault()
+                    })
+                    .ToListAsync();
+
+                var result = assignments.Select(a =>
+                {
+                    string status;
+                    if (a.Completed && a.Result != null)
+                        status = "Completed";
+                    else if (a.EndTime < now)
+                        status = "Missed";
+                    else if (a.StartTime > now)
+                        status = "Upcoming";
+                    else
+                        status = "Available";
+
+                    return new AssignedQuizDetailDto
+                    {
+                        QuizId = a.QuizId,
+                        Title = a.Title,
+                        CategoryName = a.CategoryName,
+                        StartTime = a.StartTime,
+                        EndTime = a.EndTime,
+                        IsCompleted = a.Completed,
+                        Score = a.Result?.Score,
+                        TotalQuestions = a.Result?.TotalQuestions,
+                        CompletedAt = a.Result?.TakenAt,
+                        Status = status
+                    };
+                }).ToList();
+
+                return Ok(ApiResponse<List<AssignedQuizDetailDto>>.CreateSuccess(result, "All assigned quizzes retrieved."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<List<AssignedQuizDetailDto>>.CreateFailure($"Error: {ex.Message}"));
             }
         }
     }

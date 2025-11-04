@@ -8,68 +8,94 @@
             <!-- Header -->
             <TextBlock Text="📊 Your Quiz Dashboard" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
 
+            <!-- Loading Indicator -->
+            <TextBlock Text="Loading dashboard data..." 
+                       Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       HorizontalAlignment="Center" FontSize="16" Foreground="#7F8C8D" Margin="0,20"/>
+
             <!-- Stats Cards -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20"
+                       Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                 <Border Background="#4CAF50" Padding="20" Margin="0,0,15,0" Width="200">
                     <StackPanel>
-                        <TextBlock Text="5" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="{Binding DashboardData.TotalAssignedQuizzes}" FontSize="32" FontWeight="Bold" Foreground="White"/>
                         <TextBlock Text="Assigned Quizzes" FontSize="14" Foreground="White"/>
                     </StackPanel>
                 </Border>
 
                 <Border Background="#2196F3" Padding="20" Margin="0,0,15,0" Width="200">
                     <StackPanel>
-                        <TextBlock Text="3" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="{Binding DashboardData.TotalCompletedQuizzes}" FontSize="32" FontWeight="Bold" Foreground="White"/>
                         <TextBlock Text="Completed" FontSize="14" Foreground="White"/>
                     </StackPanel>
                 </Border>
 
                 <Border Background="#FF9800" Padding="20" Width="200">
                     <StackPanel>
-                        <TextBlock Text="85%" FontSize="32" FontWeight="Bold" Foreground="White"/>
+                        <TextBlock Text="{Binding DashboardData.AverageScore, StringFormat={}{0}%}" FontSize="32" FontWeight="Bold" Foreground="White"/>
                         <TextBlock Text="Average Score" FontSize="14" Foreground="White"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
-            <!-- Recent Quizzes -->
-            <Border Background="White" Padding="20" Margin="0,0,0,20">
+            <!-- Recent Results -->
+            <Border Background="White" Padding="20" Margin="0,0,0,20"
+                   Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                 <StackPanel>
-                    <TextBlock Text="📝 Recent Quizzes" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+                    <TextBlock Text="📝 Recent Results" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
 
-                    <StackPanel>
-                        <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
-                            <TextBlock Text="Math Basics Quiz - Score: 9/10" FontWeight="SemiBold"/>
-                        </Border>
-                        <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
-                            <TextBlock Text="Science Fundamentals - Score: 8/10" FontWeight="SemiBold"/>
-                        </Border>
-                        <Border Padding="0,10">
-                            <TextBlock Text="History Challenge - Score: 7/10" FontWeight="SemiBold"/>
-                        </Border>
-                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding DashboardData.RecentResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
+                                    <TextBlock FontWeight="SemiBold">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0} - Score: {1}/{2}">
+                                                <Binding Path="QuizTitle"/>
+                                                <Binding Path="Score"/>
+                                                <Binding Path="TotalQuestions"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty State -->
+                    <TextBlock Text="No recent results" 
+                               Visibility="{Binding DashboardData.RecentResults.Count, Converter={StaticResource CountToVisibilityConverter}}"
+                               HorizontalAlignment="Center" FontSize="14" Foreground="#BDC3C7" FontStyle="Italic" Margin="0,10"/>
                 </StackPanel>
             </Border>
 
-            <!-- Available Quizzes -->
-            <Border Background="White" Padding="20">
+            <!-- Upcoming Quizzes -->
+            <Border Background="White" Padding="20"
+                   Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                 <StackPanel>
-                    <TextBlock Text="🆕 Available Quizzes" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+                    <TextBlock Text="🆕 Upcoming Quizzes" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
 
-                    <StackPanel>
-                        <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Advanced Mathematics" FontWeight="SemiBold" Width="200"/>
-                                <Button Content="Take Quiz" Background="#4CAF50" Foreground="White" Padding="10,5"/>
-                            </StackPanel>
-                        </Border>
-                        <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="Computer Science" FontWeight="SemiBold" Width="200"/>
-                                <Button Content="Take Quiz" Background="#4CAF50" Foreground="White" Padding="10,5"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding DashboardData.UpcomingQuizzes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
+                                    <TextBlock FontWeight="SemiBold">
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0} - Due: {1}">
+                                                <Binding Path="Title"/>
+                                                <Binding Path="DueDate" StringFormat="{}{0:MMM dd, yyyy}"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty State -->
+                    <TextBlock Text="No upcoming quizzes" 
+                               Visibility="{Binding DashboardData.UpcomingQuizzes.Count, Converter={StaticResource CountToVisibilityConverter}}"
+                               HorizontalAlignment="Center" FontSize="14" Foreground="#BDC3C7" FontStyle="Italic" Margin="0,10"/>
                 </StackPanel>
             </Border>
         </StackPanel>
