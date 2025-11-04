@@ -2,8 +2,13 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:QuizApp.WPF"
+             xmlns:converters="clr-namespace:QuizApp.WPF.Converters"
              StartupUri="Views/Auth/LoginView.xaml">
     <Application.Resources>
-         
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <converters:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <converters:CountToVisibilityConverter x:Key="CountToVisibilityConverter"/>
+        <converters:CountToInverseVisibilityConverter x:Key="CountToInverseVisibilityConverter"/>
+        <converters:ScoreToPercentageConverter x:Key="ScoreToPercentageConverter"/>
     </Application.Resources>
 </Application>

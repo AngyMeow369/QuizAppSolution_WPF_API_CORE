@@ -1,0 +1,94 @@
+﻿<UserControl x:Class="QuizApp.WPF.Views.User.UserResultsView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Height="600" Width="800">
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="20">
+            <!-- Header -->
+            <TextBlock Text="📈 My Quiz Results" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
+
+            <!-- Loading Indicator -->
+            <TextBlock Text="Loading results..." 
+                       Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       HorizontalAlignment="Center" FontSize="16" Foreground="#7F8C8D" Margin="0,20"/>
+
+            <!-- Results Summary -->
+            <Border Background="White" Padding="20" Margin="0,0,0,20"
+                   Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="Performance Summary" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Margin="0,0,30,0">
+                            <TextBlock Text="{Binding TotalQuizzesTaken}" FontSize="32" FontWeight="Bold" Foreground="#4CAF50"/>
+                            <TextBlock Text="Total Quizzes" FontSize="14" Foreground="#7F8C8D"/>
+                        </StackPanel>
+
+                        <StackPanel Margin="0,0,30,0">
+                            <TextBlock Text="{Binding AverageScore, StringFormat={}{0:F1}%}" FontSize="32" FontWeight="Bold" Foreground="#2196F3"/>
+                            <TextBlock Text="Average Score" FontSize="14" Foreground="#7F8C8D"/>
+                        </StackPanel>
+
+                        <StackPanel>
+                            <TextBlock Text="{Binding PerfectScores}" FontSize="32" FontWeight="Bold" Foreground="#FF9800"/>
+                            <TextBlock Text="Perfect Scores" FontSize="14" Foreground="#7F8C8D"/>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- Recent Results -->
+            <Border Background="White" Padding="20"
+                   Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                <StackPanel>
+                    <TextBlock Text="Recent Quiz Results" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+
+                    <ItemsControl ItemsSource="{Binding QuizResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <StackPanel Grid.Column="0">
+                                            <TextBlock Text="{Binding QuizTitle}" FontSize="16" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding TakenAt, StringFormat='Completed: {0:MMM dd, yyyy - h:mm tt}'}" 
+                                                       FontSize="11" Foreground="#7F8C8D"/>
+                                        </StackPanel>
+
+                                        <TextBlock Grid.Column="1" 
+                                                   Text="{Binding StringFormat='{}{0}/{1}'}" 
+                                                   FontSize="18" FontWeight="Bold" 
+                                                   VerticalAlignment="Center" Margin="0,0,20,0">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0}/{1}">
+                                                    <Binding Path="Score"/>
+                                                    <Binding Path="TotalQuestions"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+
+                                        <TextBlock Grid.Column="2" 
+                                                   Text="{Binding Score, Converter={StaticResource ScoreToPercentageConverter}, ConverterParameter={Binding TotalQuestions}, StringFormat='{}{0}%'}" 
+                                                   FontSize="16" FontWeight="SemiBold" 
+                                                   VerticalAlignment="Center"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <!-- Empty State -->
+                    <TextBlock Text="No quiz results yet" 
+                               Visibility="{Binding QuizResults.Count, Converter={StaticResource CountToVisibilityConverter}}"
+                               HorizontalAlignment="Center" FontSize="14" Foreground="#BDC3C7" FontStyle="Italic" Margin="0,10"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

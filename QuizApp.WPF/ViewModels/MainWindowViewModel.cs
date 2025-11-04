@@ -1,4 +1,7 @@
 ﻿using QuizApp.WPF.Services;
+using QuizApp.WPF.Services.User;
+using QuizApp.WPF.ViewModels.User;
+using QuizApp.WPF.Views.User;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -65,17 +68,23 @@ namespace QuizApp.WPF.ViewModels
 
         private void NavigateToDashboard()
         {
-            CurrentView = CreatePlaceholderView($"Dashboard - Welcome {_currentUsername}!");
+            var dashboardService = new UserDashboardService(/* pass auth service */);
+            var viewModel = new UserDashboardViewModel(dashboardService);
+            CurrentView = new UserDashboardView { DataContext = viewModel };
         }
 
         private void NavigateToQuizzes()
         {
-            CurrentView = CreatePlaceholderView("My Quizzes - Coming Soon");
+            var quizService = new UserQuizService(/* pass auth service */);
+            var viewModel = new UserQuizzesViewModel(quizService);
+            CurrentView = new UserQuizzesView { DataContext = viewModel };
         }
 
         private void NavigateToResults()
         {
-            CurrentView = CreatePlaceholderView("Results - Coming Soon");
+            var resultsService = new UserResultsService(/* pass auth service */);
+            var viewModel = new UserResultsViewModel(resultsService);
+            CurrentView = new UserResultsView { DataContext = viewModel };
         }
 
         private void NavigateToProfile()

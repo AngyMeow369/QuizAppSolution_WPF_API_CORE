@@ -101,8 +101,8 @@ namespace QuizApp.WPF.ViewModels
                         }
                         else if (loginData.Role == "User")
                         {
-                            // Redirect to User Dashboard (MainWindow)
-                            var userDashboard = new MainWindow(loginData.Username, loginData.Token);
+                            // Redirect to User Dashboard (MainWindow) - FIXED: Pass _authService
+                            var userDashboard = new MainWindow(loginData.Username, loginData.Token, _authService);
                             userDashboard.Show();
                         }
                         else
