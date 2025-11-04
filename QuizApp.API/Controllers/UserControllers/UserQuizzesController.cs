@@ -38,7 +38,8 @@ namespace QuizApp.API.Controllers.UserControllers
                         StartTime = a.Quiz.StartTime,
                         EndTime = a.Quiz.EndTime
                     })
-                    .Where(q => q.StartTime <= DateTime.UtcNow && q.EndTime >= DateTime.UtcNow)
+                    // Remove or adjust this filter to see more quizzes
+                    // .Where(q => q.StartTime <= DateTime.UtcNow && q.EndTime >= DateTime.UtcNow)
                     .ToListAsync();
 
                 return Ok(ApiResponse<List<QuizDto>>.CreateSuccess(quizzes, "Assigned quizzes retrieved successfully."));
