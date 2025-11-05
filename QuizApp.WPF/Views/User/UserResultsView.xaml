@@ -71,11 +71,17 @@
                                                 </MultiBinding>
                                             </TextBlock.Text>
                                         </TextBlock>
+                                        <TextBlock Grid.Column="2"
+           FontSize="16" FontWeight="SemiBold"
+           VerticalAlignment="Center">
+                                            <TextBlock.Text>
+                                                <MultiBinding Converter="{StaticResource ScoreToPercentageConverter}" StringFormat="{}{0}%">
+                                                    <Binding Path="Score"/>
+                                                    <Binding Path="TotalQuestions"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
 
-                                        <TextBlock Grid.Column="2" 
-                               Text="{Binding Score, Converter={StaticResource ScoreToPercentageConverter}, ConverterParameter={Binding TotalQuestions}, StringFormat='{}{0}%'}" 
-                               FontSize="16" FontWeight="SemiBold" 
-                               VerticalAlignment="Center"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>

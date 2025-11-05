@@ -1,8 +1,9 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using QuizApp.API.Data;
+using System.Security.Claims;
 using System.Text;
 using System.Text.Json.Serialization;
 
@@ -88,37 +89,43 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = jwtIssuer,
             ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+
+            // 👇 add these two lines
+            NameClaimType = ClaimTypes.NameIdentifier,
+            RoleClaimType = ClaimTypes.Role
         };
     });
 
-// -------------------------
-// Build App
-// -------------------------
-var app = builder.Build();
+        // -------------------------
+        // Build App
+        // -------------------------
+        var app = builder.Build();
 
-// -------------------------
-// Configure Middleware
-// -------------------------
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+        // -------------------------
+        // Configure Middleware
+        // -------------------------
+        if (app.Environment.IsDevelopment())
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+        }
 
-app.UseHttpsRedirection();
+        app.UseHttpsRedirection();
 
-// Enable CORS
-app.UseCors("AllowAll");
+        // Enable CORS
+        app.UseCors("AllowAll");
 
-// Enable Authentication and Authorization
-app.UseAuthentication();
-app.UseAuthorization();
+        // Enable Authentication and Authorization
+        app.UseAuthentication();
+        app.UseAuthorization();
 
-// Map Controllers
-app.MapControllers();
+        // Map Controllers
+        app.MapControllers();
 
-// -------------------------
-// Run
-// -------------------------
-app.Run();
+        // -------------------------
+        // Run
+        // -------------------------
+        app.Run();
+        
+    

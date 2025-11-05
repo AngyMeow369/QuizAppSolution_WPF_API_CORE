@@ -75,9 +75,11 @@ namespace QuizApp.API.Controllers
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.Name, user.Username),
-        new Claim(ClaimTypes.Role, user.Role)
-    };
+                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()), // 👈 add this line
+                new Claim(ClaimTypes.Name, user.Username),
+                new Claim(ClaimTypes.Role, user.Role)
+            };
+
 
             // Read expiration from config, default to 60 minutes if not set
             var expireMinutes = _config.GetValue<int>("Jwt:ExpireMinutes", 60);
