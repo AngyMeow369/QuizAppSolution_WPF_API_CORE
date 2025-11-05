@@ -9,7 +9,8 @@ namespace QuizApp.WPF.ViewModels
     {
         private readonly AuthService _authService;
 
-        private string _username = string.Empty;
+
+    private string _username = string.Empty;
         private string _password = string.Empty;
         private bool _isLoading;
         private string _loadingText = "Signing you in...";
@@ -18,7 +19,7 @@ namespace QuizApp.WPF.ViewModels
         {
             _authService = new AuthService();
             LoginCommand = new RelayCommand(async () => await LoginAsync(), CanLogin);
-            RegisterCommand = new RelayCommand(() => { /* Register logic here */ }); // Initialize RegisterCommand
+            RegisterCommand = new RelayCommand(() => { /* Register logic here */ });
         }
 
         public string Username
@@ -67,7 +68,7 @@ namespace QuizApp.WPF.ViewModels
         public string LoginButtonText => IsLoading ? "Please wait..." : "Sign In";
 
         public ICommand LoginCommand { get; }
-        public ICommand RegisterCommand { get; } // Now properly initialized
+        public ICommand RegisterCommand { get; }
 
         private bool CanLogin()
         {
@@ -90,52 +91,55 @@ namespace QuizApp.WPF.ViewModels
 
                     Application.Current.Dispatcher.Invoke(() =>
                     {
-                        // Check user role and redirect accordingly
+                        Window mainWindow;
+
                         if (loginData.Role == "Admin")
                         {
-                            // Redirect to Admin Dashboard
-                            var adminVM = new AdminDashboardViewModel(_authService);
-                            var adminDashboard = new AdminDashboard();
-                            adminDashboard.DataContext = adminVM;
-                            adminDashboard.Show();
+                            // Open AdminMainWindow  
+                            var adminVM = new AdminMainViewModel(); // make sure constructor sets default view  
+                            mainWindow = new AdminMainWindow();
+                            mainWindow.DataContext = adminVM;
                         }
                         else if (loginData.Role == "User")
                         {
-                            // Redirect to User Dashboard (MainWindow) - FIXED: Pass _authService
-                            var userDashboard = new MainWindow(loginData.Username, loginData.Token, _authService);
-                            userDashboard.Show();
+                            // Open User MainWindow  
+                            mainWindow = new MainWindow(loginData.Username, loginData.Token, _authService);
                         }
                         else
                         {
-                            MessageBox.Show($"Unknown role: {loginData.Role}", "Error",
-                                          MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show($"Unknown role: {loginData.Role}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                             return;
                         }
 
-                        // Close login window
+                        mainWindow.Show();
+
+                        // Close login window  
                         foreach (Window window in Application.Current.Windows)
                         {
                             if (window.DataContext == this)
+                            {
                                 window.Close();
+                                break;
+                            }
                         }
                     });
                 }
                 else
                 {
-                    MessageBox.Show(response.Message ?? "Invalid credentials!", "Login Failed",
-                                  MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(response.Message ?? "Invalid credentials!", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
                     Password = string.Empty;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Connection error: {ex.Message}", "Error",
-                              MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Connection error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
                 IsLoading = false;
             }
         }
-    }
+    }  
+
+
 }

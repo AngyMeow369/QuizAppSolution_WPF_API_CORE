@@ -249,15 +249,16 @@ namespace QuizApp.API.Controllers
         {
             try
             {
-                var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
                 var now = DateTime.UtcNow;
 
                 var assignments = await _context.QuizAssignments
-                    .Where(a => a.UserId == userId)
+                    .Include(a => a.User)
                     .Include(a => a.Quiz)
                         .ThenInclude(q => q.Category)
                     .Select(a => new
                     {
+                        a.UserId,
+                        Username = a.User.Username,
                         a.QuizId,
                         a.Quiz.Title,
                         CategoryName = a.Quiz.Category.Name,
@@ -265,7 +266,7 @@ namespace QuizApp.API.Controllers
                         a.Quiz.EndTime,
                         a.Completed,
                         Result = _context.QuizResults
-                            .Where(r => r.UserId == userId && r.QuizId == a.QuizId)
+                            .Where(r => r.UserId == a.UserId && r.QuizId == a.QuizId)
                             .Select(r => new { r.Score, r.TotalQuestions, r.TakenAt })
                             .FirstOrDefault()
                     })
@@ -294,7 +295,9 @@ namespace QuizApp.API.Controllers
                         Score = a.Result?.Score,
                         TotalQuestions = a.Result?.TotalQuestions,
                         CompletedAt = a.Result?.TakenAt,
-                        Status = status
+                        Status = status,
+                        AssignedToUserId = a.UserId,
+                        AssignedToUsername = a.Username
                     };
                 }).ToList();
 
@@ -305,5 +308,6 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<List<AssignedQuizDetailDto>>.CreateFailure($"Error: {ex.Message}"));
             }
         }
+
     }
 }

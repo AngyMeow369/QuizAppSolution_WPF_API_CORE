@@ -18,5 +18,9 @@
 
         // Computed status: "Completed", "Available", "Upcoming", "Missed"
         public string Status { get; set; } = string.Empty;
+
+        public int? AssignedToUserId { get; set; }
+        public string? AssignedToUsername { get; set; }
+
     }
 }
