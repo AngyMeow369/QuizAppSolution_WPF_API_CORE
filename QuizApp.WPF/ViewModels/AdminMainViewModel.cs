@@ -1,6 +1,5 @@
 ﻿using QuizApp.WPF.Services;
 using QuizApp.WPF.ViewModels.Admin;
-using QuizApp.WPF.Views.Admin;
 using System.Windows.Input;
 
 namespace QuizApp.WPF.ViewModels
@@ -8,9 +7,10 @@ namespace QuizApp.WPF.ViewModels
     public class AdminMainViewModel : ObservableObject
     {
         private readonly AuthService _authService;
-        private object? _currentView; // made nullable
+        private object? _currentView;
 
-        public object? CurrentView
+
+    public object? CurrentView
         {
             get => _currentView;
             set => SetProperty(ref _currentView, value);
@@ -25,11 +25,12 @@ namespace QuizApp.WPF.ViewModels
         public string CurrentUsername => _authService.Username;
         public string UserRole => _authService.Role;
 
-        public AdminMainViewModel()
+        // **Inject the logged-in AuthService instance**  
+        public AdminMainViewModel(AuthService authService)
         {
-            _authService = new AuthService();
+            _authService = authService;
 
-            // Create the service instances
+            // Use the same AuthService to create dependent services  
             var quizService = new QuizService(_authService);
             var userService = new UserService(_authService);
 
@@ -39,7 +40,7 @@ namespace QuizApp.WPF.ViewModels
             NavigateToAnalyticsCommand = new RelayCommand(() => CurrentView = new AnalyticsViewModel(quizService));
             LogoutCommand = new RelayCommand(Logout);
 
-            // default page
+            // default page  
             CurrentView = new AdminDashboardViewModel(_authService);
         }
 
@@ -54,5 +55,7 @@ namespace QuizApp.WPF.ViewModels
                     w.Close();
             }
         }
-    }
+    }  
+
+
 }

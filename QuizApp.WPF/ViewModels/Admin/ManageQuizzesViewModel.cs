@@ -13,12 +13,13 @@ namespace QuizApp.WPF.ViewModels.Admin
 
     public ObservableCollection<Quiz> Quizzes { get; set; } = new ObservableCollection<Quiz>();
 
-        private Quiz _selectedQuiz;
-        public Quiz SelectedQuiz
+        private Quiz? _selectedQuiz;
+        public Quiz? SelectedQuiz
         {
             get => _selectedQuiz;
             set => SetProperty(ref _selectedQuiz, value);
         }
+
 
         private bool _isLoading;
         public bool IsLoading

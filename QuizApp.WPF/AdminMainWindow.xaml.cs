@@ -8,7 +8,6 @@ namespace QuizApp.WPF
         public AdminMainWindow()
         {
             InitializeComponent();
-            DataContext = new AdminMainViewModel();
         }
     }
 }

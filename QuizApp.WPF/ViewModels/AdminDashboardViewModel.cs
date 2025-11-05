@@ -24,10 +24,10 @@ namespace QuizApp.WPF.ViewModels.Admin
             set => SetProperty(ref _isLoading, value);
         }
 
-        public ObservableCollection<UserDto> Users { get; private set; } = new();
-        public ObservableCollection<CategoryDto> Categories { get; private set; } = new();
-        public ObservableCollection<QuestionDto> Questions { get; private set; } = new();
-        public ObservableCollection<QuizDto> Quizzes { get; private set; } = new();
+        public ObservableCollection<UserDto> Users { get; } = new();
+        public ObservableCollection<CategoryDto> Categories { get; } = new();
+        public ObservableCollection<QuestionDto> Questions { get; } = new();
+        public ObservableCollection<QuizDto> Quizzes { get; } = new();
 
         public string CurrentUsername => _authService.Username;
         public string UserRole => _authService.Role;
@@ -58,7 +58,7 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Error loading data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading dashboard data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -71,15 +71,19 @@ namespace QuizApp.WPF.ViewModels.Admin
             try
             {
                 var usersFromService = await _userService.GetUsersAsync();
-                Users = new ObservableCollection<UserDto>(usersFromService.Select(u => new UserDto
+                Users.Clear();
+                foreach (var u in usersFromService)
                 {
-                    Id = u.Id,
-                    Username = u.Username,
-                    Role = u.Role,
-                    Email = u.Username + "@example.com",
-                    AssignedQuizCount = 0,
-                    AttemptedQuizCount = 0
-                }));
+                    Users.Add(new UserDto
+                    {
+                        Id = u.Id,
+                        Username = u.Username,
+                        Role = u.Role,
+                        Email = u.Username + "@example.com",
+                        AssignedQuizCount = 0,
+                        AttemptedQuizCount = 0
+                    });
+                }
             }
             catch (System.Exception ex)
             {
@@ -95,12 +99,13 @@ namespace QuizApp.WPF.ViewModels.Admin
                 var questions = await _questionService.GetAllAsync();
 
                 var questionsByCategory = questions.GroupBy(q => q.CategoryId).ToDictionary(g => g.Key, g => g.ToList());
+
+                Categories.Clear();
                 foreach (var cat in categories)
                 {
                     cat.Questions = questionsByCategory.TryGetValue(cat.Id, out var catQuestions) ? catQuestions : new System.Collections.Generic.List<QuestionDto>();
+                    Categories.Add(cat);
                 }
-
-                Categories = new ObservableCollection<CategoryDto>(categories);
             }
             catch (System.Exception ex)
             {
@@ -113,7 +118,11 @@ namespace QuizApp.WPF.ViewModels.Admin
             try
             {
                 var questions = await _questionService.GetAllAsync();
-                Questions = new ObservableCollection<QuestionDto>(questions);
+                Questions.Clear();
+                foreach (var q in questions)
+                {
+                    Questions.Add(q);
+                }
             }
             catch (System.Exception ex)
             {
@@ -126,13 +135,17 @@ namespace QuizApp.WPF.ViewModels.Admin
             try
             {
                 var quizzes = await _quizService.GetQuizzesAsync();
-                Quizzes = new ObservableCollection<QuizDto>(quizzes.Select(q => new QuizDto
+                Quizzes.Clear();
+                foreach (var q in quizzes)
                 {
-                    Id = q.Id,
-                    Title = q.Title,
-                    StartTime = q.StartTime,
-                    EndTime = q.EndTime
-                }));
+                    Quizzes.Add(new QuizDto
+                    {
+                        Id = q.Id,
+                        Title = q.Title,
+                        StartTime = q.StartTime,
+                        EndTime = q.EndTime
+                    });
+                }
             }
             catch (System.Exception ex)
             {

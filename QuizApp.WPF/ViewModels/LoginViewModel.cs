@@ -1,4 +1,6 @@
-﻿using System.Windows;
+﻿using System;
+using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Input;
 using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Admin;
@@ -8,14 +10,13 @@ namespace QuizApp.WPF.ViewModels
     public class LoginViewModel : ObservableObject
     {
         private readonly AuthService _authService;
-
-
-    private string _username = string.Empty;
+        private string _username = string.Empty;
         private string _password = string.Empty;
         private bool _isLoading;
         private string _loadingText = "Signing you in...";
 
-        public LoginViewModel()
+
+    public LoginViewModel()
         {
             _authService = new AuthService();
             LoginCommand = new RelayCommand(async () => await LoginAsync(), CanLogin);
@@ -95,14 +96,15 @@ namespace QuizApp.WPF.ViewModels
 
                         if (loginData.Role == "Admin")
                         {
-                            // Open AdminMainWindow  
-                            var adminVM = new AdminMainViewModel(); // make sure constructor sets default view  
-                            mainWindow = new AdminMainWindow();
-                            mainWindow.DataContext = adminVM;
+                            // Pass the same AuthService instance to AdminMainViewModel
+                            var adminVM = new AdminMainViewModel(_authService);
+                            var adminWindow = new AdminMainWindow();
+                            adminWindow.DataContext = adminVM;
+                            mainWindow = adminWindow;
                         }
                         else if (loginData.Role == "User")
                         {
-                            // Open User MainWindow  
+                            // Pass token and username if needed for user main window
                             mainWindow = new MainWindow(loginData.Username, loginData.Token, _authService);
                         }
                         else
@@ -113,7 +115,7 @@ namespace QuizApp.WPF.ViewModels
 
                         mainWindow.Show();
 
-                        // Close login window  
+                        // Close login window
                         foreach (Window window in Application.Current.Windows)
                         {
                             if (window.DataContext == this)
@@ -139,7 +141,7 @@ namespace QuizApp.WPF.ViewModels
                 IsLoading = false;
             }
         }
-    }  
+    }
 
 
 }
