@@ -29,9 +29,21 @@ namespace QuizApp.API.Controllers
             try
             {
                 var categories = await _context.Categories
-                                               .Include(c => c.Questions)
-                                               .ToListAsync();
-                return Ok(ApiResponse<List<Category>>.CreateSuccess(categories, "Categories retrieved successfully."));
+    .Include(c => c.Questions)
+    .Select(c => new CategoryDto
+    {
+        Id = c.Id,
+        Name = c.Name,
+        Questions = c.Questions.Select(q => new QuestionDto
+        {
+            Id = q.Id,
+            Text = q.Text
+        }).ToList()
+    })
+    .ToListAsync();
+
+                return Ok(ApiResponse<List<CategoryDto>>.CreateSuccess(categories, "Categories retrieved successfully."));
+
             }
             catch (Exception ex)
             {

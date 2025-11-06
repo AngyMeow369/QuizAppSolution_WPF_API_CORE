@@ -1,6 +1,10 @@
 ﻿using QuizApp.API.Models;
+using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
+using System;
 using System.Collections.ObjectModel;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
@@ -9,17 +13,30 @@ namespace QuizApp.WPF.ViewModels.Admin
     public class ManageQuizzesViewModel : ObservableObject
     {
         private readonly QuizService _quizService;
+        private readonly CategoryService _categoryService;
 
-
-    public ObservableCollection<Quiz> Quizzes { get; set; } = new ObservableCollection<Quiz>();
+        public ObservableCollection<Quiz> Quizzes { get; set; } = new();
+        public ObservableCollection<CategoryDto> Categories { get; set; } = new();
 
         private Quiz? _selectedQuiz;
         public Quiz? SelectedQuiz
         {
             get => _selectedQuiz;
-            set => SetProperty(ref _selectedQuiz, value);
+            set
+            {
+                SetProperty(ref _selectedQuiz, value);
+                (EditQuizCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (DeleteQuizCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (AssignQuizCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
         }
 
+        private CategoryDto? _selectedCategory;
+        public CategoryDto? SelectedCategory
+        {
+            get => _selectedCategory;
+            set => SetProperty(ref _selectedCategory, value);
+        }
 
         private bool _isLoading;
         public bool IsLoading
@@ -28,22 +45,41 @@ namespace QuizApp.WPF.ViewModels.Admin
             set => SetProperty(ref _isLoading, value);
         }
 
-        // Commands
         public ICommand AddQuizCommand { get; }
         public ICommand EditQuizCommand { get; }
         public ICommand DeleteQuizCommand { get; }
         public ICommand AssignQuizCommand { get; }
 
-        public ManageQuizzesViewModel(QuizService quizService)
+        public ManageQuizzesViewModel(QuizService quizService, CategoryService categoryService)
         {
-            _quizService = quizService;
+            _quizService = quizService ?? throw new ArgumentNullException(nameof(quizService));
+            _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
 
-            AddQuizCommand = new RelayCommand(OnAddQuiz);
-            EditQuizCommand = new RelayCommand(OnEditQuiz, () => SelectedQuiz != null);
+            AddQuizCommand = new RelayCommand(async () => await OnAddQuiz());
+            EditQuizCommand = new RelayCommand(async () => await OnEditQuiz(), () => SelectedQuiz != null);
             DeleteQuizCommand = new RelayCommand(async () => await OnDeleteQuiz(), () => SelectedQuiz != null);
             AssignQuizCommand = new RelayCommand(OnAssignQuiz, () => SelectedQuiz != null);
 
-            _ = LoadQuizzes();
+            _ = LoadInitialData();
+        }
+
+        private async Task LoadInitialData()
+        {
+            await LoadCategories();
+            await LoadQuizzes();
+        }
+
+        private async Task LoadCategories()
+        {
+            try
+            {
+                var cats = await _categoryService.GetAllAsync();
+                Categories = new ObservableCollection<CategoryDto>(cats);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load categories: {ex.Message}");
+            }
         }
 
         private async Task LoadQuizzes()
@@ -56,7 +92,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                 foreach (var quiz in quizzes)
                     Quizzes.Add(quiz);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
                 MessageBox.Show($"Failed to load quizzes: {ex.Message}");
             }
@@ -66,25 +102,75 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
         }
 
-        private void OnAddQuiz()
+        private async Task OnAddQuiz()
         {
-            // TODO: Open AddQuiz dialog or navigate
-            MessageBox.Show("AddQuiz clicked");
+            if (SelectedCategory == null)
+            {
+                MessageBox.Show("Please select a category before adding a quiz.", "Missing Category", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
+            try
+            {
+                var newQuiz = new Quiz
+                {
+                    Title = "New Quiz",
+                    CategoryId = SelectedCategory.Id,
+                    StartTime = DateTime.Now,
+                    EndTime = DateTime.Now.AddHours(1)
+                };
+
+                IsLoading = true;
+                var createdQuiz = await _quizService.CreateQuizAsync(newQuiz, new List<int>());
+                Quizzes.Add(createdQuiz);
+                MessageBox.Show("Quiz added successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to add quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
-        private void OnEditQuiz()
+        private async Task OnEditQuiz()
         {
-            if (SelectedQuiz == null) return;
-            // TODO: Open EditQuiz dialog
-            MessageBox.Show($"Edit Quiz: {SelectedQuiz.Title}");
+            if (SelectedQuiz == null)
+                return;
+
+            try
+            {
+                SelectedQuiz.Title += " (Edited)";
+                if (SelectedCategory != null)
+                    SelectedQuiz.CategoryId = SelectedCategory.Id;
+
+                IsLoading = true;
+                await _quizService.UpdateQuizAsync(SelectedQuiz);
+                MessageBox.Show("Quiz updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to update quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private async Task OnDeleteQuiz()
         {
-            if (SelectedQuiz == null) return;
+            if (SelectedQuiz == null)
+                return;
 
-            var result = MessageBox.Show($"Are you sure you want to delete '{SelectedQuiz.Title}'?", "Confirm Delete", MessageBoxButton.YesNo);
-            if (result != MessageBoxResult.Yes) return;
+            var result = MessageBox.Show(
+                $"Are you sure you want to delete '{SelectedQuiz.Title}'?",
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+
+            if (result != MessageBoxResult.Yes)
+                return;
 
             try
             {
@@ -92,10 +178,11 @@ namespace QuizApp.WPF.ViewModels.Admin
                 await _quizService.DeleteQuizAsync(SelectedQuiz.Id);
                 Quizzes.Remove(SelectedQuiz);
                 SelectedQuiz = null;
+                MessageBox.Show("Quiz deleted successfully!", "Deleted", MessageBoxButton.OK, MessageBoxImage.Information);
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                MessageBox.Show($"Failed to delete quiz: {ex.Message}");
+                MessageBox.Show($"Failed to delete quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
@@ -105,11 +192,10 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         private void OnAssignQuiz()
         {
-            if (SelectedQuiz == null) return;
-            // TODO: Open AssignQuiz dialog
-            MessageBox.Show($"Assign Quiz: {SelectedQuiz.Title}");
+            if (SelectedQuiz == null)
+                return;
+
+            MessageBox.Show($"Assign Quiz: {SelectedQuiz.Title}", "Assign Quiz");
         }
     }
-
-
 }

@@ -29,9 +29,8 @@
             <DataGrid.Columns>
                 <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80"/>
                 <DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*"/>
-                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="2*"/>
-                <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="150"/>
-                <DataGridTextColumn Header="Questions Count" Binding="{Binding Questions.Count}" Width="150"/>
+                <DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" Width="150"/>
+               
             </DataGrid.Columns>
         </DataGrid>
 

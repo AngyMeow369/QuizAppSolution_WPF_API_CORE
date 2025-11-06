@@ -1,13 +1,16 @@
 ﻿<UserControl x:Class="QuizApp.WPF.Views.Admin.AdminDashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="clr-namespace:QuizApp.WPF.Views.Admin"
              Background="#F8FAFC"
              FontFamily="Segoe UI">
 
-    <!-- Resources must include all brushes, styles, and converters -->
     <UserControl.Resources>
         <!-- Converters -->
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!-- Shadow Effect (MUST BE FIRST, referenced by styles) -->
+        <DropShadowEffect x:Key="DropShadow" Color="#000000" ShadowDepth="0" Opacity="0.1" BlurRadius="12"/>
 
         <!-- Brushes -->
         <SolidColorBrush x:Key="PrimaryBrush">#2563EB</SolidColorBrush>
@@ -20,59 +23,138 @@
         <SolidColorBrush x:Key="BorderBrush">#E5E7EB</SolidColorBrush>
         <SolidColorBrush x:Key="HoverBrush">#F3F4F6</SolidColorBrush>
 
-        <!-- Styles -->
-        <Style x:Key="ModernCard" TargetType="Border">
+        <!-- Card Style -->
+        <Style x:Key="DashboardCard" TargetType="Button">
             <Setter Property="Background" Value="{StaticResource CardBgBrush}"/>
-            <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Effect">
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
                 <Setter.Value>
-                    <DropShadowEffect Color="#000000" ShadowDepth="0" Opacity="0.1" BlurRadius="15"/>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}" 
+                                BorderBrush="{TemplateBinding BorderBrush}" 
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Effect="{StaticResource DropShadow}">
+                            <StackPanel>
+                                <TextBlock Text="{TemplateBinding Tag}" 
+                                           FontSize="14"
+                                           Foreground="{StaticResource TextSecondaryBrush}"/>
+                                <TextBlock Text="{TemplateBinding Content}" 
+                                           FontSize="28" 
+                                           FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                            </StackPanel>
+                        </Border>
+                    </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
-
-        <Style x:Key="LoadingText" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="HorizontalAlignment" Value="Center"/>
-            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </UserControl.Resources>
 
-    <Grid>
-        <!-- Loading Overlay -->
-        <Border Background="#F8FAFC" Opacity="0.8" 
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- LOADING OVERLAY -->
+        <Border Background="#F8FAFC" Opacity="0.9"
                 Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
                 Panel.ZIndex="1000">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="🔄 Loading dashboard data..." Style="{StaticResource LoadingText}"/>
-                <TextBlock Text="Please wait..." Style="{StaticResource LoadingText}" Margin="0,10,0,0"/>
+                <TextBlock Text="🔄 Loading dashboard data..." Foreground="#4B5563" FontSize="16"/>
             </StackPanel>
         </Border>
 
-        <!-- Main Layout -->
-        <Grid Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <!-- SUMMARY CARDS -->
+        <UniformGrid Grid.Row="0" Columns="4" Margin="0,0,0,20">
+            <Button Style="{StaticResource DashboardCard}"
+                    Tag="Total Users"
+                    Content="{Binding Users.Count}"
+                    Command="{Binding DataContext.NavigateToUsersCommand, 
+                                      RelativeSource={RelativeSource AncestorType=Window}}"/>
 
-            <!-- Header -->
-            <Border Grid.Row="0" Style="{StaticResource ModernCard}" Padding="25" Margin="0,0,0,20">
-                <!-- Add header content here -->
+            <Button Style="{StaticResource DashboardCard}"
+                    Tag="Total Quizzes"
+                    Content="{Binding Quizzes.Count}"
+                    Command="{Binding DataContext.NavigateToManageQuizzesCommand, 
+                                      RelativeSource={RelativeSource AncestorType=Window}}"/>
+
+            <Button Style="{StaticResource DashboardCard}"
+                    Tag="Categories"
+                    Content="{Binding Categories.Count}"
+                    Command="{Binding DataContext.NavigateToDashboardCommand, 
+                                      RelativeSource={RelativeSource AncestorType=Window}}"/>
+
+            <Button Style="{StaticResource DashboardCard}"
+                    Tag="Questions"
+                    Content="{Binding Questions.Count}"
+                    Command="{Binding DataContext.NavigateToDashboardCommand, 
+                                      RelativeSource={RelativeSource AncestorType=Window}}"/>
+        </UniformGrid>
+
+        <!-- RECENT LISTS SECTION -->
+        <Grid Grid.Row="1" Margin="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+
+            <!-- RECENT QUIZZES -->
+            <Border Grid.Column="0" Background="White" Padding="20" CornerRadius="10"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                    Effect="{StaticResource DropShadow}">
+                <StackPanel>
+                    <TextBlock Text="🧩 Recent Quizzes" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+                    <ItemsControl ItemsSource="{Binding Quizzes}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="10" Margin="0,0,0,5" Background="{StaticResource HoverBrush}" CornerRadius="6">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding StartTime, StringFormat='Starts: {0:dd MMM yyyy HH:mm}'}"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
             </Border>
 
-            <!-- Feature Cards -->
-            <ItemsControl Grid.Row="1" Margin="0,0,0,20" ItemsSource="{Binding FeatureCards}">
-                <!-- Add ItemTemplate here -->
-            </ItemsControl>
-
-            <!-- Footer -->
-            <Border Grid.Row="2" Style="{StaticResource ModernCard}" Padding="20">
-                <!-- Add footer buttons here -->
+            <!-- RECENT USERS -->
+            <Border Grid.Column="1" Background="White" Padding="20" CornerRadius="10"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                    Effect="{StaticResource DropShadow}" Margin="20,0,0,0">
+                <StackPanel>
+                    <TextBlock Text="👥 Recent Users" FontWeight="Bold" FontSize="16" Margin="0,0,0,10"/>
+                    <ItemsControl ItemsSource="{Binding Users}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Padding="10" Margin="0,0,0,5" Background="{StaticResource HoverBrush}" CornerRadius="6">
+                                    <DockPanel LastChildFill="True">
+                                        <TextBlock Text="{Binding Username}" FontWeight="SemiBold" DockPanel.Dock="Left"/>
+                                        <TextBlock Text="{Binding Role}" 
+                                                   Foreground="{StaticResource TextSecondaryBrush}" 
+                                                   FontSize="12"
+                                                   HorizontalAlignment="Right"
+                                                   DockPanel.Dock="Right"/>
+                                    </DockPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
             </Border>
         </Grid>
     </Grid>

@@ -30,11 +30,13 @@ namespace QuizApp.API.Controllers
             try
             {
                 var quizzes = await _context.Quizzes
-                                            .Include(q => q.QuizQuestions)
-                                                .ThenInclude(qq => qq.Question)
-                                            .Include(q => q.Assignments)
-                                                .ThenInclude(a => a.User)
-                                            .ToListAsync();
+                    .Include(q => q.Category) // ✅ Add this line
+                    .Include(q => q.QuizQuestions)
+                        .ThenInclude(qq => qq.Question)
+                    .Include(q => q.Assignments)
+                        .ThenInclude(a => a.User)
+                    .ToListAsync();
+
                 return Ok(ApiResponse<List<Quiz>>.CreateSuccess(quizzes, "Quizzes retrieved successfully."));
             }
             catch (Exception ex)
@@ -52,11 +54,12 @@ namespace QuizApp.API.Controllers
             try
             {
                 var quiz = await _context.Quizzes
-                                         .Include(q => q.QuizQuestions)
-                                             .ThenInclude(qq => qq.Question)
-                                         .Include(q => q.Assignments)
-                                             .ThenInclude(a => a.User)
-                                         .FirstOrDefaultAsync(q => q.Id == id);
+                    .Include(q => q.Category) // ✅ Add this line
+                    .Include(q => q.QuizQuestions)
+                        .ThenInclude(qq => qq.Question)
+                    .Include(q => q.Assignments)
+                        .ThenInclude(a => a.User)
+                    .FirstOrDefaultAsync(q => q.Id == id);
 
                 if (quiz == null)
                     return NotFound(ApiResponse<Quiz>.CreateFailure("Quiz not found."));
@@ -68,6 +71,7 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<Quiz>.CreateFailure($"Error retrieving quiz: {ex.Message}"));
             }
         }
+
 
         // -----------------------------
         // POST: api/quizzes

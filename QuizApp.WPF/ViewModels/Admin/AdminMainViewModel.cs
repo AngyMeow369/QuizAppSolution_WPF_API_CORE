@@ -30,19 +30,30 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             _authService = authService;
 
-            // Use the same AuthService to create dependent services  
+            // ✅ Create service instances
             var quizService = new QuizService(_authService);
             var userService = new UserService(_authService);
+            var categoryService = new CategoryService(_authService); // <-- ADD THIS
 
-            NavigateToDashboardCommand = new RelayCommand(() => CurrentView = new AdminDashboardViewModel(_authService));
-            NavigateToManageQuizzesCommand = new RelayCommand(() => CurrentView = new ManageQuizzesViewModel(quizService));
-            NavigateToUsersCommand = new RelayCommand(() => CurrentView = new ManageUsersViewModel(userService));
-            NavigateToAnalyticsCommand = new RelayCommand(() => CurrentView = new AnalyticsViewModel(quizService));
+            // ✅ Pass both quizService and categoryService where needed
+            NavigateToDashboardCommand = new RelayCommand(() =>
+                CurrentView = new AdminDashboardViewModel(_authService));
+
+            NavigateToManageQuizzesCommand = new RelayCommand(() =>
+                CurrentView = new ManageQuizzesViewModel(quizService, categoryService)); // <-- FIXED HERE
+
+            NavigateToUsersCommand = new RelayCommand(() =>
+                CurrentView = new ManageUsersViewModel(userService));
+
+            NavigateToAnalyticsCommand = new RelayCommand(() =>
+                CurrentView = new AnalyticsViewModel(quizService));
+
             LogoutCommand = new RelayCommand(Logout);
 
-            // default page  
+            // ✅ Default page
             CurrentView = new AdminDashboardViewModel(_authService);
         }
+
 
         private void Logout()
         {

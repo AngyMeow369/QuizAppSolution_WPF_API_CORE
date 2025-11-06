@@ -64,6 +64,8 @@ namespace QuizApp.WPF.ViewModels.Admin
             {
                 IsLoading = false;
             }
+
+
         }
 
         private async Task LoadUsersAsync()
@@ -71,6 +73,7 @@ namespace QuizApp.WPF.ViewModels.Admin
             try
             {
                 var usersFromService = await _userService.GetUsersAsync();
+
                 Users.Clear();
                 foreach (var u in usersFromService)
                 {
@@ -89,6 +92,8 @@ namespace QuizApp.WPF.ViewModels.Admin
             {
                 MessageBox.Show($"Error loading users: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+
+
         }
 
         private async Task LoadCategoriesAsync()
