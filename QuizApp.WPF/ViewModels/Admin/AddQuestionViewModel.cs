@@ -1,251 +1,121 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
+using QuizApp.WPF.ViewModels;
+using QuizApp.WPF.ViewModels.Admin;
 using System.Collections.ObjectModel;
 using System.Windows;
+using System.Windows.Input;
 
-namespace QuizApp.WPF.ViewModels.Admin
+public class AddQuestionViewModel : ObservableObject
 {
-    public class AddQuestionViewModel : ObservableObject
+    private readonly CategoryService _categoryService;
+    private bool _isSaved;
+
+    public AddQuestionViewModel(CategoryService categoryService)
     {
-        private readonly CategoryService _categoryService;
+        _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
 
-        private string _questionText = string.Empty;
-        private CategoryDto? _selectedCategory;
-        private string _headerTitle = string.Empty;
-        private string _validationMessage = string.Empty;
-        private bool _isValidationVisible;
-        private bool _isEditMode;
-        private bool _isLoading;
+        Options = new ObservableCollection<OptionDto>();
+        Categories = new ObservableCollection<CategoryDto>();
 
-        public AddQuestionViewModel(CategoryService categoryService, QuestionDto? existingQuestion = null)
+        AddOptionCommand = new RelayCommand(AddOption);
+        RemoveOptionCommand = new RelayCommand<OptionDto>(RemoveOption);
+        SaveCommand = new RelayCommand(Save);
+        CancelCommand = new RelayCommand(Cancel);
+
+        _ = LoadCategoriesAsync();
+    }
+
+    public string QuestionText { get; set; } = string.Empty;
+    public ObservableCollection<OptionDto> Options { get; }
+    public ObservableCollection<CategoryDto> Categories { get; }
+    public CategoryDto? SelectedCategory { get; set; }
+    public QuestionDto? Question { get; private set; }
+    public bool IsSaved
+    {
+        get => _isSaved;
+        private set { _isSaved = value; OnPropertyChanged(); }
+    }
+
+    public string HeaderTitle => Question == null ? "Add New Question" : "Edit Question";
+
+    public Action<bool?>? CloseAction { get; set; }
+
+    public ICommand AddOptionCommand { get; }
+    public ICommand RemoveOptionCommand { get; }
+    public ICommand SaveCommand { get; }
+    public ICommand CancelCommand { get; }
+
+    public void Reset()
+    {
+        Question = null;
+        QuestionText = string.Empty;
+        SelectedCategory = null;
+        Options.Clear();
+        Options.Add(new OptionDto { Text = "", IsCorrect = false });
+        Options.Add(new OptionDto { Text = "", IsCorrect = true });
+        IsSaved = false;
+
+        OnPropertyChanged(nameof(QuestionText));
+        OnPropertyChanged(nameof(Options));
+        OnPropertyChanged(nameof(SelectedCategory));
+    }
+
+    public void LoadQuestion(QuestionDto question)
+    {
+        Question = question;
+        QuestionText = question.Text;
+        SelectedCategory = Categories.FirstOrDefault(c => c.Id == question.CategoryId);
+
+        Options.Clear();
+        foreach (var opt in question.Options) Options.Add(opt);
+
+        IsSaved = false;
+
+        OnPropertyChanged(nameof(QuestionText));
+        OnPropertyChanged(nameof(Options));
+        OnPropertyChanged(nameof(SelectedCategory));
+    }
+
+    private async Task LoadCategoriesAsync()
+    {
+        try
         {
-            _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
-            Categories = new ObservableCollection<CategoryDto>();
-            Options = new ObservableCollection<OptionDto>();
-            Question = existingQuestion ?? new QuestionDto();
-            _isEditMode = existingQuestion != null;
-
-            InitializeCommands();
-            LoadCategoriesAsync();
-            InitializeForm();
+            var categories = await _categoryService.GetAllAsync();
+            Categories.Clear();
+            foreach (var cat in categories) Categories.Add(cat);
         }
-
-        #region Properties
-
-        public ObservableCollection<CategoryDto> Categories { get; }
-        public ObservableCollection<OptionDto> Options { get; }
-        public QuestionDto Question { get; }
-
-        public string QuestionText
+        catch (Exception ex)
         {
-            get => _questionText;
-            set
-            {
-                _questionText = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(QuestionTextLength));
-            }
+            MessageBox.Show($"Error loading categories: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
+    }
 
-        public int QuestionTextLength => QuestionText.Length;
+    private void AddOption() => Options.Add(new OptionDto { Text = "", IsCorrect = false });
 
-        public CategoryDto? SelectedCategory
-        {
-            get => _selectedCategory;
-            set
-            {
-                _selectedCategory = value;
-                OnPropertyChanged();
-            }
-        }
+    private void RemoveOption(OptionDto? option)
+    {
+        if (option == null) return;
+        if (Options.Count > 2) Options.Remove(option);
+        else MessageBox.Show("A question must have at least two options.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+    }
 
-        public string HeaderTitle
-        {
-            get => _headerTitle;
-            set
-            {
-                _headerTitle = value;
-                OnPropertyChanged();
-            }
-        }
+    private void Save()
+    {
+        if (string.IsNullOrWhiteSpace(QuestionText) || SelectedCategory == null) return;
 
-        public string ValidationMessage
-        {
-            get => _validationMessage;
-            set
-            {
-                _validationMessage = value;
-                OnPropertyChanged();
-            }
-        }
+        Question ??= new QuestionDto();
+        Question.Text = QuestionText.Trim();
+        Question.CategoryId = SelectedCategory.Id;
+        Question.Options = Options.Where(o => !string.IsNullOrWhiteSpace(o.Text)).ToList();
 
-        public bool IsValidationVisible
-        {
-            get => _isValidationVisible;
-            set
-            {
-                _isValidationVisible = value;
-                OnPropertyChanged();
-            }
-        }
+        IsSaved = true;
+        CloseAction?.Invoke(true);
+    }
 
-        public bool IsLoading
-        {
-            get => _isLoading;
-            set
-            {
-                _isLoading = value;
-                OnPropertyChanged();
-            }
-        }
-
-        public bool IsSaved { get; private set; }
-
-        #endregion
-
-        #region Commands
-
-        public RelayCommand AddOptionCommand { get; private set; } = null!;
-        public RelayCommand<OptionDto> RemoveOptionCommand { get; private set; } = null!;
-        public RelayCommand SaveCommand { get; private set; } = null!;
-        public RelayCommand CancelCommand { get; private set; } = null!;
-
-        private void InitializeCommands()
-        {
-            AddOptionCommand = new RelayCommand(AddOption);
-            RemoveOptionCommand = new RelayCommand<OptionDto>(RemoveOption);
-            SaveCommand = new RelayCommand(SaveQuestion);
-            CancelCommand = new RelayCommand(() => CloseAction?.Invoke(false));
-        }
-
-        #endregion
-
-        #region Methods
-
-        private async void LoadCategoriesAsync()
-        {
-            IsLoading = true;
-            try
-            {
-                var categories = await _categoryService.GetAllAsync();
-                Categories.Clear();
-
-                // ensure CategoryDto conversion if service still returns API models
-                foreach (var category in categories)
-                {
-                    Categories.Add(new CategoryDto
-                    {
-                        Id = category.Id,
-                        Name = category.Name
-                    });
-                }
-
-                if (_isEditMode && Question.CategoryId > 0)
-                    SelectedCategory = Categories.FirstOrDefault(c => c.Id == Question.CategoryId);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error loading categories: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-
-        private void InitializeForm()
-        {
-            HeaderTitle = _isEditMode ? "Edit Question" : "Add New Question";
-            QuestionText = Question.Text ?? string.Empty;
-
-            Options.Clear();
-
-            if (_isEditMode && Question.Options != null && Question.Options.Any())
-            {
-                foreach (var option in Question.Options)
-                {
-                    Options.Add(new OptionDto
-                    {
-                        Id = option.Id,
-                        Text = option.Text,
-                        IsCorrect = option.IsCorrect,
-                        QuestionId = option.QuestionId
-                    });
-                }
-            }
-            else
-            {
-                // default: one correct and one incorrect
-                Options.Add(new OptionDto { Text = "", IsCorrect = false });
-                Options.Add(new OptionDto { Text = "", IsCorrect = true });
-            }
-        }
-
-        private void AddOption()
-        {
-            Options.Add(new OptionDto { Text = "", IsCorrect = false });
-        }
-
-        private void RemoveOption(OptionDto? option)
-        {
-            if (option == null) return;
-
-            if (Options.Count > 2)
-                Options.Remove(option);
-            else
-                MessageBox.Show("A question must have at least two options.",
-                    "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
-        }
-
-        private void SaveQuestion()
-        {
-            IsValidationVisible = false;
-
-            if (string.IsNullOrWhiteSpace(QuestionText))
-            {
-                MessageBox.Show("Please enter question text.", "Validation Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (SelectedCategory == null)
-            {
-                MessageBox.Show("Please select a category.", "Validation Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            var validOptions = Options.Where(o => !string.IsNullOrWhiteSpace(o.Text)).ToList();
-
-            if (validOptions.Count < 2)
-            {
-                ValidationMessage = "⚠️ Please add at least 2 options with text";
-                IsValidationVisible = true;
-                MessageBox.Show("Please add at least two options with text.", "Validation Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            if (!validOptions.Any(o => o.IsCorrect))
-            {
-                ValidationMessage = "⚠️ Please mark at least one option as correct";
-                IsValidationVisible = true;
-                MessageBox.Show("Please mark at least one option as correct.", "Validation Error",
-                    MessageBoxButton.OK, MessageBoxImage.Warning);
-                return;
-            }
-
-            Question.Text = QuestionText.Trim();
-            Question.CategoryId = SelectedCategory.Id;
-            Question.Options = validOptions;
-
-            IsSaved = true;
-            CloseAction?.Invoke(true);
-        }
-
-        #endregion
-
-        public Action<bool?>? CloseAction { get; set; }
+    private void Cancel()
+    {
+        Reset();
+        CloseAction?.Invoke(false);
     }
 }

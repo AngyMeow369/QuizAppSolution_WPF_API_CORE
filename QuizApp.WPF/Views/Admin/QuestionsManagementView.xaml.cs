@@ -19,11 +19,7 @@ namespace QuizApp.WPF.Views.Admin
             DataContext = viewModel;
 
             // Handle window closing through ViewModel
-            viewModel.CloseAction = (result) =>
-            {
-                DialogResult = result;
-                Close();
-            };
+            
         }
     }
 }

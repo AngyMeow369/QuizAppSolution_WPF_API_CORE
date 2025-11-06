@@ -1,16 +1,15 @@
-﻿<Window x:Class="QuizApp.WPF.Views.Admin.AddQuestionView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Add Question"
-        Height="600"
-        Width="700"
-        WindowStartupLocation="CenterOwner"
-        Background="#F8FAFC"
-        FontFamily="Segoe UI">
+﻿<UserControl x:Class="QuizApp.WPF.Views.Admin.AddQuestionControl"
+          xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+          xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+          xmlns:vm="clr-namespace:QuizApp.WPF.ViewModels.Admin"
+          Background="#F8FAFC"
+          FontFamily="Segoe UI">
 
-    <Window.Resources>
+   
+    <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
+        <!-- Primary Button Style -->
         <Style x:Key="PrimaryButton" TargetType="Button">
             <Setter Property="Background" Value="#2563EB"/>
             <Setter Property="Foreground" Value="White"/>
@@ -35,6 +34,7 @@
             </Setter>
         </Style>
 
+        <!-- Danger Button Style -->
         <Style x:Key="DangerButton" TargetType="Button">
             <Setter Property="Background" Value="#EF4444"/>
             <Setter Property="Foreground" Value="White"/>
@@ -59,6 +59,7 @@
             </Setter>
         </Style>
 
+        <!-- Secondary Button Style -->
         <Style x:Key="SecondaryButton" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="#6B7280"/>
@@ -83,7 +84,7 @@
                 </Setter.Value>
             </Setter>
         </Style>
-    </Window.Resources>
+    </UserControl.Resources>
 
     <Border Background="White" CornerRadius="12" Margin="20">
         <Border.Effect>
@@ -117,20 +118,20 @@
                             <TextBlock Text="Question Text" FontSize="14" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,8"/>
                             <Border BorderThickness="1" BorderBrush="#E5E7EB" CornerRadius="4" Background="White">
                                 <TextBox Text="{Binding QuestionText, UpdateSourceTrigger=PropertyChanged}"
-                                       Height="80"
-                                       TextWrapping="Wrap"
-                                       AcceptsReturn="True"
-                                       VerticalScrollBarVisibility="Auto"
-                                       FontSize="14"
-                                       Padding="10"
-                                       BorderThickness="0"
-                                       Background="Transparent"/>
+                                     Height="80"
+                                     TextWrapping="Wrap"
+                                     AcceptsReturn="True"
+                                     VerticalScrollBarVisibility="Auto"
+                                     FontSize="14"
+                                     Padding="10"
+                                     BorderThickness="0"
+                                     Background="Transparent"/>
                             </Border>
                             <TextBlock Text="{Binding QuestionTextLength, StringFormat='{}{0}/500'}" 
-                                       FontSize="11" 
-                                       Foreground="#6B7280" 
-                                       HorizontalAlignment="Right"
-                                       Margin="0,5,0,0"/>
+                                   FontSize="11" 
+                                   Foreground="#6B7280" 
+                                   HorizontalAlignment="Right"
+                                   Margin="0,5,0,0"/>
                         </StackPanel>
                     </Border>
 
@@ -140,12 +141,12 @@
                             <TextBlock Text="Category" FontSize="14" FontWeight="SemiBold" Foreground="#374151" Margin="0,0,0,8"/>
                             <Border BorderThickness="1" BorderBrush="#E5E7EB" CornerRadius="4" Background="White">
                                 <ComboBox ItemsSource="{Binding Categories}"
-                                          SelectedItem="{Binding SelectedCategory}"
-                                          Height="40"
-                                          FontSize="14"
-                                          Padding="10"
-                                          BorderThickness="0"
-                                          Background="Transparent">
+                                      SelectedItem="{Binding SelectedCategory}"
+                                      Height="40"
+                                      FontSize="14"
+                                      Padding="10"
+                                      BorderThickness="0"
+                                      Background="Transparent">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate>
                                             <TextBlock Text="{Binding Name}" Padding="5"/>
@@ -162,20 +163,18 @@
                             <StackPanel Orientation="Horizontal" Margin="0,0,0,15">
                                 <TextBlock Text="Options" FontSize="14" FontWeight="SemiBold" Foreground="#374151"/>
                                 <Button Content="+ Add Option" 
-                                        Command="{Binding AddOptionCommand}"
-                                        Style="{StaticResource PrimaryButton}"
-                                        Margin="15,0,0,0"
-                                        Padding="10,6"/>
+                                    Command="{Binding AddOptionCommand}"
+                                    Style="{StaticResource PrimaryButton}"
+                                    Margin="15,0,0,0"
+                                    Padding="10,6"/>
                             </StackPanel>
 
-                            <!-- Validation Message -->
                             <TextBlock Text="{Binding ValidationMessage}"
-                                       Foreground="#EF4444"
-                                       FontSize="12"
-                                       Margin="0,0,0,10"
-                                       Visibility="{Binding IsValidationVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                   Foreground="#EF4444"
+                                   FontSize="12"
+                                   Margin="0,0,0,10"
+                                   Visibility="{Binding IsValidationVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-                            <!-- Options List -->
                             <ItemsControl ItemsSource="{Binding Options}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
@@ -189,25 +188,25 @@
 
                                                 <Border BorderThickness="1" BorderBrush="#E5E7EB" CornerRadius="4" Background="White">
                                                     <TextBox Text="{Binding Text, UpdateSourceTrigger=PropertyChanged}"
-                                                             FontSize="13"
-                                                             Padding="8"
-                                                             BorderThickness="0"
-                                                             Background="Transparent"
-                                                             VerticalContentAlignment="Center"/>
+                                                         FontSize="13"
+                                                         Padding="8"
+                                                         BorderThickness="0"
+                                                         Background="Transparent"
+                                                         VerticalContentAlignment="Center"/>
                                                 </Border>
 
                                                 <CheckBox Grid.Column="1" 
-                                                          IsChecked="{Binding IsCorrect}"
-                                                          Content="Correct"
-                                                          Margin="10,0"
-                                                          VerticalAlignment="Center"/>
+                                                      IsChecked="{Binding IsCorrect}"
+                                                      Content="Correct"
+                                                      Margin="10,0"
+                                                      VerticalAlignment="Center"/>
 
                                                 <Button Grid.Column="2"
-                                                        Content="Remove"
-                                                        Command="{Binding DataContext.RemoveOptionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
-                                                        CommandParameter="{Binding}"
-                                                        Style="{StaticResource DangerButton}"
-                                                        Padding="8,4"/>
+                                                    Content="Remove"
+                                                    Command="{Binding DataContext.RemoveOptionCommand, RelativeSource={RelativeSource AncestorType=ItemsControl}}"
+                                                    CommandParameter="{Binding}"
+                                                    Style="{StaticResource DangerButton}"
+                                                    Padding="8,4"/>
                                             </Grid>
                                         </Border>
                                     </DataTemplate>
@@ -221,13 +220,15 @@
             <!-- Footer Buttons -->
             <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
                 <Button Content="Cancel"
-                        Command="{Binding CancelCommand}"
-                        Style="{StaticResource SecondaryButton}"
-                        Margin="0,0,10,0"/>
+                    Command="{Binding CancelCommand}"
+                    Style="{StaticResource SecondaryButton}"
+                    Margin="0,0,10,0"/>
                 <Button Content="Save Question"
-                        Command="{Binding SaveCommand}"
-                        Style="{StaticResource PrimaryButton}"/>
+                    Command="{Binding SaveCommand}"
+                    Style="{StaticResource PrimaryButton}"/>
             </StackPanel>
         </Grid>
     </Border>
-</Window>
+    
+
+</UserControl>

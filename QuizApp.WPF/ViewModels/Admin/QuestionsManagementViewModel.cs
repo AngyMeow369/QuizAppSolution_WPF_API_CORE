@@ -1,6 +1,5 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
-using QuizApp.WPF.Views.Admin;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -15,11 +14,19 @@ namespace QuizApp.WPF.ViewModels.Admin
         private readonly CategoryService _categoryService;
         private ObservableCollection<QuestionDto> _questions = new();
         private bool _isLoading;
+        private bool _isAddQuestionVisible;
 
         public QuestionsManagementViewModel(QuestionService questionService, CategoryService categoryService)
         {
             _questionService = questionService ?? throw new ArgumentNullException(nameof(questionService));
             _categoryService = categoryService ?? throw new ArgumentNullException(nameof(categoryService));
+
+            AddQuestionVM = new AddQuestionViewModel(_categoryService);
+            AddQuestionVM.CloseAction = (result) =>
+            {
+                IsAddQuestionVisible = false; // hide overlay
+                if (result == true) _ = LoadQuestionsAsync(); // reload if saved
+            };
 
             InitializeCommands();
             _ = LoadQuestionsAsync();
@@ -37,22 +44,46 @@ namespace QuizApp.WPF.ViewModels.Admin
             get => _isLoading;
             set { _isLoading = value; OnPropertyChanged(); }
         }
+
+        public bool IsAddQuestionVisible
+        {
+            get => _isAddQuestionVisible;
+            set { _isAddQuestionVisible = value; OnPropertyChanged(); }
+        }
+
+        public AddQuestionViewModel AddQuestionVM { get; }
         #endregion
 
         #region Commands
-        public RelayCommand LoadQuestionsCommand { get; private set; } = null!;
-        public RelayCommand AddQuestionCommand { get; private set; } = null!;
-        public RelayCommand<QuestionDto?> EditQuestionCommand { get; private set; } = null!;
-        public RelayCommand<QuestionDto?> DeleteQuestionCommand { get; private set; } = null!;
-        public RelayCommand CloseCommand { get; private set; } = null!;
+        public RelayCommand LoadQuestionsCommand { get; private set; } = default!;
+        public RelayCommand ShowAddQuestionCommand { get; private set; } = default!;
+        public RelayCommand<QuestionDto?> EditQuestionCommand { get; private set; } = default!;
+        public RelayCommand<QuestionDto?> DeleteQuestionCommand { get; private set; } = default!;
+
 
         private void InitializeCommands()
         {
             LoadQuestionsCommand = new RelayCommand(async () => await LoadQuestionsAsync());
-            AddQuestionCommand = new RelayCommand(async () => await AddQuestionAsync());
-            EditQuestionCommand = new RelayCommand<QuestionDto?>(async (q) => { if (q != null) await EditQuestionAsync(q); });
-            DeleteQuestionCommand = new RelayCommand<QuestionDto?>(async (q) => { if (q != null) await DeleteQuestionAsync(q); });
-            CloseCommand = new RelayCommand(() => CloseAction?.Invoke(true));
+
+            ShowAddQuestionCommand = new RelayCommand(() =>
+            {
+                AddQuestionVM.Reset();
+                IsAddQuestionVisible = true;
+            });
+
+            EditQuestionCommand = new RelayCommand<QuestionDto?>(q =>
+            {
+                if (q != null)
+                {
+                    AddQuestionVM.LoadQuestion(q);
+                    IsAddQuestionVisible = true;
+                }
+            });
+
+            DeleteQuestionCommand = new RelayCommand<QuestionDto?>(async q =>
+            {
+                if (q != null) await DeleteQuestionAsync(q);
+            });
         }
         #endregion
 
@@ -75,57 +106,6 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
         }
 
-        private async Task AddQuestionAsync()
-        {
-            try
-            {
-                var view = new AddQuestionView(_categoryService)
-                {
-                    Owner = Application.Current.MainWindow
-                };
-
-                var result = view.ShowDialog();
-                if (result != true || !view.IsSaved) return;
-
-                var newQuestion = view.Question as QuestionDto;
-                var newOptions = view.Options.Cast<OptionDto>().ToList();
-
-                await _questionService.CreateAsync(newQuestion);
-                // optional: handle options separately if needed
-
-                MessageBox.Show("Question created successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                await LoadQuestionsAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error creating question: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
-        private async Task EditQuestionAsync(QuestionDto question)
-        {
-            try
-            {
-                var view = new AddQuestionView(_categoryService, question)
-                {
-                    Owner = Application.Current.MainWindow
-                };
-
-                var result = view.ShowDialog();
-                if (result != true || !view.IsSaved) return;
-
-                var updatedQuestion = view.Question as QuestionDto;
-                await _questionService.UpdateAsync(updatedQuestion);
-
-                MessageBox.Show("Question updated successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
-                await LoadQuestionsAsync();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Error updating question: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-        }
-
         private async Task DeleteQuestionAsync(QuestionDto question)
         {
             if (MessageBox.Show($"Delete this question?\n\n\"{question.Text}\"",
@@ -144,7 +124,5 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
         }
         #endregion
-
-        public Action<bool?>? CloseAction { get; set; }
     }
 }
