@@ -5,14 +5,18 @@
      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
      xmlns:local="clr-namespace:QuizApp.WPF"
      xmlns:vm="clr-namespace:QuizApp.WPF.ViewModels.Admin"
+     xmlns:views="clr-namespace:QuizApp.WPF.Views.Admin"
      mc:Ignorable="d"
-     Title="QuizApp - Admin Dashboard" Height="700" Width="1200"
+     Title="QuizApp - Admin Dashboard"
+     Height="700"
+     Width="1200"
      WindowStartupLocation="CenterScreen"
      Background="#F5F6FA">
 
     
     <Window.Resources>
-        <!-- Button Styles -->
+
+        <!-- Sidebar Button Style -->
         <Style x:Key="NavButton" TargetType="Button">
             <Setter Property="Background" Value="#34495E"/>
             <Setter Property="Foreground" Value="White"/>
@@ -20,11 +24,14 @@
             <Setter Property="Padding" Value="20,15"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" CornerRadius="8">
-                            <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center" Margin="15,0,0,0"/>
+                            <ContentPresenter HorizontalAlignment="Left"
+                                          VerticalAlignment="Center"
+                                          Margin="15,0,0,0"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -37,31 +44,27 @@
             </Style.Triggers>
         </Style>
 
-        <!-- DataTemplates for only existing ViewModels -->
-        <DataTemplate DataType="{x:Type vm:ManageUsersViewModel}">
-            <TextBlock Text="Manage Users View Placeholder" FontSize="20" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <!-- Data Templates for each ViewModel -->
+        <DataTemplate DataType="{x:Type vm:AdminDashboardViewModel}">
+            <views:AdminDashboardView />
         </DataTemplate>
+
+       
 
         <DataTemplate DataType="{x:Type vm:ManageQuizzesViewModel}">
-            <TextBlock Text="Manage Quizzes View Placeholder" FontSize="20" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <views:ManageQuizzesView />
         </DataTemplate>
 
-        <DataTemplate DataType="{x:Type vm:AnalyticsViewModel}">
-            <TextBlock Text="Analytics / Dashboard View Placeholder" FontSize="20" Foreground="Gray" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        </DataTemplate>
+        
 
-        <!-- Commented out non-existing ViewModels -->
+        <!-- Add more templates if needed -->
         <!--
-    <DataTemplate DataType="{x:Type vm:CategoriesViewModel}">
-        <TextBlock Text="Categories View Placeholder" />
+    <DataTemplate DataType="{x:Type vm:CategoriesManagementViewModel}">
+        <views:CategoriesManagementView />
     </DataTemplate>
 
-    <DataTemplate DataType="{x:Type vm:AssignQuizViewModel}">
-        <TextBlock Text="Assign Quiz View Placeholder" />
-    </DataTemplate>
-
-    <DataTemplate DataType="{x:Type vm:ReportsViewModel}">
-        <TextBlock Text="Reports View Placeholder" />
+    <DataTemplate DataType="{x:Type vm:QuestionsManagementViewModel}">
+        <views:QuestionsManagementView />
     </DataTemplate>
     -->
     </Window.Resources>
@@ -84,37 +87,64 @@
                 <!-- Header -->
                 <Border Grid.Row="0" Background="#1A2530" Padding="20" CornerRadius="0,0,12,12">
                     <StackPanel>
-                        <TextBlock Text="🛠️ QuizApp" Foreground="White" FontSize="20" FontWeight="Bold"/>
-                        <TextBlock Text="Admin Dashboard" Foreground="#BDC3C7" FontSize="12" Margin="0,5,0,0"/>
+                        <TextBlock Text="🛠️ QuizApp"
+                               Foreground="White"
+                               FontSize="20"
+                               FontWeight="Bold"/>
+                        <TextBlock Text="Admin Dashboard"
+                               Foreground="#BDC3C7"
+                               FontSize="12"
+                               Margin="0,5,0,0"/>
                     </StackPanel>
                 </Border>
 
                 <!-- Navigation -->
                 <StackPanel Grid.Row="1" Margin="15,30,15,0">
-                    <Button Content="🏠 Dashboard" Style="{StaticResource NavButton}" Command="{Binding NavigateToDashboardCommand}"/>
-                    <Button Content="🧑‍💼 Manage Users" Style="{StaticResource NavButton}" Command="{Binding NavigateToUsersCommand}" Margin="0,10,0,0"/>
-                    <Button Content="🧩 Manage Quizzes" Style="{StaticResource NavButton}" Command="{Binding NavigateToQuizzesCommand}" Margin="0,10,0,0"/>
-                    <!-- Buttons for non-existing pages are commented out -->
-                    <!--
-                <Button Content="📚 Categories" Style="{StaticResource NavButton}" Command="{Binding NavigateToCategoriesCommand}" Margin="0,10,0,0"/>
-                <Button Content="🗂️ Assign Quizzes" Style="{StaticResource NavButton}" Command="{Binding NavigateToAssignQuizCommand}" Margin="0,10,0,0"/>
-                <Button Content="📊 View Reports" Style="{StaticResource NavButton}" Command="{Binding NavigateToReportsCommand}" Margin="0,10,0,0"/>
-                -->
+                    <Button Content="🏠 Dashboard"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding NavigateToDashboardCommand}"/>
+
+                    <Button Content="🧑‍💼 Manage Users"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding NavigateToUsersCommand}"
+                        Margin="0,10,0,0"/>
+
+                    <Button Content="🧩 Manage Quizzes"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding NavigateToManageQuizzesCommand}"
+                        Margin="0,10,0,0"/>
+
+                    <Button Content="📊 Analytics"
+                        Style="{StaticResource NavButton}"
+                        Command="{Binding NavigateToAnalyticsCommand}"
+                        Margin="0,10,0,0"/>
                 </StackPanel>
 
                 <!-- Footer -->
                 <Border Grid.Row="2" Background="#1A2530" Padding="15" CornerRadius="12,12,0,0">
                     <StackPanel>
-                        <TextBlock Text="{Binding CurrentUsername}" Foreground="White" FontWeight="SemiBold" TextTrimming="CharacterEllipsis"/>
-                        <TextBlock Text="{Binding UserRole}" Foreground="#BDC3C7" FontSize="11" Margin="0,2,0,10"/>
-                        <Button Content="🚪 Logout" Command="{Binding LogoutCommand}" Style="{StaticResource NavButton}" Background="#E74C3C" Foreground="White"/>
+                        <TextBlock Text="{Binding CurrentUsername}"
+                               Foreground="White"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Text="{Binding UserRole}"
+                               Foreground="#BDC3C7"
+                               FontSize="11"
+                               Margin="0,2,0,10"/>
+                        <Button Content="🚪 Logout"
+                            Command="{Binding LogoutCommand}"
+                            Style="{StaticResource NavButton}"
+                            Background="#E74C3C"
+                            Foreground="White"/>
                     </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
         <!-- Main Content -->
-        <ContentControl Grid.Column="1" Margin="20" Content="{Binding CurrentView}"/>
+        <ContentControl Grid.Column="1"
+                    Margin="20"
+                    Content="{Binding CurrentView}"/>
     </Grid>
     
 

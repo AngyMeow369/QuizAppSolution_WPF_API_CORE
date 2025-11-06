@@ -1,5 +1,5 @@
 ﻿using QuizApp.WPF.Services;
-using QuizApp.WPF.ViewModels;
+using QuizApp.WPF.ViewModels.Admin;
 using System.Windows;
 
 namespace QuizApp.WPF.Views.Admin

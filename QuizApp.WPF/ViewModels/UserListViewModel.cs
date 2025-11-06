@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace QuizApp.WPF.ViewModels
-{
+{   
     public class UserListViewModel : BaseViewModel
     {
         private readonly HttpClient _httpClient;

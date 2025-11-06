@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace QuizApp.WPF.ViewModels
+namespace QuizApp.WPF.ViewModels.Admin
 {
     public class ObservableObject : INotifyPropertyChanged
     {

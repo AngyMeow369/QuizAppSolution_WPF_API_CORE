@@ -1,7 +1,7 @@
 ﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using QuizApp.WPF.ViewModels;
+using QuizApp.WPF.ViewModels.Admin;
 
 namespace QuizApp.WPF.Views.Auth
 {

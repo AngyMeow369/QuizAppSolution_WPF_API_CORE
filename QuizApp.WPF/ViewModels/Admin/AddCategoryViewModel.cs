@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 
-namespace QuizApp.WPF.ViewModels
+namespace QuizApp.WPF.ViewModels.Admin
 {
     public class AddCategoryViewModel : ObservableObject
     {

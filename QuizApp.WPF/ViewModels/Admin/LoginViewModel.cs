@@ -5,7 +5,7 @@ using System.Windows.Input;
 using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Admin;
 
-namespace QuizApp.WPF.ViewModels
+namespace QuizApp.WPF.ViewModels.Admin
 {
     public class LoginViewModel : ObservableObject
     {
