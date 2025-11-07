@@ -2,7 +2,6 @@
 using QuizApp.WPF.ViewModels.Admin;
 using Refit;
 using QuizApp.WPF.Services.Interfaces;
-
 using System.Windows.Input;
 
 namespace QuizApp.WPF.ViewModels.Admin
@@ -12,8 +11,7 @@ namespace QuizApp.WPF.ViewModels.Admin
         private readonly AuthService _authService;
         private object? _currentView;
 
-
-    public object? CurrentView
+        public object? CurrentView
         {
             get => _currentView;
             set => SetProperty(ref _currentView, value);
@@ -28,22 +26,28 @@ namespace QuizApp.WPF.ViewModels.Admin
         public string CurrentUsername => _authService.Username;
         public string UserRole => _authService.Role;
 
-        // **Inject the logged-in AuthService instance**  
         public AdminMainViewModel(AuthService authService)
         {
             _authService = authService;
 
-            // ✅ Create service instances
-            var quizApi = RestService.For<IQuizApi>("https://localhost:7016");
-            var quizService = new QuizService(quizApi, _authService); var userService = new UserService(_authService);
-            var categoryService = new CategoryService(_authService); // <-- ADD THIS
+            // ✅ Create service instances with proper dependencies
+            const string baseApiUrl = "https://localhost:7016";
+
+            var quizApi = RestService.For<IQuizApi>(baseApiUrl);
+            var quizService = new QuizService(quizApi, _authService);
+
+            var userService = new UserService(_authService);
+
+            // ✅ Fix CategoryService - add ICategoryApi dependency
+            var categoryApi = RestService.For<ICategoryApi>(baseApiUrl);
+            var categoryService = new CategoryService(categoryApi, _authService);
 
             // ✅ Pass both quizService and categoryService where needed
             NavigateToDashboardCommand = new RelayCommand(() =>
                 CurrentView = new AdminDashboardViewModel(_authService));
 
             NavigateToManageQuizzesCommand = new RelayCommand(() =>
-                CurrentView = new ManageQuizzesViewModel(quizService, categoryService)); // <-- FIXED HERE
+                CurrentView = new ManageQuizzesViewModel(quizService, categoryService));
 
             NavigateToUsersCommand = new RelayCommand(() =>
                 CurrentView = new ManageUsersViewModel(userService));
@@ -57,7 +61,6 @@ namespace QuizApp.WPF.ViewModels.Admin
             CurrentView = new AdminDashboardViewModel(_authService);
         }
 
-
         private void Logout()
         {
             var login = new QuizApp.WPF.Views.Auth.LoginView();
@@ -69,7 +72,5 @@ namespace QuizApp.WPF.ViewModels.Admin
                     w.Close();
             }
         }
-    }  
-
-
+    }
 }

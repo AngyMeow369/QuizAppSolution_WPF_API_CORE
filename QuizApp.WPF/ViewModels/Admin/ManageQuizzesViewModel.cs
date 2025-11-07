@@ -3,6 +3,7 @@ using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Admin;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -14,8 +15,7 @@ namespace QuizApp.WPF.ViewModels.Admin
         private readonly QuizService _quizService;
         private readonly CategoryService _categoryService;
 
-
-    public ObservableCollection<QuizDto> Quizzes { get; set; } = new();
+        public ObservableCollection<QuizDto> Quizzes { get; set; } = new();
         public ObservableCollection<CategoryDto> Categories { get; set; } = new();
         public ObservableCollection<QuestionDto> Questions { get; set; } = new();
 
@@ -51,10 +51,33 @@ namespace QuizApp.WPF.ViewModels.Admin
             set => SetProperty(ref _selectedOption, value);
         }
 
-        // Commands
+        // New properties for overlay and loading state
+        private object? _currentOverlay;
+        public object? CurrentOverlay
+        {
+            get => _currentOverlay;
+            set => SetProperty(ref _currentOverlay, value);
+        }
+
+        private bool _isOverlayVisible;
+        public bool IsOverlayVisible
+        {
+            get => _isOverlayVisible;
+            set => SetProperty(ref _isOverlayVisible, value);
+        }
+
+        private bool _isLoading;
+        public bool IsLoading
+        {
+            get => _isLoading;
+            set => SetProperty(ref _isLoading, value);
+        }
+        // Commands - Added the missing ones from XAML
         public ICommand AddQuizCommand { get; }
         public ICommand EditQuizCommand { get; }
         public ICommand DeleteQuizCommand { get; }
+        public ICommand ShowAddCategoryCommand { get; }
+        public ICommand ShowAddQuestionCommand { get; }
 
         public ICommand AddCategoryCommand { get; }
         public ICommand EditCategoryCommand { get; }
@@ -73,9 +96,14 @@ namespace QuizApp.WPF.ViewModels.Admin
             _quizService = quizService;
             _categoryService = categoryService;
 
+
             AddQuizCommand = new RelayCommand(async () => await AddQuiz());
             EditQuizCommand = new RelayCommand(async () => await EditQuiz(), () => SelectedQuiz != null);
             DeleteQuizCommand = new RelayCommand(async () => await DeleteQuiz(), () => SelectedQuiz != null);
+
+            // Add the missing commands that are referenced in XAML
+            ShowAddCategoryCommand = new RelayCommand(() => ShowAddCategory());
+            ShowAddQuestionCommand = new RelayCommand(() => ShowAddQuestion(), () => SelectedQuiz != null);
 
             AddCategoryCommand = new RelayCommand(async () => await AddCategory());
             EditCategoryCommand = new RelayCommand(async () => await EditCategory(), () => SelectedCategory != null);
@@ -94,57 +122,83 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         private async Task LoadInitialData()
         {
-            await LoadCategories();
-            await LoadQuizzes();
+            try
+            {
+                IsLoading = true;
+                await Task.WhenAll(LoadCategories(), LoadQuizzes());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load initial data: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsLoading = false;
+            }
         }
 
         private async Task LoadCategories()
         {
-            var cats = await _categoryService.GetAllAsync();
-            Categories = new ObservableCollection<CategoryDto>(cats);
-            OnPropertyChanged(nameof(Categories));
+            try
+            {
+                var categories = await _categoryService.GetAllAsync();
+                Categories = new ObservableCollection<CategoryDto>(categories);
+                OnPropertyChanged(nameof(Categories));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load categories: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Categories.Clear();
+            }
         }
 
         private async Task LoadQuizzes()
         {
-            var quizzes = await _quizService.GetAllAsync();
-            Quizzes = new ObservableCollection<QuizDto>(quizzes);
-            OnPropertyChanged(nameof(Quizzes));
+            try
+            {
+                var quizzes = await _quizService.GetAllAsync();
+                Quizzes = new ObservableCollection<QuizDto>(quizzes);
+                OnPropertyChanged(nameof(Quizzes));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load quizzes: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+                Quizzes.Clear();
+            }
         }
 
         private void LoadQuestionsForSelectedQuiz()
         {
             Questions.Clear();
-            if (SelectedQuiz == null) return;
-
-            foreach (var question in SelectedQuiz.Questions)
-                Questions.Add(question);
-
+            if (SelectedQuiz?.Questions != null)
+            {
+                foreach (var question in SelectedQuiz.Questions)
+                    Questions.Add(question);
+            }
             OnPropertyChanged(nameof(Questions));
         }
 
-        // CRUD Methods
+        // CRUD Methods with improved error handling
 
         private async Task AddQuiz()
         {
-            var dialogVM = new QuizDialogViewModel(_quizService, Categories);
-            var dialog = new QuizDialog(dialogVM) { Owner = Application.Current.MainWindow };
-
-            if (dialog.ShowDialog() == true)
+            try
             {
-                try
+                var dialogVM = new QuizDialogViewModel(_quizService, new ObservableCollection<CategoryDto>(Categories));
+                var dialog = new QuizDialog(dialogVM) { Owner = Application.Current.MainWindow };
+
+                if (dialog.ShowDialog() == true)
                 {
-                    var createdQuiz = await _quizService.CreateAsync(dialogVM.Quiz, dialogVM.SelectedQuestionIds);
-                    if (createdQuiz != null)
-                    {
-                        Quizzes.Add(createdQuiz);
-                        SelectedQuiz = createdQuiz;
-                    }
+                    await LoadQuizzes(); // Reload to get the newly created quiz
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to add quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening quiz dialog: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -152,25 +206,20 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             if (SelectedQuiz == null) return;
 
-            var dialogVM = new QuizDialogViewModel(_quizService, Categories, SelectedQuiz);
-            var dialog = new QuizDialog(dialogVM) { Owner = Application.Current.MainWindow };
-
-            if (dialog.ShowDialog() == true)
+            try
             {
-                try
+                var dialogVM = new QuizDialogViewModel(_quizService, new ObservableCollection<CategoryDto>(Categories), SelectedQuiz);
+                var dialog = new QuizDialog(dialogVM) { Owner = Application.Current.MainWindow };
+
+                if (dialog.ShowDialog() == true)
                 {
-                    bool success = await _quizService.UpdateAsync(dialogVM.Quiz);
-                    if (success)
-                    {
-                        int index = Quizzes.IndexOf(SelectedQuiz);
-                        Quizzes[index] = dialogVM.Quiz;
-                        SelectedQuiz = dialogVM.Quiz;
-                    }
+                    await LoadQuizzes(); // Reload to reflect changes
                 }
-                catch (Exception ex)
-                {
-                    MessageBox.Show($"Failed to update quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error editing quiz: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -178,8 +227,8 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             if (SelectedQuiz == null) return;
 
-            var confirm = MessageBox.Show($"Are you sure you want to delete the quiz '{SelectedQuiz.Title}'?",
-                                          "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            var confirm = MessageBox.Show($"Are you sure you want to delete '{SelectedQuiz.Title}'?",
+                "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
 
             if (confirm != MessageBoxResult.Yes) return;
 
@@ -193,13 +242,26 @@ namespace QuizApp.WPF.ViewModels.Admin
                 }
                 else
                 {
-                    MessageBox.Show("Failed to delete the quiz.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Failed to delete the quiz.", "Error",
+                        MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error deleting quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error deleting quiz: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        // Methods for the new commands
+        private void ShowAddCategory()
+        {
+            MessageBox.Show("Add category overlay - to be implemented");
+        }
+
+        private void ShowAddQuestion()
+        {
+            MessageBox.Show("Add question overlay - to be implemented");
         }
 
         // Placeholder methods for categories, questions, options
@@ -219,6 +281,4 @@ namespace QuizApp.WPF.ViewModels.Admin
         public static Task AsTask(this MessageBoxResult _) => Task.CompletedTask;
         public static Task AsTask(this MessageBox _) => Task.CompletedTask;
     }
-
-
 }

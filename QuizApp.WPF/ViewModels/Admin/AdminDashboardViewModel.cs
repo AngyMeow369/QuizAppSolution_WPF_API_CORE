@@ -38,12 +38,17 @@ namespace QuizApp.WPF.ViewModels.Admin
             _authService = authService ?? throw new System.ArgumentNullException(nameof(authService));
 
             _userService = new UserService(_authService);
-            _categoryService = new CategoryService(_authService);
+
+            // Fix CategoryService initialization
+            const string baseApiUrl = "https://localhost:7075";
+            var categoryApi = Refit.RestService.For<QuizApp.WPF.Services.Interfaces.ICategoryApi>(baseApiUrl);
+            _categoryService = new CategoryService(categoryApi, _authService);
+
             _questionService = new QuestionService(_authService);
 
             // Ensure QuizService gets its IQuizApi dependency properly
-            const string baseApiUrl = "https://localhost:7075"; // ✅ Change this to your API URL
-            var quizApi = Refit.RestService.For<QuizApp.WPF.Services.Interfaces.IQuizApi>(baseApiUrl); _quizService = new QuizService(quizApi, _authService);
+            var quizApi = Refit.RestService.For<QuizApp.WPF.Services.Interfaces.IQuizApi>(baseApiUrl);
+            _quizService = new QuizService(quizApi, _authService);
 
             LoadDataCommand = new RelayCommand(async () => await LoadAllDataAsync());
 
