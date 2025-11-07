@@ -1,67 +1,53 @@
 ﻿<UserControl x:Class="QuizApp.WPF.Views.Admin.ManageQuizzesView"
           xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
           xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-          xmlns:admin="clr-namespace:QuizApp.WPF.Views.Admin"
-          Background="#F8FAFC"
-          FontFamily="Segoe UI">
+          xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+          xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+          mc:Ignorable="d"
+          d:DesignHeight="600" d:DesignWidth="900">
 
-	<UserControl.Resources>
-		<BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-	</UserControl.Resources>
+    <Grid Background="#F5F6FA" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <TextBlock Text="Manage Quizzes" FontSize="24" FontWeight="Bold" Margin="10"/>
 
-	<Grid Margin="20">
-		<!-- Main content -->
-		<Grid x:Name="MainGrid">
-			<Grid.RowDefinitions>
-				<RowDefinition Height="Auto"/>
-				<RowDefinition Height="*"/>
-			</Grid.RowDefinitions>
+        <Grid Grid.Row="1" Margin="0,10,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="2*"/>
+            </Grid.ColumnDefinitions>
 
-			<!-- Header -->
-			<DockPanel Grid.Row="0" Margin="0,0,0,15">
-				<TextBlock Text="Manage Quizzes"
-						   FontSize="24"
-						   FontWeight="SemiBold"
-						   Foreground="#1F2937"
-						   VerticalAlignment="Center"
-						   DockPanel.Dock="Left"/>
-				<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" DockPanel.Dock="Right">
-					<Button Content="➕ Add Quiz" Command="{Binding ShowAddQuestionCommand}" Margin="10,0"/>
-					<Button Content="✏️ Edit" Command="{Binding EditQuizCommand}" Margin="10,0"/>
-					<Button Content="🗑 Delete" Command="{Binding DeleteQuizCommand}" Margin="10,0"/>
-					<Button Content="📋 Assign" Command="{Binding AssignQuizCommand}" Margin="10,0"/>
-					<Button Content="➕ Add Category" Command="{Binding ShowAddCategoryCommand}" Margin="10,0"/>
-				</StackPanel>
-			</DockPanel>
+            <!-- Quiz List -->
+            <Border Grid.Column="0" Background="White" CornerRadius="8" Padding="10" Margin="0,0,10,0" BorderBrush="#DDD" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Quizzes" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,10"/>
+                    <ListBox ItemsSource="{Binding Quizzes}" SelectedItem="{Binding SelectedQuiz}" DisplayMemberPath="Title"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="Add Quiz" Width="80" Margin="0,0,5,0" Command="{Binding AddQuizCommand}"/>
+                        <Button Content="Edit" Width="60" Margin="0,0,5,0" Command="{Binding EditQuizCommand}"/>
+                        <Button Content="Delete" Width="60" Command="{Binding DeleteQuizCommand}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
 
-			<!-- DataGrid -->
-			<DataGrid Grid.Row="1"
-					  ItemsSource="{Binding Quizzes}"
-					  SelectedItem="{Binding SelectedQuiz, Mode=TwoWay}"
-					  AutoGenerateColumns="False"
-					  CanUserAddRows="False"
-					  CanUserDeleteRows="False"
-					  IsReadOnly="True"
-					  RowHeight="40">
-				<DataGrid.Columns>
-					<DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="80"/>
-					<DataGridTextColumn Header="Title" Binding="{Binding Title}" Width="*"/>
-					<DataGridTextColumn Header="Category" Binding="{Binding Category.Name}" Width="150"/>
-				</DataGrid.Columns>
-			</DataGrid>
-		</Grid>
+            <!-- Categories & Overlay Placeholder -->
+            <Border Grid.Column="1" Background="White" CornerRadius="8" Padding="10" BorderBrush="#DDD" BorderThickness="1">
+                <StackPanel>
+                    <TextBlock Text="Categories" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,10"/>
+                    <ListBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" DisplayMemberPath="Name"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="Add Category" Width="100" Margin="0,0,5,0" Command="{Binding ShowAddCategoryCommand}"/>
+                        <Button Content="Add Question" Width="100" Command="{Binding ShowAddQuestionCommand}"/>
+                    </StackPanel>
 
-		<!-- Single overlay container -->
-		<Grid Visibility="{Binding IsOverlayVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-			<Border Background="#80000000"
-					HorizontalAlignment="Stretch"
-					VerticalAlignment="Stretch"/>
-
-			<ContentControl Content="{Binding CurrentOverlay}"
-							HorizontalAlignment="Center"
-							VerticalAlignment="Center"/>
-		</Grid>
-	</Grid>
-	
+                    <!-- Placeholder for overlay content -->
+                    <ContentControl Content="{Binding CurrentOverlay}" Visibility="{Binding IsOverlayVisible, Converter={StaticResource BooleanToVisibilityConverter}}" Margin="0,10,0,0"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </Grid>
+  
 
 </UserControl>

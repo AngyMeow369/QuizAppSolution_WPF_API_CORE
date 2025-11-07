@@ -143,8 +143,11 @@
 
         <!-- Main Content -->
         <ContentControl Grid.Column="1"
-                    Margin="20"
-                    Content="{Binding CurrentView}"/>
+                Margin="20"
+                Content="{Binding CurrentView}"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"/>
+
     </Grid>
     
 

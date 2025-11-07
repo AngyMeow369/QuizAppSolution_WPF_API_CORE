@@ -16,8 +16,7 @@ namespace QuizApp.WPF.ViewModels.Admin
         private readonly QuestionService _questionService;
         private readonly QuizService _quizService;
 
-
-    private bool _isLoading;
+        private bool _isLoading;
         public bool IsLoading
         {
             get => _isLoading;
@@ -41,11 +40,13 @@ namespace QuizApp.WPF.ViewModels.Admin
             _userService = new UserService(_authService);
             _categoryService = new CategoryService(_authService);
             _questionService = new QuestionService(_authService);
-            _quizService = new QuizService(_authService);
+
+            // Ensure QuizService gets its IQuizApi dependency properly
+            const string baseApiUrl = "https://localhost:7075"; // ✅ Change this to your API URL
+            var quizApi = Refit.RestService.For<QuizApp.WPF.Services.Interfaces.IQuizApi>(baseApiUrl); _quizService = new QuizService(quizApi, _authService);
 
             LoadDataCommand = new RelayCommand(async () => await LoadAllDataAsync());
 
-            // Load initial data automatically  
             _ = LoadAllDataAsync();
         }
 
@@ -64,8 +65,6 @@ namespace QuizApp.WPF.ViewModels.Admin
             {
                 IsLoading = false;
             }
-
-
         }
 
         private async Task LoadUsersAsync()
@@ -92,8 +91,6 @@ namespace QuizApp.WPF.ViewModels.Admin
             {
                 MessageBox.Show($"Error loading users: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-
-
         }
 
         private async Task LoadCategoriesAsync()
@@ -103,12 +100,15 @@ namespace QuizApp.WPF.ViewModels.Admin
                 var categories = await _categoryService.GetAllAsync();
                 var questions = await _questionService.GetAllAsync();
 
-                var questionsByCategory = questions.GroupBy(q => q.CategoryId).ToDictionary(g => g.Key, g => g.ToList());
+                var questionsByCategory = questions.GroupBy(q => q.CategoryId)
+                                                   .ToDictionary(g => g.Key, g => g.ToList());
 
                 Categories.Clear();
                 foreach (var cat in categories)
                 {
-                    cat.Questions = questionsByCategory.TryGetValue(cat.Id, out var catQuestions) ? catQuestions : new System.Collections.Generic.List<QuestionDto>();
+                    cat.Questions = questionsByCategory.TryGetValue(cat.Id, out var catQuestions)
+                        ? catQuestions
+                        : new System.Collections.Generic.List<QuestionDto>();
                     Categories.Add(cat);
                 }
             }
@@ -125,9 +125,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                 var questions = await _questionService.GetAllAsync();
                 Questions.Clear();
                 foreach (var q in questions)
-                {
                     Questions.Add(q);
-                }
             }
             catch (System.Exception ex)
             {
@@ -139,7 +137,7 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             try
             {
-                var quizzes = await _quizService.GetQuizzesAsync();
+                var quizzes = await _quizService.GetAllAsync();
                 Quizzes.Clear();
                 foreach (var q in quizzes)
                 {
@@ -148,7 +146,9 @@ namespace QuizApp.WPF.ViewModels.Admin
                         Id = q.Id,
                         Title = q.Title,
                         StartTime = q.StartTime,
-                        EndTime = q.EndTime
+                        EndTime = q.EndTime,
+                        CategoryId = q.CategoryId,
+                        CategoryName = q.CategoryName
                     });
                 }
             }
@@ -157,7 +157,5 @@ namespace QuizApp.WPF.ViewModels.Admin
                 MessageBox.Show($"Error loading quizzes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-    }  
-
-
+    }
 }

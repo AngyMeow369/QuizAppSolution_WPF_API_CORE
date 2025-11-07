@@ -1,6 +1,7 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 using System.Windows;
 
 namespace QuizApp.WPF.ViewModels.Admin
@@ -9,7 +10,7 @@ namespace QuizApp.WPF.ViewModels.Admin
     {
         private readonly QuizService _quizService;
 
-        public ObservableCollection<Quiz> Quizzes { get; set; } = new ObservableCollection<Quiz>();
+        public ObservableCollection<QuizDto> Quizzes { get; set; } = new();
 
         private bool _isLoading;
         public bool IsLoading
@@ -20,8 +21,7 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         public AnalyticsViewModel(QuizService quizService)
         {
-            _quizService = quizService;
-
+            _quizService = quizService ?? throw new ArgumentNullException(nameof(quizService));
             _ = LoadAnalytics();
         }
 
@@ -30,16 +30,16 @@ namespace QuizApp.WPF.ViewModels.Admin
             try
             {
                 IsLoading = true;
-                var quizzes = await _quizService.GetQuizzesAsync();
+                var quizzes = await _quizService.GetAllAsync();
                 Quizzes.Clear();
                 foreach (var quiz in quizzes)
                     Quizzes.Add(quiz);
 
-                // TODO: Load additional analytics, e.g., scores, completion rates
+                // TODO: Load additional analytics (scores, completion rates, etc.)
             }
-            catch (System.Exception ex)
+            catch (Exception ex)
             {
-                MessageBox.Show($"Failed to load analytics: {ex.Message}");
+                MessageBox.Show($"Failed to load analytics: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {

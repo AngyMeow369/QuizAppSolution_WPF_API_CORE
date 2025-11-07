@@ -77,22 +77,33 @@ namespace QuizApp.API.Controllers
         // POST: api/quizzes
         // -----------------------------
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<Quiz>>> Create([FromBody] Quiz quiz, [FromQuery] List<int>? questionIds)
+        public async Task<ActionResult<ApiResponse<QuizDto>>> Create([FromBody] QuizDto dto, [FromQuery] List<int>? questionIds)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(quiz.Title))
-                    return BadRequest(ApiResponse<Quiz>.CreateFailure("Quiz title is required."));
+                if (string.IsNullOrWhiteSpace(dto.Title))
+                    return BadRequest(ApiResponse<QuizDto>.CreateFailure("Quiz title is required."));
 
-                // Validate time range
-                if (quiz.StartTime >= quiz.EndTime)
-                    return BadRequest(ApiResponse<Quiz>.CreateFailure("End time must be after start time."));
+                if (dto.StartTime >= dto.EndTime)
+                    return BadRequest(ApiResponse<QuizDto>.CreateFailure("End time must be after start time."));
 
-                // Add quiz
+                var category = await _context.Categories.FindAsync(dto.CategoryId);
+                if (category == null)
+                    return BadRequest(ApiResponse<QuizDto>.CreateFailure("Invalid category ID."));
+
+                var quiz = new Quiz
+                {
+                    Title = dto.Title,
+                    StartTime = dto.StartTime,
+                    EndTime = dto.EndTime,
+                    CategoryId = dto.CategoryId,
+                    Category = category
+                };
+
                 _context.Quizzes.Add(quiz);
                 await _context.SaveChangesAsync();
 
-                // Assign questions
+                // Assign questions if provided
                 if (questionIds != null && questionIds.Any())
                 {
                     foreach (var qId in questionIds)
@@ -110,20 +121,32 @@ namespace QuizApp.API.Controllers
                     await _context.SaveChangesAsync();
                 }
 
-                // Reload the quiz with related data
+                // Re-fetch with includes to build response
                 var createdQuiz = await _context.Quizzes
-                                                .Include(q => q.QuizQuestions)
-                                                    .ThenInclude(qq => qq.Question)
-                                                .FirstOrDefaultAsync(q => q.Id == quiz.Id);
+                    .Include(q => q.Category)
+                    .Include(q => q.QuizQuestions)
+                        .ThenInclude(qq => qq.Question)
+                    .FirstOrDefaultAsync(q => q.Id == quiz.Id);
+
+                var responseDto = new QuizDto
+                {
+                    Id = createdQuiz!.Id,
+                    Title = createdQuiz.Title,
+                    StartTime = createdQuiz.StartTime,
+                    EndTime = createdQuiz.EndTime,
+                    CategoryId = createdQuiz.CategoryId,
+                    CategoryName = createdQuiz.Category?.Name ?? string.Empty
+                };
 
                 return CreatedAtAction(nameof(GetById), new { id = quiz.Id },
-                    ApiResponse<Quiz>.CreateSuccess(createdQuiz, "Quiz created successfully."));
+                    ApiResponse<QuizDto>.CreateSuccess(responseDto, "Quiz created successfully."));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<Quiz>.CreateFailure($"Error creating quiz: {ex.Message}"));
+                return StatusCode(500, ApiResponse<QuizDto>.CreateFailure($"Error creating quiz: {ex.Message}"));
             }
         }
+
 
         // -----------------------------
         // PUT: api/quizzes/{id}

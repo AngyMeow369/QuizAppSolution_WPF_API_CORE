@@ -1,5 +1,8 @@
 ﻿using QuizApp.WPF.Services;
 using QuizApp.WPF.ViewModels.Admin;
+using Refit;
+using QuizApp.WPF.Services.Interfaces;
+
 using System.Windows.Input;
 
 namespace QuizApp.WPF.ViewModels.Admin
@@ -31,8 +34,8 @@ namespace QuizApp.WPF.ViewModels.Admin
             _authService = authService;
 
             // ✅ Create service instances
-            var quizService = new QuizService(_authService);
-            var userService = new UserService(_authService);
+            var quizApi = RestService.For<IQuizApi>("https://localhost:7016");
+            var quizService = new QuizService(quizApi, _authService); var userService = new UserService(_authService);
             var categoryService = new CategoryService(_authService); // <-- ADD THIS
 
             // ✅ Pass both quizService and categoryService where needed

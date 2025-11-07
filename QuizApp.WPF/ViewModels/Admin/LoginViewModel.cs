@@ -96,10 +96,8 @@ namespace QuizApp.WPF.ViewModels.Admin
 
                         if (loginData.Role == "Admin")
                         {
-                            // Pass the same AuthService instance to AdminMainViewModel
-                            var adminVM = new AdminMainViewModel(_authService);
-                            var adminWindow = new AdminMainWindow();
-                            adminWindow.DataContext = adminVM;
+                            // ✅ Pass the same AuthService instance into the AdminMainWindow constructor
+                            var adminWindow = new AdminMainWindow(_authService);
                             mainWindow = adminWindow;
                         }
                         else if (loginData.Role == "User")
@@ -112,6 +110,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                             MessageBox.Show($"Unknown role: {loginData.Role}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                             return;
                         }
+
 
                         mainWindow.Show();
 

@@ -1,7 +1,9 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services.Interfaces;
-using QuizApp.Shared.DTOs;
 using Refit;
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace QuizApp.WPF.Services
 {
@@ -10,59 +12,70 @@ namespace QuizApp.WPF.Services
         private readonly IQuizApi _quizApi;
         private readonly IAuthService _authService;
 
+        public QuizService(IQuizApi quizApi, IAuthService authService)
+        {
+            _quizApi = quizApi;
+            _authService = authService;
+        }
+
         public QuizService(IAuthService authService)
         {
             _authService = authService;
-            _quizApi = RestService.For<IQuizApi>("https://localhost:7016");
+            const string apiBase = "https://localhost:7016";
+            _quizApi = RestService.For<IQuizApi>(apiBase);
         }
 
-        public async Task<List<Quiz>> GetQuizzesAsync()
+        private string GetAuthHeader()
         {
-            var token = _authService.GetToken();
-            var response = await _quizApi.GetAllQuizzesAsync($"Bearer {token}");
-            return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to load quizzes");
+            var token = _authService.GetToken() ?? string.Empty;
+            return token.StartsWith("Bearer") ? token : $"Bearer {token}";
         }
 
-        public async Task<Quiz> GetQuizByIdAsync(int id)
+        public async Task<List<QuizDto>> GetAllAsync()
         {
-            var token = _authService.GetToken();
-            var response = await _quizApi.GetQuizByIdAsync(id, $"Bearer {token}");
-            return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to load quiz");
+            var token = GetAuthHeader();
+            var response = await _quizApi.GetAllQuizzesAsync(token);
+            if (response?.Success != true) throw new Exception(response?.Message ?? "Failed to load quizzes.");
+            return response.Data ?? new List<QuizDto>();
         }
 
-        public async Task<Quiz> CreateQuizAsync(Quiz quiz, List<int> questionIds)
+        public async Task<QuizDto?> GetByIdAsync(int id)
         {
-            var token = _authService.GetToken();
-            var response = await _quizApi.CreateQuizAsync(quiz, questionIds, $"Bearer {token}");
-            return response.Success && response.Data != null ? response.Data : throw new Exception(response.Message ?? "Failed to create quiz");
+            var token = GetAuthHeader();
+            var response = await _quizApi.GetQuizByIdAsync(id, token);
+            if (response?.Success != true) throw new Exception(response?.Message ?? $"Failed to load quiz {id}");
+            return response.Data;
         }
 
-        public async Task UpdateQuizAsync(Quiz quiz)
+        public async Task<QuizDto?> CreateAsync(QuizDto quiz, List<int> questionIds)
         {
-            var token = _authService.GetToken();
-            var response = await _quizApi.UpdateQuizAsync(quiz.Id, quiz, $"Bearer {token}");
-            if (!response.Success) throw new Exception(response.Message ?? "Failed to update quiz");
+            var response = await _quizApi.CreateQuizAsync(quiz, questionIds, GetAuthHeader());
+            return response?.Data;
         }
 
-        public async Task DeleteQuizAsync(int quizId)
+        public async Task<bool> UpdateAsync(QuizDto quiz)
         {
-            var token = _authService.GetToken();
-            var response = await _quizApi.DeleteQuizAsync(quizId, $"Bearer {token}");
-            if (!response.Success) throw new Exception(response.Message ?? "Failed to delete quiz");
+            var response = await _quizApi.UpdateQuizAsync(quiz.Id, quiz, GetAuthHeader());
+            return response?.Success ?? false;
         }
 
-        public async Task AssignQuizToUserAsync(int quizId, int userId)
+        public async Task<bool> DeleteAsync(int id)
         {
-            var token = _authService.GetToken();
-            var response = await _quizApi.AssignQuizAsync(quizId, userId, $"Bearer {token}");
-            if (!response.Success) throw new Exception(response.Message ?? "Failed to assign quiz");
+            var response = await _quizApi.DeleteQuizAsync(id, GetAuthHeader());
+            return response?.Success ?? false;
         }
 
-        public async Task RemoveQuizAssignmentAsync(int quizId, int userId)
+        public async Task<bool> AssignQuizAsync(int quizId, int userId)
         {
-            var token = _authService.GetToken();
-            var response = await _quizApi.RemoveAssignmentAsync(quizId, userId, $"Bearer {token}");
-            if (!response.Success) throw new Exception(response.Message ?? "Failed to remove assignment");
+            var response = await _quizApi.AssignQuizAsync(quizId, userId, GetAuthHeader());
+            return response?.Success ?? false;
+        }
+
+        public async Task<bool> RemoveAssignmentAsync(int quizId, int userId)
+        {
+            var response = await _quizApi.RemoveAssignmentAsync(quizId, userId, GetAuthHeader());
+            return response?.Success ?? false;
         }
     }
+
 }
