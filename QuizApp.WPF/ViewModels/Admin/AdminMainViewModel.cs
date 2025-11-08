@@ -1,6 +1,7 @@
 ﻿using QuizApp.WPF.Services;
 using QuizApp.WPF.ViewModels.Admin;
 using Refit;
+using System.Text.Json;
 using QuizApp.WPF.Services.Interfaces;
 using System.Windows.Input;
 
@@ -33,14 +34,23 @@ namespace QuizApp.WPF.ViewModels.Admin
             // ✅ Create service instances with proper dependencies
             const string baseApiUrl = "https://localhost:7016";
 
-            var quizApi = RestService.For<IQuizApi>(baseApiUrl);
-            var quizService = new QuizService(quizApi, _authService);
+            var refitSettings = new RefitSettings
+            {
+                ContentSerializer = new SystemTextJsonContentSerializer(
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    })
+            };
+
+            var quizApi = RestService.For<IQuizApi>(baseApiUrl, refitSettings); var quizService = new QuizService(quizApi, _authService);
 
             var userService = new UserService(_authService);
 
             // ✅ Fix CategoryService - add ICategoryApi dependency
-            var categoryApi = RestService.For<ICategoryApi>(baseApiUrl);
+            var categoryApi = RestService.For<ICategoryApi>(baseApiUrl, refitSettings);
             var categoryService = new CategoryService(categoryApi, _authService);
+
 
             // ✅ Pass both quizService and categoryService where needed
             NavigateToDashboardCommand = new RelayCommand(() =>

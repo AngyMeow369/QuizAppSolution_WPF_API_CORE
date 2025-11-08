@@ -1,6 +1,7 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,7 +13,8 @@ namespace QuizApp.WPF.ViewModels.Admin
     public class QuizDialogViewModel : ObservableObject
     {
         private readonly QuizService _quizService;
-        public ObservableCollection<CategoryDto> Categories { get; set; }
+
+        public ObservableCollection<CategoryDto> Categories { get; set; } = new();
         public ObservableCollection<QuestionDto> SelectedQuestions { get; set; } = new();
         public List<int> SelectedQuestionIds { get; set; } = new();
 
@@ -23,18 +25,35 @@ namespace QuizApp.WPF.ViewModels.Admin
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
 
-        public event Action<bool?>? CloseRequested; // Event to signal dialog close
+        // Commands for Today/Yesterday buttons with private setter
+        public ICommand SetStartTimeTodayCommand { get; private set; }
+        public ICommand SetStartTimeYesterdayCommand { get; private set; }
+        public ICommand SetEndTimeTodayCommand { get; private set; }
+        public ICommand SetEndTimeYesterdayCommand { get; private set; }
+
+        public event Action<bool?>? CloseRequested;
 
         // Constructor for Add mode
         public QuizDialogViewModel(QuizService quizService, ObservableCollection<CategoryDto> categories)
         {
             _quizService = quizService;
             Categories = categories;
-            Quiz = new QuizDto();
+
+            Quiz = new QuizDto
+            {
+                StartTime = DateTime.Now,
+                EndTime = DateTime.Now.AddHours(1)
+            };
             IsEditMode = false;
 
             SaveCommand = new RelayCommand(async () => await Save());
             CancelCommand = new RelayCommand(() => CloseRequested?.Invoke(false));
+
+            // Assign date commands
+            SetStartTimeTodayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now);
+            SetStartTimeYesterdayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now.AddDays(-1));
+            SetEndTimeTodayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now);
+            SetEndTimeYesterdayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now.AddDays(-1));
         }
 
         // Constructor for Edit mode
@@ -42,6 +61,7 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             _quizService = quizService;
             Categories = categories;
+
             Quiz = new QuizDto
             {
                 Id = existingQuiz.Id,
@@ -51,11 +71,18 @@ namespace QuizApp.WPF.ViewModels.Admin
                 EndTime = existingQuiz.EndTime,
                 Questions = new List<QuestionDto>(existingQuiz.Questions)
             };
+
             SelectedQuestions = new ObservableCollection<QuestionDto>(Quiz.Questions);
             IsEditMode = true;
 
             SaveCommand = new RelayCommand(async () => await Save());
             CancelCommand = new RelayCommand(() => CloseRequested?.Invoke(false));
+
+            // Assign date commands
+            SetStartTimeTodayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now);
+            SetStartTimeYesterdayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now.AddDays(-1));
+            SetEndTimeTodayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now);
+            SetEndTimeYesterdayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now.AddDays(-1));
         }
 
         private async Task Save()
@@ -83,7 +110,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                         throw new Exception("Failed to create quiz.");
                 }
 
-                CloseRequested?.Invoke(true); // Close dialog with "true" result
+                CloseRequested?.Invoke(true);
             }
             catch (Exception ex)
             {

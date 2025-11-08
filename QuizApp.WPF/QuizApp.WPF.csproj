@@ -20,6 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="Extended.Wpf.Toolkit" Version="5.0.0" />
 	  <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.10" />
 	  <PackageReference Include="Refit" Version="8.0.0" />
 	  <PackageReference Include="Refit.HttpClientFactory" Version="8.0.0" />
