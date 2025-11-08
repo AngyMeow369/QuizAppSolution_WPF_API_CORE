@@ -95,6 +95,12 @@ namespace QuizApp.WPF.ViewModels.Admin
                     return;
                 }
 
+                if (Quiz.CategoryId == 0) // Add this check
+                {
+                    MessageBox.Show("Please select a category for the quiz.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
                 Quiz.Questions = SelectedQuestions.ToList();
 
                 if (IsEditMode)
