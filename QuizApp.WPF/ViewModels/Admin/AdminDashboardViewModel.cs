@@ -40,7 +40,7 @@ namespace QuizApp.WPF.ViewModels.Admin
             _userService = new UserService(_authService);
 
             // Fix CategoryService initialization
-            const string baseApiUrl = "https://localhost:7075";
+            const string baseApiUrl = "https://localhost:7016";
             var categoryApi = Refit.RestService.For<QuizApp.WPF.Services.Interfaces.ICategoryApi>(baseApiUrl);
             _categoryService = new CategoryService(categoryApi, _authService);
 
