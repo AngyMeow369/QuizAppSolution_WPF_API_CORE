@@ -1,4 +1,5 @@
-﻿using QuizApp.Shared.DTOs;
+﻿using QuizApp.API.DTOs;
+using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Admin;
 using System;
@@ -76,6 +77,10 @@ namespace QuizApp.WPF.ViewModels.Admin
         public ICommand DeleteQuizCommand { get; }
         public ICommand ShowAddCategoryCommand { get; }
         public ICommand ShowAddQuestionCommand { get; }
+        public ICommand AddCategoryCommand { get; }
+        public ICommand EditCategoryCommand { get; }
+        public ICommand DeleteCategoryCommand { get; }
+
 
         public ManageQuizzesViewModel(QuizService quizService, CategoryService categoryService)
         {
@@ -89,8 +94,97 @@ namespace QuizApp.WPF.ViewModels.Admin
             ShowAddCategoryCommand = new RelayCommand(() => ShowAddCategory());
             ShowAddQuestionCommand = new RelayCommand(() => ShowAddQuestion(), () => SelectedQuiz != null);
 
+            AddCategoryCommand = new RelayCommand(async () => await AddCategory());
+            EditCategoryCommand = new RelayCommand(async () => await EditCategory(), () => SelectedCategory != null);
+            DeleteCategoryCommand = new RelayCommand(async () => await DeleteCategory(), () => SelectedCategory != null);
+
+
             _ = LoadInitialData();
         }
+
+        private async Task AddCategory()
+        {
+            var name = Microsoft.VisualBasic.Interaction.InputBox("Enter category name:", "Add Category", "");
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            try
+            {
+                var newCategory = new CategoryDto { Name = name };
+                var createdCategory = await _categoryService.CreateAsync(newCategory);
+                if (createdCategory != null)
+                {
+                    Categories.Add(createdCategory);
+                }
+                else
+                {
+                    MessageBox.Show("Failed to create category.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error adding category: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async Task EditCategory()
+        {
+            if (SelectedCategory == null) return;
+
+            var name = Microsoft.VisualBasic.Interaction.InputBox("Edit category name:", "Edit Category", SelectedCategory.Name);
+            if (string.IsNullOrWhiteSpace(name)) return;
+
+            try
+            {
+                var updatedCategory = new CategoryDto
+                {
+                    Id = SelectedCategory.Id,
+                    Name = name
+                };
+
+                var success = await _categoryService.UpdateAsync(updatedCategory);
+                if (success)
+                {
+                    SelectedCategory.Name = name;
+                    MessageBox.Show("Category updated successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
+                }
+                else
+                {
+                    MessageBox.Show("Failed to update category.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error editing category: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+        private async Task DeleteCategory()
+        {
+            if (SelectedCategory == null) return;
+
+            var confirm = MessageBox.Show($"Delete category '{SelectedCategory.Name}'?", "Confirm Delete", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (confirm != MessageBoxResult.Yes) return;
+
+            try
+            {
+                var success = await _categoryService.DeleteAsync(SelectedCategory.Id);
+                if (success)
+                {
+                    Categories.Remove(SelectedCategory);
+                    SelectedCategory = null;
+                }
+                else
+                {
+                    MessageBox.Show("Failed to delete category.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                }
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error deleting category: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
 
         private async Task LoadInitialData()
         {

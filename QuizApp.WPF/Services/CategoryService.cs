@@ -1,6 +1,5 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services.Interfaces;
-using Refit;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -33,88 +32,60 @@ namespace QuizApp.WPF.Services
 
         public async Task<List<CategoryDto>> GetAllAsync()
         {
-            try
-            {
-                var token = GetAuthHeader();
-                var response = await _categoryApi.GetAllCategoriesAsync(token);
+            var token = GetAuthHeader();
+            var response = await _categoryApi.GetAllCategoriesAsync(token);
 
-                if (response?.Success == true && response.Data != null)
-                    return response.Data;
+            if (response?.Success == true && response.Data != null)
+                return response.Data;
 
-                throw new Exception(response?.Message ?? "Failed to load categories");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error loading categories: {ex.Message}");
-            }
+            throw new Exception(response?.Message ?? "Failed to load categories");
         }
 
         public async Task<CategoryDto> GetByIdAsync(int id)
         {
-            try
-            {
-                var token = GetAuthHeader();
-                var response = await _categoryApi.GetCategoryByIdAsync(id, token);
+            var token = GetAuthHeader();
+            var response = await _categoryApi.GetCategoryByIdAsync(id, token);
 
-                if (response?.Success == true && response.Data != null)
-                    return response.Data;
+            if (response?.Success == true && response.Data != null)
+                return response.Data;
 
-                throw new Exception(response?.Message ?? $"Failed to load category {id}");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error loading category {id}: {ex.Message}");
-            }
+            throw new Exception(response?.Message ?? $"Failed to load category {id}");
         }
 
         public async Task<CategoryDto> CreateAsync(CategoryDto category)
         {
-            try
-            {
-                var token = GetAuthHeader();
-                var response = await _categoryApi.CreateCategoryAsync(category, token);
+            var token = GetAuthHeader();
+            var response = await _categoryApi.CreateCategoryAsync(category, token);
 
-                if (response?.Success == true && response.Data != null)
-                    return response.Data;
+            if (response?.Success == true && response.Data != null)
+                return response.Data;
 
-                throw new Exception(response?.Message ?? "Failed to create category");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error creating category: {ex.Message}");
-            }
+            throw new Exception(response?.Message ?? "Failed to create category");
         }
 
-        public async Task UpdateAsync(CategoryDto category)
+        public async Task<bool> UpdateAsync(CategoryDto category)
         {
-            try
-            {
-                var token = GetAuthHeader();
-                var response = await _categoryApi.UpdateCategoryAsync(category.Id, category, token);
+            if (category == null)
+                throw new ArgumentNullException(nameof(category));
 
-                if (!response?.Success == true)
-                    throw new Exception(response?.Message ?? "Failed to update category");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error updating category: {ex.Message}");
-            }
+            var token = GetAuthHeader();
+            var response = await _categoryApi.UpdateCategoryAsync(category.Id, category, token);
+
+            if (response?.Success == true)
+                return true;
+
+            throw new Exception(response?.Message ?? "Failed to update category");
         }
 
-        public async Task DeleteAsync(int id)
+        public async Task<bool> DeleteAsync(int id)
         {
-            try
-            {
-                var token = GetAuthHeader();
-                var response = await _categoryApi.DeleteCategoryAsync(id, token);
+            var token = GetAuthHeader();
+            var response = await _categoryApi.DeleteCategoryAsync(id, token);
 
-                if (!response?.Success == true)
-                    throw new Exception(response?.Message ?? "Failed to delete category");
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"Error deleting category: {ex.Message}");
-            }
+            if (response?.Success == true)
+                return true;
+
+            throw new Exception(response?.Message ?? "Failed to delete category");
         }
     }
 }
