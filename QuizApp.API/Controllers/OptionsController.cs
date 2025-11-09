@@ -23,18 +23,26 @@ namespace QuizApp.API.Controllers
         // GET: api/options
         // -----------------------------
         [HttpGet]
-        public async Task<ActionResult<ApiResponse<List<Option>>>> GetAll()
+        public async Task<ActionResult<ApiResponse<List<OptionDto>>>> GetAll()
         {
             try
             {
                 var options = await _context.Options
-                                            .Include(o => o.Question)
-                                            .ToListAsync();
-                return Ok(ApiResponse<List<Option>>.CreateSuccess(options, "Options retrieved successfully."));
+                    .Include(o => o.Question)
+                    .Select(o => new OptionDto
+                    {
+                        Id = o.Id,
+                        Text = o.Text,
+                        IsCorrect = o.IsCorrect,
+                        QuestionId = o.QuestionId
+                    })
+                    .ToListAsync();
+
+                return Ok(ApiResponse<List<OptionDto>>.CreateSuccess(options, "Options retrieved successfully."));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<List<Option>>.CreateFailure($"Error retrieving options: {ex.Message}"));
+                return StatusCode(500, ApiResponse<List<OptionDto>>.CreateFailure($"Error retrieving options: {ex.Message}"));
             }
         }
 
@@ -42,22 +50,30 @@ namespace QuizApp.API.Controllers
         // GET: api/options/{id}
         // -----------------------------
         [HttpGet("{id}")]
-        public async Task<ActionResult<ApiResponse<Option>>> GetById(int id)
+        public async Task<ActionResult<ApiResponse<OptionDto>>> GetById(int id)
         {
             try
             {
                 var option = await _context.Options
-                                           .Include(o => o.Question)
-                                           .FirstOrDefaultAsync(o => o.Id == id);
+                    .Include(o => o.Question)
+                    .Where(o => o.Id == id)
+                    .Select(o => new OptionDto
+                    {
+                        Id = o.Id,
+                        Text = o.Text,
+                        IsCorrect = o.IsCorrect,
+                        QuestionId = o.QuestionId
+                    })
+                    .FirstOrDefaultAsync();
 
                 if (option == null)
-                    return NotFound(ApiResponse<Option>.CreateFailure("Option not found."));
+                    return NotFound(ApiResponse<OptionDto>.CreateFailure("Option not found."));
 
-                return Ok(ApiResponse<Option>.CreateSuccess(option, "Option retrieved successfully."));
+                return Ok(ApiResponse<OptionDto>.CreateSuccess(option, "Option retrieved successfully."));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<Option>.CreateFailure($"Error retrieving option: {ex.Message}"));
+                return StatusCode(500, ApiResponse<OptionDto>.CreateFailure($"Error retrieving option: {ex.Message}"));
             }
         }
 
@@ -65,31 +81,34 @@ namespace QuizApp.API.Controllers
         // POST: api/options
         // -----------------------------
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<Option>>> Create([FromBody] Option option)
+        public async Task<ActionResult<ApiResponse<OptionDto>>> Create([FromBody] OptionDto dto)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(option.Text))
-                    return BadRequest(ApiResponse<Option>.CreateFailure("Option text is required."));
+                if (string.IsNullOrWhiteSpace(dto.Text))
+                    return BadRequest(ApiResponse<OptionDto>.CreateFailure("Option text is required."));
 
-                var question = await _context.Questions.FindAsync(option.QuestionId);
+                var question = await _context.Questions.FindAsync(dto.QuestionId);
                 if (question == null)
-                    return BadRequest(ApiResponse<Option>.CreateFailure("Invalid QuestionId."));
+                    return BadRequest(ApiResponse<OptionDto>.CreateFailure("Invalid QuestionId."));
+
+                var option = new Option
+                {
+                    Text = dto.Text,
+                    IsCorrect = dto.IsCorrect,
+                    QuestionId = dto.QuestionId
+                };
 
                 _context.Options.Add(option);
                 await _context.SaveChangesAsync();
 
-                // Reload the option with related data
-                var createdOption = await _context.Options
-                                                  .Include(o => o.Question)
-                                                  .FirstOrDefaultAsync(o => o.Id == option.Id);
-
-                return CreatedAtAction(nameof(GetById), new { id = option.Id },
-                    ApiResponse<Option>.CreateSuccess(createdOption, "Option created successfully."));
+                dto.Id = option.Id;
+                return CreatedAtAction(nameof(GetById), new { id = dto.Id },
+                    ApiResponse<OptionDto>.CreateSuccess(dto, "Option created successfully."));
             }
             catch (Exception ex)
             {
-                return StatusCode(500, ApiResponse<Option>.CreateFailure($"Error creating option: {ex.Message}"));
+                return StatusCode(500, ApiResponse<OptionDto>.CreateFailure($"Error creating option: {ex.Message}"));
             }
         }
 
@@ -97,7 +116,7 @@ namespace QuizApp.API.Controllers
         // PUT: api/options/{id}
         // -----------------------------
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] Option updatedOption)
+        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] OptionDto dto)
         {
             try
             {
@@ -105,20 +124,16 @@ namespace QuizApp.API.Controllers
                 if (option == null)
                     return NotFound(ApiResponse<object>.CreateFailure("Option not found."));
 
-                if (string.IsNullOrWhiteSpace(updatedOption.Text))
+                if (string.IsNullOrWhiteSpace(dto.Text))
                     return BadRequest(ApiResponse<object>.CreateFailure("Option text is required."));
 
-                // Validate QuestionId if it's being changed
-                if (option.QuestionId != updatedOption.QuestionId)
-                {
-                    var question = await _context.Questions.FindAsync(updatedOption.QuestionId);
-                    if (question == null)
-                        return BadRequest(ApiResponse<object>.CreateFailure("Invalid QuestionId."));
-                }
+                var question = await _context.Questions.FindAsync(dto.QuestionId);
+                if (question == null)
+                    return BadRequest(ApiResponse<object>.CreateFailure("Invalid QuestionId."));
 
-                option.Text = updatedOption.Text;
-                option.IsCorrect = updatedOption.IsCorrect;
-                option.QuestionId = updatedOption.QuestionId;
+                option.Text = dto.Text;
+                option.IsCorrect = dto.IsCorrect;
+                option.QuestionId = dto.QuestionId;
 
                 await _context.SaveChangesAsync();
 

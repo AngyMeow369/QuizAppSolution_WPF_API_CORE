@@ -12,6 +12,7 @@ namespace QuizApp.Shared.DTOs
         private int _categoryId;
         private string _categoryName = string.Empty;
         private List<QuestionDto> _questions = new();
+        private List<int> _questionIds = new();  // ✅ Added
 
         public int Id { get; set; }
 
@@ -45,10 +46,18 @@ namespace QuizApp.Shared.DTOs
             set { _categoryName = value; OnPropertyChanged(nameof(CategoryName)); }
         }
 
+        // ✅ The full Question objects, used by WPF
         public List<QuestionDto> Questions
         {
             get => _questions;
             set { _questions = value; OnPropertyChanged(nameof(Questions)); }
+        }
+
+        // ✅ The question IDs only — used by API calls
+        public List<int> QuestionIds
+        {
+            get => _questionIds;
+            set { _questionIds = value; OnPropertyChanged(nameof(QuestionIds)); }
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
