@@ -152,7 +152,7 @@ namespace QuizApp.API.Controllers
         // PUT: api/quizzes/{id}
         // -----------------------------
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] Quiz updatedQuiz)
+        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] QuizDto dto)
         {
             try
             {
@@ -160,16 +160,16 @@ namespace QuizApp.API.Controllers
                 if (quiz == null)
                     return NotFound(ApiResponse<object>.CreateFailure("Quiz not found."));
 
-                if (string.IsNullOrWhiteSpace(updatedQuiz.Title))
+                if (string.IsNullOrWhiteSpace(dto.Title))
                     return BadRequest(ApiResponse<object>.CreateFailure("Quiz title is required."));
 
-                // Validate time range
-                if (updatedQuiz.StartTime >= updatedQuiz.EndTime)
+                if (dto.StartTime >= dto.EndTime)
                     return BadRequest(ApiResponse<object>.CreateFailure("End time must be after start time."));
 
-                quiz.Title = updatedQuiz.Title;
-                quiz.StartTime = updatedQuiz.StartTime;
-                quiz.EndTime = updatedQuiz.EndTime;
+                quiz.Title = dto.Title;
+                quiz.StartTime = dto.StartTime;
+                quiz.EndTime = dto.EndTime;
+                quiz.CategoryId = dto.CategoryId;
 
                 await _context.SaveChangesAsync();
 
@@ -180,6 +180,7 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<object>.CreateFailure($"Error updating quiz: {ex.Message}"));
             }
         }
+
 
         // -----------------------------
         // DELETE: api/quizzes/{id}

@@ -86,11 +86,15 @@ namespace QuizApp.WPF.Services
             }
         }
 
-        public async Task<bool> UpdateAsync(QuizDto quiz)
+        public async Task<bool> UpdateAsync(QuizDto quiz, List<int> questionIds)
         {
             try
             {
                 var token = GetAuthHeader();
+
+                // Include only Ids in Questions to satisfy the API
+                quiz.Questions = questionIds.Select(id => new QuestionDto { Id = id }).ToList();
+
                 var response = await _quizApi.UpdateQuizAsync(quiz.Id, quiz, token);
                 return response?.Success == true;
             }
@@ -99,6 +103,8 @@ namespace QuizApp.WPF.Services
                 throw new Exception($"Error updating quiz: {ex.Message}");
             }
         }
+
+
 
         public async Task<bool> DeleteAsync(int id)
         {

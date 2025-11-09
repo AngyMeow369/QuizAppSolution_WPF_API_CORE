@@ -1,9 +1,8 @@
 ﻿using QuizApp.WPF.Services;
 using QuizApp.WPF.Services.Interfaces;
 using Refit;
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+using System;
+using System.Net.Http;
 using System.Text.Json;
 using System.Windows;
 
@@ -19,20 +18,31 @@ namespace QuizApp.WPF
         {
             base.OnStartup(e);
 
-            // ✅ Bypass self-signed SSL validation for localhost (dev only)
-            ServicePointManager.ServerCertificateValidationCallback +=
-                (sender, cert, chain, sslPolicyErrors) => true;
-
             const string quizApiBaseUrl = "https://localhost:7016";
 
+            // Create HttpClientHandler to bypass SSL validation for development
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback =
+                    HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
+            // HttpClient for Refit
+            var httpClient = new HttpClient(handler)
+            {
+                BaseAddress = new Uri(quizApiBaseUrl)
+            };
+
+            // Refit settings with System.Text.Json serializer
             var refitSettings = new RefitSettings
             {
                 ContentSerializer = new SystemTextJsonContentSerializer(
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
             };
 
+            // Initialize services
             AuthService = new AuthService();
-            QuizApi = RestService.For<IQuizApi>(quizApiBaseUrl, refitSettings);
+            QuizApi = RestService.For<IQuizApi>(httpClient, refitSettings);
             QuizService = new QuizService(QuizApi, AuthService);
         }
     }

@@ -14,22 +14,25 @@ namespace QuizApp.WPF.ViewModels.Admin
     {
         private readonly QuizService _quizService;
 
-        public ObservableCollection<CategoryDto> Categories { get; set; } = new();
+        public ObservableCollection<CategoryDto> Categories { get; set; }
         public ObservableCollection<QuestionDto> SelectedQuestions { get; set; } = new();
-        public List<int> SelectedQuestionIds { get; set; } = new();
 
         public bool IsEditMode { get; private set; }
 
-        public QuizDto Quiz { get; set; }
+        private QuizDto _quiz = new QuizDto();
+        public QuizDto Quiz
+        {
+            get => _quiz;
+            set => SetProperty(ref _quiz, value);
+        }
 
+        // Commands
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
-
-        // Commands for Today/Yesterday buttons with private setter
-        public ICommand SetStartTimeTodayCommand { get; private set; }
-        public ICommand SetStartTimeYesterdayCommand { get; private set; }
-        public ICommand SetEndTimeTodayCommand { get; private set; }
-        public ICommand SetEndTimeYesterdayCommand { get; private set; }
+        public ICommand SetStartTimeTodayCommand { get; }
+        public ICommand SetStartTimeYesterdayCommand { get; }
+        public ICommand SetEndTimeTodayCommand { get; }
+        public ICommand SetEndTimeYesterdayCommand { get; }
 
         public event Action<bool?>? CloseRequested;
 
@@ -46,10 +49,9 @@ namespace QuizApp.WPF.ViewModels.Admin
             };
             IsEditMode = false;
 
-            SaveCommand = new RelayCommand(async () => await Save());
+            SaveCommand = new RelayCommand(async () => await SaveAsync());
             CancelCommand = new RelayCommand(() => CloseRequested?.Invoke(false));
 
-            // Assign date commands
             SetStartTimeTodayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now);
             SetStartTimeYesterdayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now.AddDays(-1));
             SetEndTimeTodayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now);
@@ -58,62 +60,65 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         // Constructor for Edit mode
         public QuizDialogViewModel(QuizService quizService, ObservableCollection<CategoryDto> categories, QuizDto existingQuiz)
+            : this(quizService, categories)
         {
-            _quizService = quizService;
-            Categories = categories;
+            if (existingQuiz == null) throw new ArgumentNullException(nameof(existingQuiz));
 
             Quiz = new QuizDto
             {
                 Id = existingQuiz.Id,
                 Title = existingQuiz.Title,
                 CategoryId = existingQuiz.CategoryId,
+                CategoryName = existingQuiz.CategoryName,
                 StartTime = existingQuiz.StartTime,
                 EndTime = existingQuiz.EndTime,
-                Questions = new List<QuestionDto>(existingQuiz.Questions)
+                Questions = existingQuiz.Questions?.Select(q => new QuestionDto
+                {
+                    Id = q.Id,
+                    Text = q.Text,
+                    CategoryId = q.CategoryId,
+                    CategoryName = q.CategoryName,
+                    Options = q.Options
+                }).ToList() ?? new List<QuestionDto>()
             };
 
             SelectedQuestions = new ObservableCollection<QuestionDto>(Quiz.Questions);
             IsEditMode = true;
-
-            SaveCommand = new RelayCommand(async () => await Save());
-            CancelCommand = new RelayCommand(() => CloseRequested?.Invoke(false));
-
-            // Assign date commands
-            SetStartTimeTodayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now);
-            SetStartTimeYesterdayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now.AddDays(-1));
-            SetEndTimeTodayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now);
-            SetEndTimeYesterdayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now.AddDays(-1));
         }
 
-        private async Task Save()
+        private async Task SaveAsync()
         {
             try
             {
+                // Validation
                 if (string.IsNullOrWhiteSpace(Quiz.Title))
                 {
                     MessageBox.Show("Quiz title cannot be empty.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                if (Quiz.CategoryId == 0) // Add this check
+                if (Quiz.CategoryId == 0)
                 {
-                    MessageBox.Show("Please select a category for the quiz.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    MessageBox.Show("Please select a category.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
-                Quiz.Questions = SelectedQuestions.ToList();
+                // Extract question IDs instead of sending full objects
+                var questionIds = SelectedQuestions.Select(q => q.Id).ToList();
 
                 if (IsEditMode)
                 {
-                    var success = await _quizService.UpdateAsync(Quiz);
+                    // Send only the IDs for update
+                    bool success = await _quizService.UpdateAsync(Quiz, questionIds);
                     if (!success)
-                        throw new Exception("Failed to update quiz.");
+                        throw new Exception("Failed to update the quiz.");
                 }
                 else
                 {
-                    var createdQuiz = await _quizService.CreateAsync(Quiz, Quiz.Questions.Select(q => q.Id).ToList());
+                    // For creation, keep same logic
+                    var createdQuiz = await _quizService.CreateAsync(Quiz, questionIds);
                     if (createdQuiz == null)
-                        throw new Exception("Failed to create quiz.");
+                        throw new Exception("Failed to create the quiz.");
                 }
 
                 CloseRequested?.Invoke(true);
@@ -123,5 +128,6 @@ namespace QuizApp.WPF.ViewModels.Admin
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
     }
 }
