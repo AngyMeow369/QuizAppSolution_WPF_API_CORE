@@ -36,13 +36,20 @@ namespace QuizApp.WPF.ViewModels.Admin
                 }
             }
         }
-
         private CategoryDto? _selectedCategory;
         public CategoryDto? SelectedCategory
         {
             get => _selectedCategory;
-            set => SetProperty(ref _selectedCategory, value);
+            set
+            {
+                if (SetProperty(ref _selectedCategory, value))
+                {
+                    (EditCategoryCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (DeleteCategoryCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
+
 
         private QuestionDto? _selectedQuestion;
         public QuestionDto? SelectedQuestion
