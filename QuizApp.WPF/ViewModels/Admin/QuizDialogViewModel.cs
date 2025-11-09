@@ -1,5 +1,6 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
+using QuizApp.WPF.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,11 +16,19 @@ namespace QuizApp.WPF.ViewModels.Admin
         private readonly QuizService _quizService;
 
         public ObservableCollection<CategoryDto> Categories { get; set; }
-        public ObservableCollection<QuestionDto> SelectedQuestions { get; set; } = new();
+        public ObservableCollection<QuestionViewModel> SelectedQuestions { get; set; } = new();
+
+        private QuestionViewModel? _selectedQuestion;
+        public QuestionViewModel? SelectedQuestion
+
+        {
+            get => _selectedQuestion;
+            set => SetProperty(ref _selectedQuestion, value);
+        }
 
         public bool IsEditMode { get; private set; }
 
-        private QuizDto _quiz = new QuizDto();
+        private QuizDto _quiz = new();
         public QuizDto Quiz
         {
             get => _quiz;
@@ -29,14 +38,15 @@ namespace QuizApp.WPF.ViewModels.Admin
         // Commands
         public ICommand SaveCommand { get; }
         public ICommand CancelCommand { get; }
-        public ICommand SetStartTimeTodayCommand { get; }
-        public ICommand SetStartTimeYesterdayCommand { get; }
-        public ICommand SetEndTimeTodayCommand { get; }
-        public ICommand SetEndTimeYesterdayCommand { get; }
+        public ICommand AddQuestionCommand { get; }
+        public ICommand EditQuestionCommand { get; }
+        public ICommand DeleteQuestionCommand { get; }
+        public ICommand AddOptionCommand { get; }
+        public ICommand DeleteOptionCommand { get; }
 
         public event Action<bool?>? CloseRequested;
 
-        // Constructor for Add mode
+        // ------------------- Constructor for Add Mode -------------------
         public QuizDialogViewModel(QuizService quizService, ObservableCollection<CategoryDto> categories)
         {
             _quizService = quizService;
@@ -47,18 +57,23 @@ namespace QuizApp.WPF.ViewModels.Admin
                 StartTime = DateTime.Now,
                 EndTime = DateTime.Now.AddHours(1)
             };
-            IsEditMode = false;
 
             SaveCommand = new RelayCommand(async () => await SaveAsync());
             CancelCommand = new RelayCommand(() => CloseRequested?.Invoke(false));
 
-            SetStartTimeTodayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now);
-            SetStartTimeYesterdayCommand = new RelayCommand(() => Quiz.StartTime = DateTime.Now.AddDays(-1));
-            SetEndTimeTodayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now);
-            SetEndTimeYesterdayCommand = new RelayCommand(() => Quiz.EndTime = DateTime.Now.AddDays(-1));
+            AddQuestionCommand = new RelayCommand(AddQuestion);
+            EditQuestionCommand = new RelayCommand(EditQuestion, () => SelectedQuestion != null);
+            DeleteQuestionCommand = new RelayCommand(DeleteQuestion, () => SelectedQuestion != null);
+            AddOptionCommand = new RelayCommand(AddOption, () => SelectedQuestion != null);
+            DeleteOptionCommand = new RelayCommand<OptionDto>(DeleteOption, opt => opt != null);
+
+
+            IsEditMode = false;
         }
 
-        // Constructor for Edit mode
+
+
+        // ------------------- Constructor for Edit Mode -------------------
         public QuizDialogViewModel(QuizService quizService, ObservableCollection<CategoryDto> categories, QuizDto existingQuiz)
             : this(quizService, categories)
         {
@@ -78,19 +93,91 @@ namespace QuizApp.WPF.ViewModels.Admin
                     Text = q.Text,
                     CategoryId = q.CategoryId,
                     CategoryName = q.CategoryName,
-                    Options = q.Options
-                }).ToList() ?? new List<QuestionDto>()
+                    Options = q.Options != null
+                        ? q.Options.ToList()
+                        : new List<OptionDto>()
+                }).ToList() ?? new()
             };
 
-            SelectedQuestions = new ObservableCollection<QuestionDto>(Quiz.Questions);
-            IsEditMode = true;
+
+            SelectedQuestions = new ObservableCollection<QuestionViewModel>(
+    existingQuiz.Questions?.Select(QuestionViewModel.FromDto) ?? new List<QuestionViewModel>()
+);
+
         }
 
+        // ------------------- Question Management -------------------
+        private void AddQuestion()
+        {
+            var newQuestion = new QuestionViewModel
+            {
+                Text = "New Question",
+                Options = new ObservableCollection<OptionDto>()
+            };
+
+            SelectedQuestions.Add(newQuestion);
+            SelectedQuestion = newQuestion;
+        }
+
+
+        private void EditQuestion()
+        {
+            if (SelectedQuestion == null) return;
+
+            var newText = Microsoft.VisualBasic.Interaction.InputBox(
+                "Edit question text:",
+                "Edit Question",
+                SelectedQuestion.Text);
+
+            if (!string.IsNullOrWhiteSpace(newText))
+                SelectedQuestion.Text = newText;
+        }
+
+        private void DeleteQuestion()
+        {
+            if (SelectedQuestion == null) return;
+
+            var confirm = MessageBox.Show(
+                $"Delete question '{SelectedQuestion.Text}'?",
+                "Confirm Delete",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (confirm == MessageBoxResult.Yes)
+            {
+                SelectedQuestions.Remove(SelectedQuestion);
+                SelectedQuestion = null;
+            }
+        }
+
+        // ------------------- Option Management -------------------
+        private void AddOption()
+        {
+            if (SelectedQuestion == null) return;
+
+            SelectedQuestion.Options.Add(new OptionDto
+            {
+                Text = "New Option",
+                IsCorrect = false
+            });
+
+            OnPropertyChanged(nameof(SelectedQuestion));
+        }
+
+        private void DeleteOption(OptionDto? option)
+        {
+            if (SelectedQuestion == null || option == null) return;
+
+            SelectedQuestion.Options.Remove(option);
+            OnPropertyChanged(nameof(SelectedQuestion));
+        }
+
+
+        // ------------------- Save Quiz -------------------
         private async Task SaveAsync()
         {
             try
             {
-                // Validation
                 if (string.IsNullOrWhiteSpace(Quiz.Title))
                 {
                     MessageBox.Show("Quiz title cannot be empty.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -103,23 +190,14 @@ namespace QuizApp.WPF.ViewModels.Admin
                     return;
                 }
 
-                // Extract question IDs instead of sending full objects
-                var questionIds = SelectedQuestions.Select(q => q.Id).ToList();
+                Quiz.Questions = SelectedQuestions.Select(q => q.ToDto()).ToList();
 
-                if (IsEditMode)
-                {
-                    // Send only the IDs for update
-                    bool success = await _quizService.UpdateAsync(Quiz, questionIds);
-                    if (!success)
-                        throw new Exception("Failed to update the quiz.");
-                }
-                else
-                {
-                    // For creation, keep same logic
-                    var createdQuiz = await _quizService.CreateAsync(Quiz, questionIds);
-                    if (createdQuiz == null)
-                        throw new Exception("Failed to create the quiz.");
-                }
+                bool success = IsEditMode
+                    ? await _quizService.UpdateAsync(Quiz, Quiz.Questions.Select(q => q.Id).ToList())
+                    : (await _quizService.CreateAsync(Quiz, Quiz.Questions.Select(q => q.Id).ToList())) != null;
+
+                if (!success)
+                    throw new Exception("Failed to save quiz.");
 
                 CloseRequested?.Invoke(true);
             }
@@ -128,6 +206,5 @@ namespace QuizApp.WPF.ViewModels.Admin
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
-
     }
 }
