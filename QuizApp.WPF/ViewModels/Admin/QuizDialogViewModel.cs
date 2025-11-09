@@ -178,6 +178,7 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             try
             {
+
                 if (string.IsNullOrWhiteSpace(Quiz.Title))
                 {
                     MessageBox.Show("Quiz title cannot be empty.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);

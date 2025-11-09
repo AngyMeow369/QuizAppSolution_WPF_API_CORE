@@ -4,6 +4,7 @@ using Refit;
 using System.Text.Json;
 using QuizApp.WPF.Services.Interfaces;
 using System.Windows.Input;
+using QuizApp.WPF.Views.Admin;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
@@ -23,6 +24,8 @@ namespace QuizApp.WPF.ViewModels.Admin
         public ICommand NavigateToUsersCommand { get; }
         public ICommand NavigateToAnalyticsCommand { get; }
         public ICommand LogoutCommand { get; }
+        public ICommand NavigateToQuizDetailsCommand { get; }
+
 
         public string CurrentUsername => _authService.Username;
         public string UserRole => _authService.Role;
@@ -64,6 +67,11 @@ namespace QuizApp.WPF.ViewModels.Admin
 
             NavigateToAnalyticsCommand = new RelayCommand(() =>
                 CurrentView = new AnalyticsViewModel(quizService));
+
+            NavigateToQuizDetailsCommand = new RelayCommand(() =>
+            
+                CurrentView = new QuizDetailsView()); 
+            
 
             LogoutCommand = new RelayCommand(Logout);
 
