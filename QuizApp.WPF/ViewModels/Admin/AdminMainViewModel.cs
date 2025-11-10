@@ -68,9 +68,10 @@ namespace QuizApp.WPF.ViewModels.Admin
                 CurrentView = new AnalyticsViewModel(quizService));
 
             NavigateToQuizDetailsCommand = new RelayCommand(() =>
-            
-                CurrentView = new QuizDetailsView()); 
-            
+                CurrentView = new QuizDetailsView(quizApi, _authService));
+
+
+
 
             LogoutCommand = new RelayCommand(Logout);
 

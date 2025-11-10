@@ -50,7 +50,6 @@ namespace QuizApp.API.Controllers
             }
         }
 
-        // GET: api/quizzes/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ApiResponse<QuizDto>>> GetById(int id)
         {
@@ -60,11 +59,13 @@ namespace QuizApp.API.Controllers
                     .Include(q => q.Category)
                     .Include(q => q.QuizQuestions)
                         .ThenInclude(qq => qq.Question)
+                            .ThenInclude(q => q.Options)
                     .FirstOrDefaultAsync(q => q.Id == id);
 
                 if (quiz == null)
                     return NotFound(ApiResponse<QuizDto>.CreateFailure("Quiz not found."));
 
+                // Build DTO
                 var dto = new QuizDto
                 {
                     Id = quiz.Id,
@@ -73,7 +74,21 @@ namespace QuizApp.API.Controllers
                     EndTime = quiz.EndTime,
                     CategoryId = quiz.CategoryId,
                     CategoryName = quiz.Category?.Name ?? string.Empty,
-                    QuestionIds = quiz.QuizQuestions.Select(qq => qq.QuestionId).ToList()
+                    QuestionIds = quiz.QuizQuestions.Select(qq => qq.QuestionId).ToList(),
+                    Questions = quiz.QuizQuestions
+                        .Where(qq => qq.Question != null)
+                        .Select(qq => new QuestionDto
+                        {
+                            Id = qq.Question!.Id,
+                            Text = qq.Question.Text,
+                            Options = qq.Question.Options?.Select(o => new OptionDto
+                            {
+                                Id = o.Id,
+                                Text = o.Text,
+                                IsCorrect = o.IsCorrect
+                            }).ToList() ?? new List<OptionDto>()
+                        })
+                        .ToList()
                 };
 
                 return Ok(ApiResponse<QuizDto>.CreateSuccess(dto, "Quiz retrieved successfully."));
@@ -83,6 +98,7 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<QuizDto>.CreateFailure($"Error retrieving quiz: {ex.Message}"));
             }
         }
+
 
         // POST: api/quizzes
         [HttpPost]
@@ -198,7 +214,7 @@ namespace QuizApp.API.Controllers
                 {
                     foreach (var qDto in dto.Questions)
                     {
-                        Question question;
+                        Question? question;
 
                         if (qDto.Id != 0)
                         {
