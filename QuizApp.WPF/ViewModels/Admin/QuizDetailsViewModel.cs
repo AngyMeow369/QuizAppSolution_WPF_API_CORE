@@ -12,10 +12,17 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         public ObservableCollection<QuizDto> Quizzes { get; set; } = new();
         private QuizDto? _selectedQuiz;
+
         public QuizDto? SelectedQuiz
         {
             get => _selectedQuiz;
-            set => SetProperty(ref _selectedQuiz, value);
+            set
+            {
+                if (SetProperty(ref _selectedQuiz, value) && _selectedQuiz != null)
+                {
+                    LoadQuestionsForSelectedQuiz(_selectedQuiz);
+                }
+            }
         }
 
         public QuizDetailsViewModel(QuizService quizService)
@@ -29,15 +36,34 @@ namespace QuizApp.WPF.ViewModels.Admin
             try
             {
                 var allQuizzes = await _quizService.GetAllAsync();
-                if (allQuizzes != null)
-                {
-                    Quizzes = new ObservableCollection<QuizDto>(allQuizzes);
-                    OnPropertyChanged(nameof(Quizzes));
-                }
+                Quizzes = new ObservableCollection<QuizDto>(allQuizzes);
+                OnPropertyChanged(nameof(Quizzes));
             }
             catch (System.Exception ex)
             {
                 MessageBox.Show($"Failed to load quizzes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private async void LoadQuestionsForSelectedQuiz(QuizDto quiz)
+        {
+            try
+            {
+                var questions = await _quizService.GetQuestionsByQuizIdAsync(quiz.Id);
+
+                // ✅ Replace the questions in DTO
+                quiz.Questions = questions;
+
+                // ✅ Force WPF to refresh nested bindings
+                OnPropertyChanged(nameof(SelectedQuiz));
+                OnPropertyChanged(nameof(SelectedQuiz.Questions));
+
+                // Optional debug check
+                MessageBox.Show($"Loaded {questions.Count} questions for quiz '{quiz.Title}'");
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show($"Failed to load questions: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

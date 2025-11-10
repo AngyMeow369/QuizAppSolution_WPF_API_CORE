@@ -119,34 +119,7 @@
                     <Button Content="Delete Question" Command="{Binding DeleteQuestionCommand}" Width="130"/>
                 </StackPanel>
 
-                <!-- Preview Section -->
-                <GroupBox Header="Preview" Margin="0,15,0,0">
-                    <ScrollViewer Height="200" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding SelectedQuestions}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <StackPanel Margin="0,5,0,5">
-                                        <!-- Question Text -->
-                                        <TextBlock Text="{Binding Text}" FontWeight="Bold" FontSize="14"/>
-
-                                        <!-- Options -->
-                                        <ItemsControl ItemsSource="{Binding Options}">
-                                            <ItemsControl.ItemTemplate>
-                                                <DataTemplate>
-                                                    <StackPanel Orientation="Horizontal" Margin="10,2,0,2">
-                                                        <CheckBox IsChecked="{Binding IsCorrect}" IsEnabled="False"/>
-                                                        <TextBlock Text="{Binding Text}" Margin="5,0,0,0"/>
-                                                    </StackPanel>
-                                                </DataTemplate>
-                                            </ItemsControl.ItemTemplate>
-                                        </ItemsControl>
-                                    </StackPanel>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                    </ScrollViewer>
-                </GroupBox>
-
+                
             </StackPanel>
 
             <!-- Save / Cancel Buttons -->

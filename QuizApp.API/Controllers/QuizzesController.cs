@@ -100,6 +100,7 @@ namespace QuizApp.API.Controllers
                 if (category == null)
                     return BadRequest(ApiResponse<QuizDto>.CreateFailure("Invalid category ID."));
 
+                // Create new quiz
                 var quiz = new Quiz
                 {
                     Title = dto.Title,
@@ -109,13 +110,42 @@ namespace QuizApp.API.Controllers
                 };
 
                 _context.Quizzes.Add(quiz);
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(); // Save once to get the Quiz ID
 
-                // handle question mapping
-                if (dto.QuestionIds != null && dto.QuestionIds.Any())
+                // Create questions and link them
+                if (dto.Questions != null && dto.Questions.Any())
                 {
-                    foreach (var qid in dto.QuestionIds)
-                        _context.QuizQuestions.Add(new QuizQuestion { QuizId = quiz.Id, QuestionId = qid });
+                    foreach (var qDto in dto.Questions)
+                    {
+                        var question = new Question
+                        {
+                            Text = qDto.Text,
+                            CategoryId = quiz.CategoryId // Ensure valid FK
+                        };
+
+                        _context.Questions.Add(question);
+                        await _context.SaveChangesAsync(); // Get Question.Id
+
+                        // Add options for this question
+                        if (qDto.Options != null && qDto.Options.Any())
+                        {
+                            var options = qDto.Options.Select(opt => new Option
+                            {
+                                Text = opt.Text,
+                                IsCorrect = opt.IsCorrect,
+                                QuestionId = question.Id
+                            }).ToList();
+
+                            _context.Options.AddRange(options);
+                        }
+
+                        // Link question to quiz
+                        _context.QuizQuestions.Add(new QuizQuestion
+                        {
+                            QuizId = quiz.Id,
+                            QuestionId = question.Id
+                        });
+                    }
 
                     await _context.SaveChangesAsync();
                 }
@@ -130,6 +160,8 @@ namespace QuizApp.API.Controllers
             }
         }
 
+
+
         // PUT: api/quizzes/{id}
         [HttpPut("{id}")]
         public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] QuizDto dto)
@@ -138,6 +170,8 @@ namespace QuizApp.API.Controllers
             {
                 var quiz = await _context.Quizzes
                     .Include(q => q.QuizQuestions)
+                        .ThenInclude(qq => qq.Question)
+                            .ThenInclude(q => q.Options)
                     .FirstOrDefaultAsync(q => q.Id == id);
 
                 if (quiz == null)
@@ -149,17 +183,109 @@ namespace QuizApp.API.Controllers
                 if (dto.StartTime >= dto.EndTime)
                     return BadRequest(ApiResponse<object>.CreateFailure("End time must be after start time."));
 
+                // Update quiz core info
                 quiz.Title = dto.Title;
                 quiz.StartTime = dto.StartTime;
                 quiz.EndTime = dto.EndTime;
                 quiz.CategoryId = dto.CategoryId;
 
-                // Update question links
+                // Remove old QuizQuestion links
                 _context.QuizQuestions.RemoveRange(quiz.QuizQuestions);
-                if (dto.QuestionIds != null && dto.QuestionIds.Any())
+                await _context.SaveChangesAsync();
+
+                // Process questions
+                if (dto.Questions != null && dto.Questions.Any())
                 {
-                    foreach (var qid in dto.QuestionIds)
-                        _context.QuizQuestions.Add(new QuizQuestion { QuizId = quiz.Id, QuestionId = qid });
+                    foreach (var qDto in dto.Questions)
+                    {
+                        Question question;
+
+                        if (qDto.Id != 0)
+                        {
+                            // Update existing question
+                            question = await _context.Questions
+                                .Include(q => q.Options)
+                                .FirstOrDefaultAsync(q => q.Id == qDto.Id);
+
+                            if (question != null)
+                            {
+                                question.Text = qDto.Text;
+                                question.CategoryId = quiz.CategoryId; // keep consistent with quiz
+
+                                // Remove old options
+                                if (question.Options != null && question.Options.Any())
+                                    _context.Options.RemoveRange(question.Options);
+
+                                // Add updated options
+                                if (qDto.Options != null && qDto.Options.Any())
+                                {
+                                    var newOptions = qDto.Options.Select(opt => new Option
+                                    {
+                                        Text = opt.Text,
+                                        IsCorrect = opt.IsCorrect,
+                                        QuestionId = question.Id
+                                    }).ToList();
+
+                                    _context.Options.AddRange(newOptions);
+                                }
+                            }
+                            else
+                            {
+                                // Question ID invalid → create fresh
+                                question = new Question
+                                {
+                                    Text = qDto.Text,
+                                    CategoryId = quiz.CategoryId
+                                };
+
+                                _context.Questions.Add(question);
+                                await _context.SaveChangesAsync();
+
+                                if (qDto.Options != null && qDto.Options.Any())
+                                {
+                                    var options = qDto.Options.Select(opt => new Option
+                                    {
+                                        Text = opt.Text,
+                                        IsCorrect = opt.IsCorrect,
+                                        QuestionId = question.Id
+                                    }).ToList();
+
+                                    _context.Options.AddRange(options);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // New question
+                            question = new Question
+                            {
+                                Text = qDto.Text,
+                                CategoryId = quiz.CategoryId
+                            };
+
+                            _context.Questions.Add(question);
+                            await _context.SaveChangesAsync();
+
+                            if (qDto.Options != null && qDto.Options.Any())
+                            {
+                                var options = qDto.Options.Select(opt => new Option
+                                {
+                                    Text = opt.Text,
+                                    IsCorrect = opt.IsCorrect,
+                                    QuestionId = question.Id
+                                }).ToList();
+
+                                _context.Options.AddRange(options);
+                            }
+                        }
+
+                        // Link to quiz
+                        _context.QuizQuestions.Add(new QuizQuestion
+                        {
+                            QuizId = quiz.Id,
+                            QuestionId = question.Id
+                        });
+                    }
                 }
 
                 await _context.SaveChangesAsync();
@@ -170,6 +296,9 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<object>.CreateFailure($"Error updating quiz: {ex.Message}"));
             }
         }
+
+
+
 
         // DELETE: api/quizzes/{id}
         [HttpDelete("{id}")]

@@ -19,6 +19,13 @@ namespace QuizApp.WPF.Services
             _authService = authService;
         }
 
+        public async Task<List<QuestionDto>> GetQuestionsByQuizIdAsync(int quizId)
+        {
+            var quiz = await GetByIdAsync(quizId);
+            return quiz?.Questions ?? new List<QuestionDto>();
+        }
+
+
         private string GetAuthHeader()
         {
             try
