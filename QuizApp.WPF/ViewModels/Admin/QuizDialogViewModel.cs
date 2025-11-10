@@ -2,7 +2,6 @@
 using QuizApp.WPF.Services;
 using QuizApp.WPF.ViewModels;
 using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
@@ -18,9 +17,21 @@ namespace QuizApp.WPF.ViewModels.Admin
         public ObservableCollection<CategoryDto> Categories { get; set; }
         public ObservableCollection<QuestionViewModel> SelectedQuestions { get; set; } = new();
 
+        private bool _isSaving;
+        public bool IsSaving
+        {
+            get => _isSaving;
+            set
+            {
+                if (SetProperty(ref _isSaving, value))
+                {
+                    (SaveCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         private QuestionViewModel? _selectedQuestion;
         public QuestionViewModel? SelectedQuestion
-
         {
             get => _selectedQuestion;
             set => SetProperty(ref _selectedQuestion, value);
@@ -58,7 +69,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                 EndTime = DateTime.Now.AddHours(1)
             };
 
-            SaveCommand = new RelayCommand(async () => await SaveAsync());
+            SaveCommand = new RelayCommand(async () => await SaveAsync(), () => !IsSaving);
             CancelCommand = new RelayCommand(() => CloseRequested?.Invoke(false));
 
             AddQuestionCommand = new RelayCommand(AddQuestion);
@@ -67,11 +78,8 @@ namespace QuizApp.WPF.ViewModels.Admin
             AddOptionCommand = new RelayCommand(AddOption, () => SelectedQuestion != null);
             DeleteOptionCommand = new RelayCommand<OptionDto>(DeleteOption, opt => opt != null);
 
-
             IsEditMode = false;
         }
-
-
 
         // ------------------- Constructor for Edit Mode -------------------
         public QuizDialogViewModel(QuizService quizService, ObservableCollection<CategoryDto> categories, QuizDto existingQuiz)
@@ -93,17 +101,15 @@ namespace QuizApp.WPF.ViewModels.Admin
                     Text = q.Text,
                     CategoryId = q.CategoryId,
                     CategoryName = q.CategoryName,
-                    Options = q.Options != null
-                        ? q.Options.ToList()
-                        : new List<OptionDto>()
+                    Options = q.Options?.ToList() ?? new List<OptionDto>()
                 }).ToList() ?? new()
             };
 
-
             SelectedQuestions = new ObservableCollection<QuestionViewModel>(
-    existingQuiz.Questions?.Select(QuestionViewModel.FromDto) ?? new List<QuestionViewModel>()
-);
+                Quiz.Questions.Select(QuestionViewModel.FromDto)
+            );
 
+            IsEditMode = true;
         }
 
         // ------------------- Question Management -------------------
@@ -118,7 +124,6 @@ namespace QuizApp.WPF.ViewModels.Admin
             SelectedQuestions.Add(newQuestion);
             SelectedQuestion = newQuestion;
         }
-
 
         private void EditQuestion()
         {
@@ -172,13 +177,14 @@ namespace QuizApp.WPF.ViewModels.Admin
             OnPropertyChanged(nameof(SelectedQuestion));
         }
 
-
         // ------------------- Save Quiz -------------------
         private async Task SaveAsync()
         {
             try
             {
+                IsSaving = true;
 
+                // Validation
                 if (string.IsNullOrWhiteSpace(Quiz.Title))
                 {
                     MessageBox.Show("Quiz title cannot be empty.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -191,20 +197,50 @@ namespace QuizApp.WPF.ViewModels.Admin
                     return;
                 }
 
-                Quiz.Questions = SelectedQuestions.Select(q => q.ToDto()).ToList();
+                // Convert SelectedQuestions to DTOs
+                Quiz.Questions = SelectedQuestions.Select(q =>
+                {
+                    var dto = q.ToDto();
 
-                bool success = IsEditMode
-                    ? await _quizService.UpdateAsync(Quiz, Quiz.Questions.Select(q => q.Id).ToList())
-                    : (await _quizService.CreateAsync(Quiz, Quiz.Questions.Select(q => q.Id).ToList())) != null;
+                    // Preserve existing Question Ids
+                    if (IsEditMode && q.Id != 0)
+                        dto.Id = q.Id;
+
+                    // Preserve Option Ids
+                    if (dto.Options != null && q.Options != null)
+                    {
+                        for (int i = 0; i < dto.Options.Count; i++)
+                            dto.Options[i].Id = q.Options[i].Id;
+                    }
+
+                    return dto;
+                }).ToList();
+
+                // Call Create or Update based on mode
+                bool success;
+                if (IsEditMode)
+                {
+                    success = await _quizService.UpdateAsync(Quiz, Quiz.Questions.Select(q => q.Id).ToList());
+                }
+                else
+                {
+                    var created = await _quizService.CreateAsync(Quiz, Quiz.Questions.Select(q => q.Id).ToList());
+                    success = created != null;
+                }
 
                 if (!success)
                     throw new Exception("Failed to save quiz.");
 
+                MessageBox.Show("Quiz saved successfully!", "Success", MessageBoxButton.OK, MessageBoxImage.Information);
                 CloseRequested?.Invoke(true);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally
+            {
+                IsSaving = false;
             }
         }
     }

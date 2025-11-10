@@ -51,8 +51,17 @@ namespace QuizApp.WPF.ViewModels.Admin
                 Text = dto.Text,
                 CategoryId = dto.CategoryId,
                 CategoryName = dto.CategoryName,
-                Options = new ObservableCollection<OptionDto>(dto.Options ?? new())
+                Options = new ObservableCollection<OptionDto>(
+                    dto.Options?.Select(o => new OptionDto
+                    {
+                        Id = o.Id,
+                        Text = o.Text,
+                        IsCorrect = o.IsCorrect,
+                        QuestionId = o.QuestionId
+                    }) ?? new List<OptionDto>()
+                )
             };
         }
+
     }
 }

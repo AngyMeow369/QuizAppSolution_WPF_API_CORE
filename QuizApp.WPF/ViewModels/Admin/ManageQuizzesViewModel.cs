@@ -259,16 +259,32 @@ namespace QuizApp.WPF.ViewModels.Admin
                 await LoadQuizzes();
         }
 
+        // In ManageQuizzesViewModel
         private async Task EditQuiz()
         {
             if (SelectedQuiz == null) return;
 
+            // Pass the selected quiz to the dialog VM
             var dialogVM = new QuizDialogViewModel(_quizService, Categories, SelectedQuiz);
             var dialog = new QuizDialog(dialogVM) { Owner = Application.Current.MainWindow };
 
             if (dialog.ShowDialog() == true)
-                await LoadQuizzes();
+            {
+                // Instead of reloading everything, just update the existing quiz in the collection
+                var updatedQuiz = await _quizService.GetByIdAsync(SelectedQuiz.Id);
+                if (updatedQuiz != null)
+                {
+                    var index = Quizzes.IndexOf(SelectedQuiz);
+                    if (index >= 0)
+                    {
+                        Quizzes[index] = updatedQuiz;
+                        SelectedQuiz = updatedQuiz;
+                        OnPropertyChanged(nameof(Quizzes));
+                    }
+                }
+            }
         }
+
 
         private async Task DeleteQuiz()
         {
