@@ -1,5 +1,4 @@
 ﻿using QuizApp.WPF.Services;
-using QuizApp.WPF.ViewModels.Admin;
 using Refit;
 using System.Text.Json;
 using QuizApp.WPF.Services.Interfaces;
