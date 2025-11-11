@@ -24,7 +24,7 @@
 
         <!-- Assigned Quizzes for Selected User -->
         <GroupBox Header="Assigned Quizzes" Grid.Row="0" Grid.Column="1" Margin="10">
-            <ListBox ItemsSource="{Binding SelectedUser.AssignedQuizzes}"
+            <ListBox ItemsSource="{Binding AssignedQuizzes}"
                      DisplayMemberPath="Title"
                      Height="400"/>
         </GroupBox>
