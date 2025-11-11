@@ -1,5 +1,6 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
+using QuizApp.WPF.Views.Admin;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -84,74 +85,76 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             if (existingQuiz == null) throw new ArgumentNullException(nameof(existingQuiz));
 
-            Quiz = new QuizDto
-            {
-                Id = existingQuiz.Id,
-                Title = existingQuiz.Title,
-                CategoryId = existingQuiz.CategoryId,
-                CategoryName = existingQuiz.CategoryName,
-                StartTime = existingQuiz.StartTime,
-                EndTime = existingQuiz.EndTime,
-                Questions = new List<QuestionDto>()
-            };
+            Quiz = existingQuiz; // Keep reference
 
-            // Populate questions fully including options
-            if (existingQuiz.Questions != null)
+            // Clear and populate existing SelectedQuestions to preserve binding
+            SelectedQuestions.Clear();
+            foreach (var q in existingQuiz.Questions)
             {
-                foreach (var q in existingQuiz.Questions)
-                {
-                    Quiz.Questions.Add(new QuestionDto
-                    {
-                        Id = q.Id,
-                        Text = q.Text,
-                        CategoryId = q.CategoryId,
-                        CategoryName = q.CategoryName,
-                        Options = q.Options?.Select(o => new OptionDto
-                        {
-                            Id = o.Id,
-                            Text = o.Text,
-                            IsCorrect = o.IsCorrect,
-                            QuestionId = o.QuestionId
-                        }).ToList() ?? new List<OptionDto>()
-                    });
-                }
+                SelectedQuestions.Add(QuestionViewModel.FromDto(q));
             }
 
-            // Convert to QuestionViewModels
-            SelectedQuestions = new ObservableCollection<QuestionViewModel>(
-                Quiz.Questions.Select(QuestionViewModel.FromDto)
-            );
-
-            OnPropertyChanged(nameof(SelectedQuestions));
             SelectedQuestion = SelectedQuestions.FirstOrDefault();
+
+
+            SelectedQuestion = SelectedQuestions.FirstOrDefault();
+            OnPropertyChanged(nameof(SelectedQuestions));
             IsEditMode = true;
         }
+
 
         // ------------------- Question Management -------------------
         private void AddQuestion()
         {
-            var newQuestion = new QuestionViewModel
+            var newQuestionVm = new QuestionViewModel
             {
-                Text = "New Question",
+                Text = "",
                 Options = new ObservableCollection<OptionDto>()
             };
 
-            SelectedQuestions.Add(newQuestion);
-            SelectedQuestion = newQuestion;
+            var dialogVm = new QuestionDialogViewModel(newQuestionVm);
+            var dialog = new QuestionDialog
+            {
+                DataContext = dialogVm,
+                Owner = Application.Current.MainWindow
+            };
+
+            dialogVm.CloseRequested += result =>
+            {
+                if (result == true) // bool? check, no HasValue/Value
+                {
+                    SelectedQuestions.Add(newQuestionVm);
+                    SelectedQuestion = newQuestionVm;
+                }
+                dialog.Close();
+            };
+
+            dialog.ShowDialog();
         }
 
         private void EditQuestion()
         {
             if (SelectedQuestion == null) return;
 
-            var newText = Microsoft.VisualBasic.Interaction.InputBox(
-                "Edit question text:",
-                "Edit Question",
-                SelectedQuestion.Text);
+            var dialogVm = new QuestionDialogViewModel(SelectedQuestion);
+            var dialog = new QuestionDialog
+            {
+                DataContext = dialogVm,
+                Owner = Application.Current.MainWindow
+            };
 
-            if (!string.IsNullOrWhiteSpace(newText))
-                SelectedQuestion.Text = newText;
+            dialogVm.CloseRequested += result =>
+            {
+                if (result == true) // bool? check, no HasValue/Value
+                {
+                    // changes already reflected via binding, no further action needed
+                }
+                dialog.Close();
+            };
+
+            dialog.ShowDialog();
         }
+
 
         private void DeleteQuestion()
         {
@@ -171,7 +174,7 @@ namespace QuizApp.WPF.ViewModels.Admin
         }
 
         // ------------------- Option Management -------------------
-        private void AddOptionToQuestion(QuestionViewModel question)
+        private void AddOptionToQuestion(QuestionViewModel? question)
         {
             if (question == null) return;
 
@@ -183,6 +186,7 @@ namespace QuizApp.WPF.ViewModels.Admin
 
             OnPropertyChanged(nameof(SelectedQuestions));
         }
+
 
         private void DeleteOption(OptionDto? option)
         {
@@ -211,21 +215,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                     return;
                 }
 
-                Quiz.Questions = SelectedQuestions.Select(q =>
-                {
-                    var dto = q.ToDto();
-
-                    if (IsEditMode && q.Id != 0)
-                        dto.Id = q.Id;
-
-                    if (dto.Options != null && q.Options != null)
-                    {
-                        for (int i = 0; i < dto.Options.Count; i++)
-                            dto.Options[i].Id = q.Options[i].Id;
-                    }
-
-                    return dto;
-                }).ToList();
+                Quiz.Questions = SelectedQuestions.Select(q => q.ToDto()).ToList();
 
                 bool success;
                 if (IsEditMode)

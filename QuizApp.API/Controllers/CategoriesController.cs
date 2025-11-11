@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using QuizApp.API.Data;
-using QuizApp.API.DTOs;
 using QuizApp.API.Models;
 using QuizApp.Shared.DTOs;
 
@@ -82,7 +81,7 @@ namespace QuizApp.API.Controllers
 
         // POST: api/categories
         [HttpPost]
-        public async Task<ActionResult<ApiResponse<CategoryDto>>> Create([FromBody] CreateCategoryDto dto)
+        public async Task<ActionResult<ApiResponse<CategoryDto>>> Create([FromBody] CategoryDto dto)
         {
             try
             {
@@ -114,7 +113,7 @@ namespace QuizApp.API.Controllers
 
         // PUT: api/categories/{id}
         [HttpPut("{id}")]
-        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] UpdateCategoryDto dto)
+        public async Task<ActionResult<ApiResponse<object>>> Update(int id, [FromBody] CategoryDto dto)
         {
             try
             {

@@ -4,7 +4,6 @@ using Microsoft.IdentityModel.Tokens;
 using QuizApp.API.Data;
 using QuizApp.Shared.DTOs;
 using QuizApp.API.Models;
-using QuizApp.API.DTOs;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;

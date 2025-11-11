@@ -39,7 +39,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                 Text = Text,
                 CategoryId = CategoryId,
                 CategoryName = CategoryName,
-                Options = Options.ToList()
+                Options = Options?.ToList() ?? new List<OptionDto>()
             };
         }
 

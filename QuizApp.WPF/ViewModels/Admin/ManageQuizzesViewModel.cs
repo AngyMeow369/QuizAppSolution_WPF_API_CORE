@@ -1,5 +1,4 @@
-﻿using QuizApp.API.DTOs;
-using QuizApp.Shared.DTOs;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using QuizApp.WPF.Views.Admin;
 using System;

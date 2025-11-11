@@ -60,12 +60,12 @@ namespace QuizApp.API.Controllers
                     .Include(q => q.QuizQuestions)
                         .ThenInclude(qq => qq.Question)
                             .ThenInclude(q => q.Options)
+                    .AsSplitQuery()
                     .FirstOrDefaultAsync(q => q.Id == id);
 
                 if (quiz == null)
                     return NotFound(ApiResponse<QuizDto>.CreateFailure("Quiz not found."));
 
-                // Build DTO
                 var dto = new QuizDto
                 {
                     Id = quiz.Id,
@@ -81,12 +81,14 @@ namespace QuizApp.API.Controllers
                         {
                             Id = qq.Question!.Id,
                             Text = qq.Question.Text,
+                            CategoryId = qq.Question.CategoryId,
+                            CategoryName = qq.Question.Category?.Name ?? string.Empty,
                             Options = qq.Question.Options?.Select(o => new OptionDto
                             {
                                 Id = o.Id,
                                 Text = o.Text,
                                 IsCorrect = o.IsCorrect,
-                                QuestionId = qq.Question.Id  // fixed here
+                                QuestionId = qq.Question.Id
                             }).ToList() ?? new List<OptionDto>()
                         })
                         .ToList()
@@ -99,6 +101,7 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<QuizDto>.CreateFailure($"Error retrieving quiz: {ex.Message}"));
             }
         }
+
 
 
 
@@ -314,8 +317,6 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<object>.CreateFailure($"Error updating quiz: {ex.Message}"));
             }
         }
-
-
 
 
         // DELETE: api/quizzes/{id}
