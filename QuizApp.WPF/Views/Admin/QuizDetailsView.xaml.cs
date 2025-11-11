@@ -13,7 +13,6 @@ namespace QuizApp.WPF.Views.Admin
             InitializeComponent();
 
             var quizService = new QuizService(quizApi, authService);
-
             DataContext = new QuizDetailsViewModel(quizService);
         }
     }

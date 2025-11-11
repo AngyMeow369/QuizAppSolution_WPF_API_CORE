@@ -5,6 +5,7 @@ using System.Windows;
 using System.Windows.Input;
 using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
+using QuizApp.WPF.Views.Admin;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
@@ -32,6 +33,9 @@ namespace QuizApp.WPF.ViewModels.Admin
         public string UserRole => _authService.Role;
 
         public ICommand LoadDataCommand { get; }
+        public ICommand EditQuizCommand { get; }
+
+
 
         public AdminDashboardViewModel(AuthService authService)
         {
@@ -51,9 +55,45 @@ namespace QuizApp.WPF.ViewModels.Admin
             _quizService = new QuizService(quizApi, _authService);
 
             LoadDataCommand = new RelayCommand(async () => await LoadAllDataAsync());
+            EditQuizCommand = new RelayCommand<QuizDto>(async (quiz) => await EditQuizAsync(quiz));
+
 
             _ = LoadAllDataAsync();
         }
+
+
+        private async Task EditQuizAsync(QuizDto? selectedQuiz)
+        {
+            if (selectedQuiz == null) return;
+
+            try
+            {
+                // Fetch full quiz including questions and options
+                var fullQuiz = await _quizService.GetByIdAsync(selectedQuiz.Id);
+                if (fullQuiz == null)
+                {
+                    MessageBox.Show("Failed to load full quiz details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // Create ViewModel for the dialog with full quiz
+                var dialogVm = new QuizDialogViewModel(_quizService, Categories, fullQuiz);
+
+                // Open dialog
+                var dialog = new QuizDialog(dialogVm);
+                dialog.ShowDialog();
+
+                // Refresh quizzes list after editing
+                await LoadQuizzesAsync();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error opening quiz for edit: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+
+
 
         private async Task LoadAllDataAsync()
         {

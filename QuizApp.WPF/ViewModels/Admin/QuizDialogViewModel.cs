@@ -1,6 +1,5 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
-using QuizApp.WPF.ViewModels;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -24,9 +23,7 @@ namespace QuizApp.WPF.ViewModels.Admin
             set
             {
                 if (SetProperty(ref _isSaving, value))
-                {
                     (SaveCommand as RelayCommand)?.RaiseCanExecuteChanged();
-                }
             }
         }
 
@@ -75,8 +72,8 @@ namespace QuizApp.WPF.ViewModels.Admin
             AddQuestionCommand = new RelayCommand(AddQuestion);
             EditQuestionCommand = new RelayCommand(EditQuestion, () => SelectedQuestion != null);
             DeleteQuestionCommand = new RelayCommand(DeleteQuestion, () => SelectedQuestion != null);
-            AddOptionCommand = new RelayCommand(AddOption, () => SelectedQuestion != null);
-            DeleteOptionCommand = new RelayCommand<OptionDto>(DeleteOption, opt => opt != null);
+            AddOptionCommand = new RelayCommand<QuestionViewModel>(AddOptionToQuestion, q => q != null);
+            DeleteOptionCommand = new RelayCommand<OptionDto>(DeleteOption, o => o != null);
 
             IsEditMode = false;
         }
@@ -95,20 +92,38 @@ namespace QuizApp.WPF.ViewModels.Admin
                 CategoryName = existingQuiz.CategoryName,
                 StartTime = existingQuiz.StartTime,
                 EndTime = existingQuiz.EndTime,
-                Questions = existingQuiz.Questions?.Select(q => new QuestionDto
-                {
-                    Id = q.Id,
-                    Text = q.Text,
-                    CategoryId = q.CategoryId,
-                    CategoryName = q.CategoryName,
-                    Options = q.Options?.ToList() ?? new List<OptionDto>()
-                }).ToList() ?? new()
+                Questions = new List<QuestionDto>()
             };
 
+            // Populate questions fully including options
+            if (existingQuiz.Questions != null)
+            {
+                foreach (var q in existingQuiz.Questions)
+                {
+                    Quiz.Questions.Add(new QuestionDto
+                    {
+                        Id = q.Id,
+                        Text = q.Text,
+                        CategoryId = q.CategoryId,
+                        CategoryName = q.CategoryName,
+                        Options = q.Options?.Select(o => new OptionDto
+                        {
+                            Id = o.Id,
+                            Text = o.Text,
+                            IsCorrect = o.IsCorrect,
+                            QuestionId = o.QuestionId
+                        }).ToList() ?? new List<OptionDto>()
+                    });
+                }
+            }
+
+            // Convert to QuestionViewModels
             SelectedQuestions = new ObservableCollection<QuestionViewModel>(
                 Quiz.Questions.Select(QuestionViewModel.FromDto)
             );
 
+            OnPropertyChanged(nameof(SelectedQuestions));
+            SelectedQuestion = SelectedQuestions.FirstOrDefault();
             IsEditMode = true;
         }
 
@@ -156,17 +171,17 @@ namespace QuizApp.WPF.ViewModels.Admin
         }
 
         // ------------------- Option Management -------------------
-        private void AddOption()
+        private void AddOptionToQuestion(QuestionViewModel question)
         {
-            if (SelectedQuestion == null) return;
+            if (question == null) return;
 
-            SelectedQuestion.Options.Add(new OptionDto
+            question.Options.Add(new OptionDto
             {
                 Text = "New Option",
                 IsCorrect = false
             });
 
-            OnPropertyChanged(nameof(SelectedQuestion));
+            OnPropertyChanged(nameof(SelectedQuestions));
         }
 
         private void DeleteOption(OptionDto? option)
@@ -174,7 +189,7 @@ namespace QuizApp.WPF.ViewModels.Admin
             if (SelectedQuestion == null || option == null) return;
 
             SelectedQuestion.Options.Remove(option);
-            OnPropertyChanged(nameof(SelectedQuestion));
+            OnPropertyChanged(nameof(SelectedQuestions));
         }
 
         // ------------------- Save Quiz -------------------
@@ -184,7 +199,6 @@ namespace QuizApp.WPF.ViewModels.Admin
             {
                 IsSaving = true;
 
-                // Validation
                 if (string.IsNullOrWhiteSpace(Quiz.Title))
                 {
                     MessageBox.Show("Quiz title cannot be empty.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -197,16 +211,13 @@ namespace QuizApp.WPF.ViewModels.Admin
                     return;
                 }
 
-                // Convert SelectedQuestions to DTOs
                 Quiz.Questions = SelectedQuestions.Select(q =>
                 {
                     var dto = q.ToDto();
 
-                    // Preserve existing Question Ids
                     if (IsEditMode && q.Id != 0)
                         dto.Id = q.Id;
 
-                    // Preserve Option Ids
                     if (dto.Options != null && q.Options != null)
                     {
                         for (int i = 0; i < dto.Options.Count; i++)
@@ -216,11 +227,10 @@ namespace QuizApp.WPF.ViewModels.Admin
                     return dto;
                 }).ToList();
 
-                // Call Create or Update based on mode
                 bool success;
                 if (IsEditMode)
                 {
-                    success = await _quizService.UpdateAsync(Quiz, Quiz.Questions.Select(q => q.Id).ToList());
+                    success = await _quizService.UpdateAsync(Quiz);
                 }
                 else
                 {

@@ -85,7 +85,8 @@ namespace QuizApp.API.Controllers
                             {
                                 Id = o.Id,
                                 Text = o.Text,
-                                IsCorrect = o.IsCorrect
+                                IsCorrect = o.IsCorrect,
+                                QuestionId = qq.Question.Id  // fixed here
                             }).ToList() ?? new List<OptionDto>()
                         })
                         .ToList()
@@ -98,6 +99,7 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<QuizDto>.CreateFailure($"Error retrieving quiz: {ex.Message}"));
             }
         }
+
 
 
         // POST: api/quizzes
