@@ -48,8 +48,6 @@
             <views:AdminDashboardView/>
         </DataTemplate>
 
-        
-
         <DataTemplate DataType="{x:Type vm:ManageQuizzesViewModel}">
             <views:ManageQuizzesView/>
         </DataTemplate>
