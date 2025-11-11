@@ -22,6 +22,11 @@ namespace QuizApp.WPF.ViewModels
 
         public void RaiseCanExecuteChanged() =>
             CanExecuteChanged?.Invoke(this, EventArgs.Empty);
+
+        internal void NotifyCanExecuteChanged()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class RelayCommand<T> : ICommand

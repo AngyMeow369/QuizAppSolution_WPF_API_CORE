@@ -1,19 +1,16 @@
-﻿using QuizApp.API.Models;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using System.Collections.ObjectModel;
-using System.Windows;
-using QuizApp.Shared.DTOs;
-using System.Windows.Input;
 using System.Threading.Tasks;
+using System.Windows;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
     public class ManageUsersViewModel : ObservableObject
     {
         private readonly UserService _userService;
-        private readonly AuthService? _authService;
 
-        public ObservableCollection<UserDto> Users { get; set; } = new ObservableCollection<UserDto>();
+        public ObservableCollection<UserDto> Users { get; } = new ObservableCollection<UserDto>();
 
         private UserDto? _selectedUser;
         public UserDto? SelectedUser
@@ -29,21 +26,9 @@ namespace QuizApp.WPF.ViewModels.Admin
             set => SetProperty(ref _isLoading, value);
         }
 
-        // Commands
-        public ICommand AddUserCommand { get; }
-        public ICommand EditUserCommand { get; }
-        public ICommand DeleteUserCommand { get; }
-
-        // Constructor with UserService
-        public ManageUsersViewModel(UserService userService, AuthService? authService = null)
+        public ManageUsersViewModel(UserService userService)
         {
             _userService = userService;
-            _authService = authService;
-
-            AddUserCommand = new RelayCommand(OnAddUser);
-            EditUserCommand = new RelayCommand(OnEditUser, () => SelectedUser != null);
-            DeleteUserCommand = new RelayCommand(async () => await OnDeleteUser(), () => SelectedUser != null);
-
             _ = LoadUsers();
         }
 
@@ -60,39 +45,6 @@ namespace QuizApp.WPF.ViewModels.Admin
             catch (System.Exception ex)
             {
                 MessageBox.Show($"Failed to load users: {ex.Message}");
-            }
-            finally
-            {
-                IsLoading = false;
-            }
-        }
-
-        private void OnAddUser() => MessageBox.Show("AddUser clicked");
-
-        private void OnEditUser()
-        {
-            if (SelectedUser != null)
-                MessageBox.Show($"Edit User: {SelectedUser.Username}");
-        }
-
-        private async Task OnDeleteUser()
-        {
-            if (SelectedUser == null) return;
-
-            var result = MessageBox.Show($"Are you sure you want to delete '{SelectedUser.Username}'?",
-                                         "Confirm Delete", MessageBoxButton.YesNo);
-            if (result != MessageBoxResult.Yes) return;
-
-            try
-            {
-                IsLoading = true;
-                await _userService.DeleteUserAsync(SelectedUser.Id);
-                Users.Remove(SelectedUser);
-                SelectedUser = null;
-            }
-            catch (System.Exception ex)
-            {
-                MessageBox.Show($"Failed to delete user: {ex.Message}");
             }
             finally
             {

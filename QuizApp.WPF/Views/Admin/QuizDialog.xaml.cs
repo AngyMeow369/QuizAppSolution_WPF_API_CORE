@@ -5,6 +5,11 @@ namespace QuizApp.WPF.Views.Admin
 {
     public partial class QuizDialog : Window
     {
+        public QuizDialog()
+        {
+            InitializeComponent();
+        }
+
         public QuizDialog(QuizDialogViewModel viewModel)
         {
             InitializeComponent();

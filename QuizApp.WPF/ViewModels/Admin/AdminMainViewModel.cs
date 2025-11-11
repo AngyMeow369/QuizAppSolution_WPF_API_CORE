@@ -33,7 +33,6 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             _authService = authService;
 
-            // ✅ Create service instances with proper dependencies
             const string baseApiUrl = "https://localhost:7016";
 
             var refitSettings = new RefitSettings
@@ -45,24 +44,24 @@ namespace QuizApp.WPF.ViewModels.Admin
                     })
             };
 
-            var quizApi = RestService.For<IQuizApi>(baseApiUrl, refitSettings); var quizService = new QuizService(quizApi, _authService);
+            var quizApi = RestService.For<IQuizApi>(baseApiUrl, refitSettings);
+            var quizService = new QuizService(quizApi, _authService);
 
             var userService = new UserService(_authService);
 
-            // ✅ Fix CategoryService - add ICategoryApi dependency
             var categoryApi = RestService.For<ICategoryApi>(baseApiUrl, refitSettings);
             var categoryService = new CategoryService(categoryApi, _authService);
 
-
-            // ✅ Pass both quizService and categoryService where needed
+            // Navigation commands
             NavigateToDashboardCommand = new RelayCommand(() =>
                 CurrentView = new AdminDashboardViewModel(_authService));
 
             NavigateToManageQuizzesCommand = new RelayCommand(() =>
                 CurrentView = new ManageQuizzesViewModel(quizService, categoryService));
 
+            // ✅ Use the UserControl for ManageUsers
             NavigateToUsersCommand = new RelayCommand(() =>
-                CurrentView = new ManageUsersViewModel(userService));
+                CurrentView = new ManageUsersView(userService)); 
 
             NavigateToAnalyticsCommand = new RelayCommand(() =>
                 CurrentView = new AnalyticsViewModel(quizService));
@@ -70,14 +69,12 @@ namespace QuizApp.WPF.ViewModels.Admin
             NavigateToQuizDetailsCommand = new RelayCommand(() =>
                 CurrentView = new QuizDetailsView(quizApi, _authService));
 
-
-
-
             LogoutCommand = new RelayCommand(Logout);
 
-            // ✅ Default page
+            // Default page
             CurrentView = new AdminDashboardViewModel(_authService);
         }
+
 
         private void Logout()
         {
