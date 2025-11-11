@@ -78,29 +78,44 @@ namespace QuizApp.WPF.ViewModels.Admin
 
             IsEditMode = false;
         }
-
         // ------------------- Constructor for Edit Mode -------------------
         public QuizDialogViewModel(QuizService quizService, ObservableCollection<CategoryDto> categories, QuizDto existingQuiz)
             : this(quizService, categories)
         {
-            if (existingQuiz == null) throw new ArgumentNullException(nameof(existingQuiz));
+            if (existingQuiz == null)
+                throw new ArgumentNullException(nameof(existingQuiz));
 
-            Quiz = existingQuiz; // Keep reference
-
-            // Clear and populate existing SelectedQuestions to preserve binding
-            SelectedQuestions.Clear();
-            foreach (var q in existingQuiz.Questions)
-            {
-                SelectedQuestions.Add(QuestionViewModel.FromDto(q));
-            }
-
-            SelectedQuestion = SelectedQuestions.FirstOrDefault();
-
-
-            SelectedQuestion = SelectedQuestions.FirstOrDefault();
-            OnPropertyChanged(nameof(SelectedQuestions));
-            IsEditMode = true;
+            _ = LoadQuizDetails(existingQuiz); // asynchronous fetch of full quiz details
         }
+
+        private async Task LoadQuizDetails(QuizDto existingQuiz)
+        {
+            try
+            {
+                IsEditMode = true;
+
+                // Re-fetch full quiz with nested Questions & Options
+                var fullQuiz = await _quizService.GetByIdAsync(existingQuiz.Id);
+
+                Quiz = fullQuiz ?? existingQuiz;
+
+                SelectedQuestions.Clear();
+                if (Quiz.Questions != null)
+                {
+                    foreach (var q in Quiz.Questions)
+                        SelectedQuestions.Add(QuestionViewModel.FromDto(q));
+                }
+
+                SelectedQuestion = SelectedQuestions.FirstOrDefault();
+                OnPropertyChanged(nameof(SelectedQuestions));
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to load quiz details: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
 
 
         // ------------------- Question Management -------------------
@@ -213,6 +228,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                 {
                     MessageBox.Show("Please select a category.", "Validation Error", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
+
                 }
 
                 Quiz.Questions = SelectedQuestions.Select(q => q.ToDto()).ToList();
