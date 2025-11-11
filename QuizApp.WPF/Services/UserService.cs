@@ -91,5 +91,26 @@ namespace QuizApp.WPF.Services
             var response = await _userApi.DeleteUserAsync(userId, $"Bearer {token}");
             if (!response.Success) throw new Exception(response.Message ?? "Failed to delete user");
         }
+
+        public async Task<List<QuizDto>> GetAssignedQuizzesAsync(int userId)
+        {
+            var token = _authService.GetToken();
+            var response = await _userApi.GetAssignedQuizzesAsync(userId, $"Bearer {token}");
+
+            if (!response.Success)
+                throw new Exception(response.Message ?? "Failed to load assigned quizzes.");
+
+            return response.Data ?? new List<QuizDto>();
+        }
+
+        public async Task AssignQuizAsync(int userId, int quizId)
+        {
+            var token = _authService.GetToken();
+            var response = await _userApi.AssignQuizAsync(userId, quizId, $"Bearer {token}");
+
+            if (!response.Success)
+                throw new Exception(response.Message ?? "Failed to assign quiz.");
+        }
+
     }
 }

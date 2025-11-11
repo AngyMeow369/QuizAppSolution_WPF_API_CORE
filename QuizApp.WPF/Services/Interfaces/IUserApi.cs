@@ -20,5 +20,20 @@ namespace QuizApp.WPF.Services.Interfaces
 
         [Delete("/api/users/{id}")]
         Task<Shared.DTOs.ApiResponse<object>> DeleteUserAsync(int id, [Header("Authorization")] string authorization);
+
+        [Get("/api/users/{userId}/assigned-quizzes")]
+        Task<Shared.DTOs.ApiResponse<List<QuizDto>>> GetAssignedQuizzesAsync(
+     [AliasAs("userId")] int userId,
+     [Header("Authorization")] string authorization
+ );
+
+        [Post("/api/users/{userId}/assign/{quizId}")]
+        Task<Shared.DTOs.ApiResponse<object>> AssignQuizAsync(
+            [AliasAs("userId")] int userId,
+            [AliasAs("quizId")] int quizId,
+            [Header("Authorization")] string authorization
+        );
+
+
     }
 }
