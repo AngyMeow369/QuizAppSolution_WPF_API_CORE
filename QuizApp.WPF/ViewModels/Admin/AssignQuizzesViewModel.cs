@@ -14,72 +14,86 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         public ObservableCollection<UserDto> Users { get; set; } = new();
         public ObservableCollection<QuizDto> Quizzes { get; set; } = new();
+        public ObservableCollection<QuizDto> SelectedQuizzes { get; set; } = new();
 
         private UserDto? _selectedUser;
         public UserDto? SelectedUser
         {
             get => _selectedUser;
-            set => SetProperty(ref _selectedUser, value);
+            set
+            {
+                if (SetProperty(ref _selectedUser, value))
+                    (AssignQuizzesCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            }
         }
 
-        private QuizDto? _selectedQuiz;
-        public QuizDto? SelectedQuiz
-        {
-            get => _selectedQuiz;
-            set => SetProperty(ref _selectedQuiz, value);
-        }
-
-        public ICommand AssignQuizCommand { get; }
+        public ICommand AssignQuizzesCommand { get; }
 
         public AssignQuizzesViewModel(UserService userService, QuizService quizService)
         {
             _userService = userService;
             _quizService = quizService;
 
-            AssignQuizCommand = new RelayCommand(async () => await AssignQuiz(), CanAssignQuiz);
+            AssignQuizzesCommand = new RelayCommand(async () => await AssignQuizzesAsync(), CanAssignQuizzes);
 
-            LoadData().ContinueWith(t =>
-            {
-                if (t.Exception != null)
-                {
-                    MessageBox.Show($"Error in LoadData(): {t.Exception.InnerException?.Message ?? t.Exception.Message}");
-                }
-            }, TaskContinuationOptions.OnlyOnFaulted);
+            // Load users and quizzes asynchronously
+            _ = LoadDataAsync();
         }
 
+        private bool CanAssignQuizzes()
+        {
+            return SelectedUser != null && SelectedQuizzes.Count > 0;
+        }
 
-        private bool CanAssignQuiz() => SelectedUser != null && SelectedQuiz != null;
-
-        private async Task LoadData()
+        private async Task LoadDataAsync()
         {
             try
             {
                 var users = await _userService.GetUsersAsync();
-                Users = new ObservableCollection<UserDto>(users);
-                OnPropertyChanged(nameof(Users));
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Users = new ObservableCollection<UserDto>(users);
+                    OnPropertyChanged(nameof(Users));
+                });
 
                 var quizzes = await _quizService.GetAllAsync();
-                Quizzes = new ObservableCollection<QuizDto>(quizzes);
-                OnPropertyChanged(nameof(Quizzes));
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    Quizzes = new ObservableCollection<QuizDto>(quizzes);
+                    OnPropertyChanged(nameof(Quizzes));
+                });
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Failed to load data: {ex.Message}");
+                MessageBox.Show($"Failed to load data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private async Task AssignQuiz()
+
+        private async Task AssignQuizzesAsync()
         {
-            if (SelectedUser == null || SelectedQuiz == null) return;
+            if (SelectedUser == null || SelectedQuizzes.Count == 0) return;
 
             try
             {
-                await _userService.AssignQuizAsync(SelectedUser.Id, SelectedQuiz.Id);
-                MessageBox.Show($"Quiz '{SelectedQuiz.Title}' assigned to '{SelectedUser.Username}' successfully.");
+                foreach (var quiz in SelectedQuizzes)
+                {
+                    await _userService.AssignQuizAsync(SelectedUser.Id, quiz.Id);
+                }
+
+                MessageBox.Show(
+                    $"Assigned {SelectedQuizzes.Count} quiz(es) to '{SelectedUser.Username}' successfully.",
+                    "Success",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
+                // Optionally clear selection after assignment
+                SelectedQuizzes.Clear();
+                OnPropertyChanged(nameof(SelectedQuizzes));
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Failed to assign quiz: {ex.Message}");
+                MessageBox.Show($"Failed to assign quizzes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

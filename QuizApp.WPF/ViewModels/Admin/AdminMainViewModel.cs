@@ -10,8 +10,11 @@ namespace QuizApp.WPF.ViewModels.Admin
     public class AdminMainViewModel : ObservableObject
     {
         private readonly AuthService _authService;
-        private object? _currentView;
+        private readonly QuizService _quizService;
+        private readonly UserService _userService;
+        private readonly CategoryService _categoryService;
 
+        private object? _currentView;
         public object? CurrentView
         {
             get => _currentView;
@@ -22,9 +25,9 @@ namespace QuizApp.WPF.ViewModels.Admin
         public ICommand NavigateToManageQuizzesCommand { get; }
         public ICommand NavigateToUsersCommand { get; }
         public ICommand NavigateToAnalyticsCommand { get; }
-        public ICommand LogoutCommand { get; }
         public ICommand NavigateToQuizDetailsCommand { get; }
-
+        public ICommand NavigateToAssignQuizzesCommand { get; }
+        public ICommand LogoutCommand { get; }
 
         public string CurrentUsername => _authService.Username;
         public string UserRole => _authService.Role;
@@ -44,37 +47,39 @@ namespace QuizApp.WPF.ViewModels.Admin
                     })
             };
 
+            // APIs
             var quizApi = RestService.For<IQuizApi>(baseApiUrl, refitSettings);
-            var quizService = new QuizService(quizApi, _authService);
-
-            var userService = new UserService(_authService);
-
             var categoryApi = RestService.For<ICategoryApi>(baseApiUrl, refitSettings);
-            var categoryService = new CategoryService(categoryApi, _authService);
+
+            // Services
+            _quizService = new QuizService(quizApi, _authService);
+            _userService = new UserService(_authService);
+            _categoryService = new CategoryService(categoryApi, _authService);
 
             // Navigation commands
             NavigateToDashboardCommand = new RelayCommand(() =>
                 CurrentView = new AdminDashboardViewModel(_authService));
 
             NavigateToManageQuizzesCommand = new RelayCommand(() =>
-                CurrentView = new ManageQuizzesViewModel(quizService, categoryService));
+                CurrentView = new ManageQuizzesViewModel(_quizService, _categoryService));
 
-            // ✅ Use the UserControl for ManageUsers
             NavigateToUsersCommand = new RelayCommand(() =>
-                CurrentView = new ManageUsersView(userService)); 
+                CurrentView = new ManageUsersView(_userService));
 
             NavigateToAnalyticsCommand = new RelayCommand(() =>
-                CurrentView = new AnalyticsViewModel(quizService));
+                CurrentView = new AnalyticsViewModel(_quizService));
 
             NavigateToQuizDetailsCommand = new RelayCommand(() =>
-                CurrentView = new QuizDetailsView(quizApi, _authService));
+                CurrentView = new QuizDetailsViewModel(_quizService));
+
+            NavigateToAssignQuizzesCommand = new RelayCommand(() =>
+                CurrentView = new AssignQuizzesViewModel(_userService, _quizService));
 
             LogoutCommand = new RelayCommand(Logout);
 
             // Default page
             CurrentView = new AdminDashboardViewModel(_authService);
         }
-
 
         private void Logout()
         {
