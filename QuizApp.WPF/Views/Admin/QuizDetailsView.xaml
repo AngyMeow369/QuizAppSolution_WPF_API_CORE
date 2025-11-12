@@ -5,74 +5,256 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="900"
-             Background="#F5F6FA">
+             Background="#0F172A">
 
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
+    <UserControl.Resources>
+        <!-- Colors -->
+        <Color x:Key="PrimaryColor">#6366F1</Color>
+        <Color x:Key="DarkBackground">#0F172A</Color>
+        <Color x:Key="CardBackground">#1E293B</Color>
+        <Color x:Key="BorderColor">#334155</Color>
+        <Color x:Key="HoverColor">#374151</Color>
+        <Color x:Key="SelectedColor">#6366F1</Color>
+        <Color x:Key="TextPrimary">#F1F5F9</Color>
+        <Color x:Key="TextSecondary">#94A3B8</Color>
+        <Color x:Key="SuccessColor">#10B981</Color>
 
-        <TextBlock Text="Quiz Details" FontSize="24" FontWeight="Bold" Margin="10"/>
+        <!-- Brushes -->
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}"/>
+        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="{StaticResource DarkBackground}"/>
+        <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource CardBackground}"/>
+        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderColor}"/>
+        <SolidColorBrush x:Key="HoverBrush" Color="{StaticResource HoverColor}"/>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}"/>
 
-        <Grid Grid.Row="1" Margin="0,10,0,0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="2*"/>
-                <ColumnDefinition Width="3*"/>
-            </Grid.ColumnDefinitions>
+        <!-- Shadow effect -->
+        <DropShadowEffect x:Key="CardShadow" Color="#000000" ShadowDepth="0" Opacity="0.3" BlurRadius="15"/>
+        <DropShadowEffect x:Key="HeaderShadow" Color="#000000" ShadowDepth="0" Opacity="0.4" BlurRadius="20"/>
 
-            <!-- Quiz List -->
-            <Border Grid.Column="0" 
-                    Background="White" 
-                    CornerRadius="8" 
-                    Padding="10" 
-                    Margin="0,0,10,0" 
-                    BorderBrush="#DDD" 
-                    BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="Quizzes" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,10"/>
-                    <ListBox ItemsSource="{Binding Quizzes}" 
-                             SelectedItem="{Binding SelectedQuiz}" 
-                             DisplayMemberPath="Title"
-                             Height="400"/>
-                </StackPanel>
-            </Border>
+        <!-- Converters -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-            <!-- Questions & Options -->
-            <Border Grid.Column="1"
-                    Background="White"
-                    CornerRadius="8"
-                    Padding="10"
-                    BorderBrush="#DDD"
-                    BorderThickness="1">
-                <StackPanel>
-                    <TextBlock Text="Questions" FontWeight="SemiBold" FontSize="16" Margin="0,0,0,10"/>
-                    <ScrollViewer Height="400" VerticalScrollBarVisibility="Auto">
-                        <ItemsControl ItemsSource="{Binding Questions}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Border BorderBrush="#DDD" BorderThickness="1" CornerRadius="5" Padding="8" Margin="0,0,0,8">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Text}" FontWeight="Bold" FontSize="14"/>
-                                            <ItemsControl ItemsSource="{Binding Options}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <StackPanel Orientation="Horizontal" Margin="10,2,0,2">
-                                                            <CheckBox IsChecked="{Binding IsCorrect}" IsEnabled="False"/>
-                                                            <TextBlock Text="{Binding Text}" Margin="5,0,0,0"/>
-                                                        </StackPanel>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
+        <!-- ListBoxItem Style -->
+        <Style TargetType="ListBoxItem">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,2"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="Bd" 
+                                Background="{TemplateBinding Background}" 
+                                CornerRadius="8" 
+                                Padding="{TemplateBinding Padding}"
+                                BorderThickness="1"
+                                BorderBrush="{StaticResource BorderBrush}">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource HoverBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="Bd" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- ListBox Style -->
+        <Style TargetType="ListBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+            <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto"/>
+        </Style>
+
+        <!-- GroupBox Style -->
+        <Style TargetType="GroupBox">
+            <Setter Property="Background" Value="{StaticResource CardBackgroundBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="20"/>
+            <Setter Property="Margin" Value="10"/>
+            <Setter Property="Effect" Value="{StaticResource CardShadow}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="GroupBox">
+                        <Grid>
+                            <Border Background="{TemplateBinding Background}" 
+                                    CornerRadius="12" 
+                                    BorderBrush="{TemplateBinding BorderBrush}" 
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    Padding="{TemplateBinding Padding}">
+                                <DockPanel>
+                                    <!-- Header with accent line -->
+                                    <Border DockPanel.Dock="Top" 
+                                            Margin="0,0,0,15" 
+                                            Background="Transparent">
+                                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                            <Rectangle Width="4" 
+                                                       Height="20" 
+                                                       Fill="{StaticResource PrimaryBrush}" 
+                                                       RadiusX="2" 
+                                                       RadiusY="2" 
+                                                       Margin="0,0,12,0"/>
+                                            <TextBlock Text="{TemplateBinding Header}" 
+                                                       FontWeight="SemiBold" 
+                                                       FontSize="16" 
+                                                       Foreground="{StaticResource TextPrimaryBrush}"/>
                                         </StackPanel>
                                     </Border>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
+                                    <ContentPresenter/>
+                                </DockPanel>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
 
-                    </ScrollViewer>
-                </StackPanel>
-            </Border>
-        </Grid>
+        <!-- Correct Option Style -->
+        <Style x:Key="CorrectOptionStyle" TargetType="Border">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsCorrect}" Value="True">
+                    <Setter Property="Background" Value="#10B98120"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource SuccessBrush}"/>
+                    <Setter Property="BorderThickness" Value="1"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="15">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="1"/>
+            <ColumnDefinition Width="3*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Divider -->
+        <Rectangle Grid.Column="1" 
+                   Fill="{StaticResource BorderBrush}" 
+                   Margin="10,0" 
+                   HorizontalAlignment="Center" 
+                   Width="1" 
+                   Opacity="0.5"/>
+
+        <!-- Quizzes List -->
+        <GroupBox Header="QUIZZES" Grid.Column="0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Quiz Count -->
+                <TextBlock Grid.Row="0"
+                           Text="{Binding Quizzes.Count, StringFormat='Total Quizzes: {0}'}"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           FontSize="12"
+                           Margin="0,0,0,10"
+                           HorizontalAlignment="Left"/>
+
+                <ListBox Grid.Row="1"
+                         ItemsSource="{Binding Quizzes}"
+                         SelectedItem="{Binding SelectedQuiz}"
+                         DisplayMemberPath="Title"
+                         Height="400"/>
+            </Grid>
+        </GroupBox>
+
+        <!-- Questions & Options -->
+        <GroupBox Header="QUESTIONS" Grid.Column="2">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <!-- Question Count -->
+                <TextBlock Grid.Row="0"
+                           Text="{Binding Questions.Count, StringFormat='Total Questions: {0}'}"
+                           Foreground="{StaticResource TextSecondaryBrush}"
+                           FontSize="12"
+                           Margin="0,0,0,10"
+                           HorizontalAlignment="Left"/>
+
+                <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Height="400">
+                    <ItemsControl ItemsSource="{Binding Questions}" BorderThickness="0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="{StaticResource CardBackgroundBrush}"
+                                        BorderBrush="{StaticResource BorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8"
+                                        Padding="16"
+                                        Margin="0,0,0,12">
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                                            <TextBlock Text="{Binding QuestionNumber, StringFormat='Q{0}:'}" 
+                                                       FontWeight="Bold" 
+                                                       FontSize="14"
+                                                       Foreground="{StaticResource PrimaryBrush}"
+                                                       Margin="0,0,8,0"/>
+                                            <TextBlock Text="{Binding Text}" 
+                                                       FontWeight="SemiBold" 
+                                                       FontSize="14"
+                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                       TextWrapping="Wrap"/>
+                                        </StackPanel>
+
+                                        <ItemsControl ItemsSource="{Binding Options}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Style="{StaticResource CorrectOptionStyle}"
+                                                            CornerRadius="6" 
+                                                            Padding="10,8" 
+                                                            Margin="0,4">
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <CheckBox IsChecked="{Binding IsCorrect}" 
+                                                                      IsEnabled="False"
+                                                                      Foreground="{StaticResource TextPrimaryBrush}"
+                                                                      VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding Text}" 
+                                                                       Margin="10,0,0,0" 
+                                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                                       VerticalAlignment="Center"
+                                                                       TextWrapping="Wrap"/>
+                                                            <TextBlock Text="✓ Correct" 
+                                                                       FontSize="10"
+                                                                       Foreground="{StaticResource SuccessBrush}"
+                                                                       FontWeight="Bold"
+                                                                       Margin="12,0,0,0"
+                                                                       VerticalAlignment="Center"
+                                                                       Visibility="{Binding IsCorrect, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                        </StackPanel>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </ScrollViewer>
+            </Grid>
+        </GroupBox>
     </Grid>
 </UserControl>
