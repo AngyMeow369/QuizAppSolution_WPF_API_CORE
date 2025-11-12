@@ -23,9 +23,9 @@ namespace QuizApp.WPF.Services.Interfaces
 
         [Get("/api/users/{userId}/assigned-quizzes")]
         Task<Shared.DTOs.ApiResponse<List<QuizDto>>> GetAssignedQuizzesAsync(
-     [AliasAs("userId")] int userId,
-     [Header("Authorization")] string authorization
- );
+             [AliasAs("userId")] int userId,
+             [Header("Authorization")] string authorization
+         );
 
         [Post("/api/users/{userId}/assign/{quizId}")]
         Task<Shared.DTOs.ApiResponse<object>> AssignQuizAsync(

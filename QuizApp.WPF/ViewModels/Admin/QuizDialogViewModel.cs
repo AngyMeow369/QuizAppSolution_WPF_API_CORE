@@ -32,7 +32,15 @@ namespace QuizApp.WPF.ViewModels.Admin
         public QuestionViewModel? SelectedQuestion
         {
             get => _selectedQuestion;
-            set => SetProperty(ref _selectedQuestion, value);
+            set
+            {
+                if (SetProperty(ref _selectedQuestion, value))
+                {
+                    // Make sure commands update their enabled/disabled state
+                    (DeleteQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (EditQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
         }
 
         public bool IsEditMode { get; private set; }

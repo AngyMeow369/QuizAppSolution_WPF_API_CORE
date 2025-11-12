@@ -38,8 +38,15 @@ namespace QuizApp.WPF.ViewModels.Admin
 
             AssignQuizCommand = new RelayCommand(async () => await AssignQuiz(), CanAssignQuiz);
 
-            _ = LoadData();
+            LoadData().ContinueWith(t =>
+            {
+                if (t.Exception != null)
+                {
+                    MessageBox.Show($"Error in LoadData(): {t.Exception.InnerException?.Message ?? t.Exception.Message}");
+                }
+            }, TaskContinuationOptions.OnlyOnFaulted);
         }
+
 
         private bool CanAssignQuiz() => SelectedUser != null && SelectedQuiz != null;
 
