@@ -1,6 +1,7 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
@@ -12,9 +13,9 @@ namespace QuizApp.WPF.ViewModels.Admin
         private readonly UserService _userService;
         private readonly QuizService _quizService;
 
-        public ObservableCollection<UserDto> Users { get; set; } = new();
-        public ObservableCollection<QuizDto> Quizzes { get; set; } = new();
-        public ObservableCollection<QuizDto> SelectedQuizzes { get; set; } = new();
+        public ObservableCollection<UserDto> Users { get; } = new();
+        public ObservableCollection<QuizDto> Quizzes { get; } = new();
+        public ObservableCollection<QuizDto> SelectedQuizzes { get; } = new();
 
         private UserDto? _selectedUser;
         public UserDto? SelectedUser
@@ -45,22 +46,26 @@ namespace QuizApp.WPF.ViewModels.Admin
             return SelectedUser != null && SelectedQuizzes.Count > 0;
         }
 
-        private async Task LoadDataAsync()
+        public async Task LoadDataAsync()
         {
             try
             {
+                // Load users
                 var users = await _userService.GetUsersAsync();
-                Application.Current.Dispatcher.Invoke(() =>
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    Users = new ObservableCollection<UserDto>(users);
-                    OnPropertyChanged(nameof(Users));
+                    Users.Clear();
+                    foreach (var u in users)
+                        Users.Add(u);
                 });
 
+                // Load quizzes
                 var quizzes = await _quizService.GetAllAsync();
-                Application.Current.Dispatcher.Invoke(() =>
+                await Application.Current.Dispatcher.InvokeAsync(() =>
                 {
-                    Quizzes = new ObservableCollection<QuizDto>(quizzes);
-                    OnPropertyChanged(nameof(Quizzes));
+                    Quizzes.Clear();
+                    foreach (var q in quizzes)
+                        Quizzes.Add(q);
                 });
             }
             catch (System.Exception ex)
@@ -69,17 +74,15 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
         }
 
-
         private async Task AssignQuizzesAsync()
         {
             if (SelectedUser == null || SelectedQuizzes.Count == 0) return;
 
             try
             {
-                foreach (var quiz in SelectedQuizzes)
-                {
-                    await _userService.AssignQuizAsync(SelectedUser.Id, quiz.Id);
-                }
+                // Assign all selected quizzes in parallel
+                var tasks = SelectedQuizzes.Select(q => _userService.AssignQuizAsync(SelectedUser.Id, q.Id));
+                await Task.WhenAll(tasks);
 
                 MessageBox.Show(
                     $"Assigned {SelectedQuizzes.Count} quiz(es) to '{SelectedUser.Username}' successfully.",
@@ -87,8 +90,8 @@ namespace QuizApp.WPF.ViewModels.Admin
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
 
-                // Optionally clear selection after assignment
-                SelectedQuizzes.Clear();
+                // Clear selected quizzes safely
+                await Application.Current.Dispatcher.InvokeAsync(() => SelectedQuizzes.Clear());
                 OnPropertyChanged(nameof(SelectedQuizzes));
             }
             catch (System.Exception ex)

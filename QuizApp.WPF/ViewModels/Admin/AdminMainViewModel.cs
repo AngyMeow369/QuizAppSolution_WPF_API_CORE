@@ -72,8 +72,13 @@ namespace QuizApp.WPF.ViewModels.Admin
             NavigateToQuizDetailsCommand = new RelayCommand(() =>
                 CurrentView = new QuizDetailsViewModel(_quizService));
 
-            NavigateToAssignQuizzesCommand = new RelayCommand(() =>
-                CurrentView = new AssignQuizzesViewModel(_userService, _quizService));
+            NavigateToAssignQuizzesCommand = new RelayCommand(async () =>
+            {
+                var assignVM = new AssignQuizzesViewModel(_userService, _quizService);
+                CurrentView = assignVM;
+                await assignVM.LoadDataAsync(); // Load users and quizzes asynchronously after setting the view
+            });
+
 
             LogoutCommand = new RelayCommand(Logout);
 
