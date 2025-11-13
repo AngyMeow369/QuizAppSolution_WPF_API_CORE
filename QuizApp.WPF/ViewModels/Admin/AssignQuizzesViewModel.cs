@@ -95,7 +95,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                 SelectedQuizzes.Clear();
                 OnPropertyChanged(nameof(SelectedQuizzes));
             }
-            catch (System.Exception ex)
+            catch (System.Exception)
             {
                 MessageBox.Show($"QUIZ CONTAINS NO QUESTIONS YET!!!!");
             }
