@@ -35,7 +35,10 @@
 
                                 <Button Grid.Column="1" Content="Start Quiz" 
                                         Background="#4CAF50" Foreground="White" 
-                                        Padding="20,10" FontWeight="SemiBold"/>
+                                        Padding="20,10" FontWeight="SemiBold"
+                                        Command="{Binding DataContext.StartQuizCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                        CommandParameter="{Binding}"/>
+
                             </Grid>
                         </Border>
                     </DataTemplate>

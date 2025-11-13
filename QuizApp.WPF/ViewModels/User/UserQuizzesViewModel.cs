@@ -1,5 +1,6 @@
 ﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services.User;
+using QuizApp.WPF.Views.User;
 using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -12,15 +13,37 @@ namespace QuizApp.WPF.ViewModels.User
     {
         private readonly UserQuizService _quizService;
         private ObservableCollection<QuizDto> _assignedQuizzes;
+        public ICommand StartQuizCommand { get; }
+
         private bool _isLoading;
 
         public UserQuizzesViewModel(UserQuizService quizService)
         {
             _quizService = quizService;
             _assignedQuizzes = new ObservableCollection<QuizDto>();
+
             LoadQuizzesCommand = new RelayCommand(async () => await LoadAssignedQuizzesAsync());
+
+            StartQuizCommand = new RelayCommand<QuizDto>(StartQuiz);
+
             _ = LoadAssignedQuizzesAsync();
         }
+        private void StartQuiz(QuizDto quiz)
+        {
+            // Create the QuizAttemptView
+            var quizAttemptView = new QuizAttemptView(_quizService);
+
+            // Pass the quiz ID to its ViewModel
+            if (quizAttemptView.DataContext is QuizAttemptViewModel vm)
+            {
+                _ = vm.LoadQuizAsync(quiz.Id);
+            }
+
+            // Navigate by replacing main window content (adjust if you use Frame or region navigation)
+            Application.Current.MainWindow.Content = quizAttemptView;
+        }
+
+
 
         public ObservableCollection<QuizDto> AssignedQuizzes
         {
