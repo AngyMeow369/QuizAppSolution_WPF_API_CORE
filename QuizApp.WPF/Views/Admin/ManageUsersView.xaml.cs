@@ -10,9 +10,7 @@ namespace QuizApp.WPF.Views.Admin
         public ManageUsersView()
         {
             InitializeComponent();
-        }
-
-       
+        }   
     }
 
 }

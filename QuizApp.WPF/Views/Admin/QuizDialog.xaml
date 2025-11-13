@@ -47,16 +47,16 @@
 
         <!-- ComboBox Style -->
         <Style TargetType="ComboBox">
-            <Setter Property="Background" Value="#2D3748"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="Black"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
         </Style>
 
         <!-- ComboBox Item Style -->
         <Style TargetType="ComboBoxItem">
-            <Setter Property="Background" Value="#2D3748"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="Foreground" Value="Black"/>
             <Setter Property="BorderThickness" Value="0"/>
         </Style>
 

@@ -10,12 +10,5 @@ namespace QuizApp.WPF.Views.Admin
         {
             InitializeComponent();
         }
-
-        // Optional constructor for manual ViewModel injection (won't affect XAML)
-        public AssignQuizzesView(object viewModel)
-        {
-            InitializeComponent();
-            DataContext = viewModel;
-        }
     }
 }
