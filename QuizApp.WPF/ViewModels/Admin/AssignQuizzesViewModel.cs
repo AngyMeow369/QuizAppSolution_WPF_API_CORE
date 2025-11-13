@@ -97,7 +97,7 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Failed to assign quizzes: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"QUIZ CONTAINS NO QUESTIONS YET!!!!");
             }
         }
     }
