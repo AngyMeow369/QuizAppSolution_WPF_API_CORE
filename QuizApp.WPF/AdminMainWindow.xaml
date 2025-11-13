@@ -48,6 +48,11 @@
             <views:AdminDashboardView/>
         </DataTemplate>
 
+        <DataTemplate DataType="{x:Type vm:ManageUsersViewModel}">
+            <views:ManageUsersView />
+        </DataTemplate>
+
+
         <DataTemplate DataType="{x:Type vm:ManageQuizzesViewModel}">
             <views:ManageQuizzesView/>
         </DataTemplate>

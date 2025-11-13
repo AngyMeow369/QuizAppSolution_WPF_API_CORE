@@ -1,9 +1,10 @@
 ﻿using QuizApp.WPF.Services;
+using QuizApp.WPF.Services.Interfaces;
+using QuizApp.WPF.Views.Admin;
 using Refit;
 using System.Text.Json;
-using QuizApp.WPF.Services.Interfaces;
+using System.Windows;
 using System.Windows.Input;
-using QuizApp.WPF.Views.Admin;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
@@ -56,15 +57,14 @@ namespace QuizApp.WPF.ViewModels.Admin
             _userService = new UserService(_authService);
             _categoryService = new CategoryService(categoryApi, _authService);
 
-            // Navigation commands
             NavigateToDashboardCommand = new RelayCommand(() =>
-                CurrentView = new AdminDashboardViewModel(_authService));
+    CurrentView = new AdminDashboardViewModel(_authService));
 
             NavigateToManageQuizzesCommand = new RelayCommand(() =>
                 CurrentView = new ManageQuizzesViewModel(_quizService, _categoryService));
 
             NavigateToUsersCommand = new RelayCommand(() =>
-                CurrentView = new ManageUsersView(_userService));
+                CurrentView = new ManageUsersViewModel(_userService)); // <-- must be ViewModel
 
             NavigateToAnalyticsCommand = new RelayCommand(() =>
                 CurrentView = new AnalyticsViewModel(_quizService));
@@ -72,18 +72,31 @@ namespace QuizApp.WPF.ViewModels.Admin
             NavigateToQuizDetailsCommand = new RelayCommand(() =>
                 CurrentView = new QuizDetailsViewModel(_quizService));
 
-            NavigateToAssignQuizzesCommand = new RelayCommand(async () =>
-            {
-                var assignVM = new AssignQuizzesViewModel(_userService, _quizService);
-                CurrentView = assignVM;
-                await assignVM.LoadDataAsync(); // Load users and quizzes asynchronously after setting the view
-            });
+            NavigateToAssignQuizzesCommand = new RelayCommand(() =>
+                CurrentView = new AssignQuizzesViewModel(_userService, _quizService));
 
 
             LogoutCommand = new RelayCommand(Logout);
 
             // Default page
             CurrentView = new AdminDashboardViewModel(_authService);
+        }
+
+        /// <summary>
+        /// Safely navigate to a new view model, catching exceptions to prevent crashes
+        /// </summary>
+        /// <param name="createViewModel">Func returning a new view model instance</param>
+        private void NavigateSafely(Func<object> createViewModel)
+        {
+            try
+            {
+                CurrentView = createViewModel();
+            }
+            catch (System.Exception ex)
+            {
+                MessageBox.Show($"Failed to navigate: {ex.Message}", "Navigation Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void Logout()
