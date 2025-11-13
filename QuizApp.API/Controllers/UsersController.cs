@@ -219,13 +219,14 @@ namespace QuizApp.API.Controllers
                 if (user == null || quiz == null)
                     return NotFound(ApiResponse<object>.CreateFailure("User or quiz not found."));
 
-                // Prevent assigning duplicates
-                bool alreadyAssigned = await _context.QuizAssignments
-                    .AnyAsync(a => a.UserId == userId && a.QuizId == quizId);
+                // Remove existing assignment if it exists
+                var existingAssignment = await _context.QuizAssignments
+                    .FirstOrDefaultAsync(a => a.UserId == userId && a.QuizId == quizId);
 
-                if (alreadyAssigned)
-                    return BadRequest(ApiResponse<object>.CreateFailure("Quiz already assigned to this user."));
+                if (existingAssignment != null)
+                    _context.QuizAssignments.Remove(existingAssignment);
 
+                // Create new assignment
                 var assignment = new QuizAssignment
                 {
                     UserId = userId,
@@ -243,6 +244,9 @@ namespace QuizApp.API.Controllers
                 return StatusCode(500, ApiResponse<object>.CreateFailure($"Error assigning quiz: {ex.Message}"));
             }
         }
+
+
+
 
 
 

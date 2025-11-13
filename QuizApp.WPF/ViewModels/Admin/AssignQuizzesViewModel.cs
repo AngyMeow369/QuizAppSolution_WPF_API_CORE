@@ -87,23 +87,14 @@ namespace QuizApp.WPF.ViewModels.Admin
 
             try
             {
-                // Fetch user's current assignments
-                var assignedQuizzes = await _userService.GetAssignedQuizzesAsync(SelectedUser.Id);
-                var quizzesToAssign = validQuizzes.Where(q => !assignedQuizzes.Any(a => a.Id == q.Id)).ToList();
-
-                if (!quizzesToAssign.Any())
-                {
-                    MessageBox.Show("Selected quizzes are already assigned to this user.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
-                    return;
-                }
-
-                foreach (var quiz in quizzesToAssign)
+                // Assign all selected quizzes — API will handle overwriting existing assignments
+                foreach (var quiz in validQuizzes)
                 {
                     await _userService.AssignQuizAsync(SelectedUser.Id, quiz.Id);
                 }
 
                 MessageBox.Show(
-                    $"Assigned {quizzesToAssign.Count} quiz(es) to '{SelectedUser.Username}' successfully.",
+                    $"Assigned {validQuizzes.Count} quiz(es) to '{SelectedUser.Username}' successfully.",
                     "Success",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -116,6 +107,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                 MessageBox.Show($"Unexpected error during assignment: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
     }
 }
