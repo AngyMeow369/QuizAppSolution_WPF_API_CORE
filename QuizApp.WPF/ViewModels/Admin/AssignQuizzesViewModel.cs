@@ -52,7 +52,15 @@ namespace QuizApp.WPF.ViewModels.Admin
             {
                 var users = await _userService.GetUsersAsync();
                 Users.Clear();
-                foreach (var u in users) Users.Add(u);
+
+                foreach (var u in users)
+                {
+                    // Skip admin users
+                    if (!string.Equals(u.Role, "admin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Users.Add(u);
+                    }
+                }
 
                 var quizzes = await _quizService.GetAllAsync();
                 Quizzes.Clear();
@@ -63,6 +71,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                 MessageBox.Show($"Failed to load data: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private async Task AssignQuizzesAsync()
         {

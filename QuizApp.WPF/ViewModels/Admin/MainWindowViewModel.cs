@@ -14,7 +14,7 @@ namespace QuizApp.WPF.ViewModels.Admin
 {
     public class MainWindowViewModel : INotifyPropertyChanged
     {
-        private readonly Services.NavigationService _navigationService;
+        private readonly NavigationService _navigationService;
         private readonly IAuthService _authService; // Add this field
         private object _currentView;
         private string _currentUsername;
