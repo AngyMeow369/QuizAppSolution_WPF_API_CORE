@@ -77,5 +77,7 @@ namespace QuizApp.WPF.Services
             if (!response.Success)
                 throw new Exception(response.Message ?? "Failed to assign quiz.");
         }
+
+
     }
 }

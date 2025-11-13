@@ -208,6 +208,43 @@ namespace QuizApp.API.Controllers
             }
         }
 
+        [HttpPost("{userId}/assign/{quizId}")]
+        public async Task<ActionResult<ApiResponse<object>>> AssignQuiz(int userId, int quizId)
+        {
+            try
+            {
+                var user = await _context.Users.FindAsync(userId);
+                var quiz = await _context.Quizzes.FindAsync(quizId);
+
+                if (user == null || quiz == null)
+                    return NotFound(ApiResponse<object>.CreateFailure("User or quiz not found."));
+
+                // Prevent assigning duplicates
+                bool alreadyAssigned = await _context.QuizAssignments
+                    .AnyAsync(a => a.UserId == userId && a.QuizId == quizId);
+
+                if (alreadyAssigned)
+                    return BadRequest(ApiResponse<object>.CreateFailure("Quiz already assigned to this user."));
+
+                var assignment = new QuizAssignment
+                {
+                    UserId = userId,
+                    QuizId = quizId,
+                    Completed = false
+                };
+
+                _context.QuizAssignments.Add(assignment);
+                await _context.SaveChangesAsync();
+
+                return Ok(ApiResponse<object>.CreateSuccess(null, "Quiz assigned successfully."));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ApiResponse<object>.CreateFailure($"Error assigning quiz: {ex.Message}"));
+            }
+        }
+
+
 
     }
 }

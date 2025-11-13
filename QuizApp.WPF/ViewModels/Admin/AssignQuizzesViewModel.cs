@@ -30,6 +30,7 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         public ICommand AssignQuizzesCommand { get; }
 
+
         public AssignQuizzesViewModel(UserService userService, QuizService quizService)
         {
             _userService = userService;
@@ -37,9 +38,12 @@ namespace QuizApp.WPF.ViewModels.Admin
 
             AssignQuizzesCommand = new RelayCommand(async () => await AssignQuizzesAsync(), CanAssignQuizzes);
 
-            // Fire-and-forget async loading
+            SelectedQuizzes.CollectionChanged += (s, e) =>
+                (AssignQuizzesCommand as RelayCommand)?.RaiseCanExecuteChanged();
+
             _ = LoadDataAsync();
         }
+
 
         private bool CanAssignQuizzes()
         {
