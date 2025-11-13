@@ -113,24 +113,27 @@
 
             <!-- Login Button -->
             <Button Grid.Row="5" 
-                    Content="{Binding LoginButtonText}" 
-                    Height="45" 
-                    Background="#4a86e8" 
-                    Foreground="White" 
-                    BorderThickness="0"
-                    FontSize="14" 
-                    FontWeight="SemiBold"
-                    Cursor="Hand"
-                    Command="{Binding LoginCommand}">
+        Content="{Binding LoginButtonText}" 
+        Height="45" 
+        Background="#4a86e8" 
+        Foreground="Black" 
+        BorderThickness="0"
+        FontSize="14" 
+        FontWeight="SemiBold"
+        Cursor="Hand"
+        Command="{Binding LoginCommand}">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="#4a86e8"/>
+                        <Setter Property="Foreground" Value="Black"/>
                         <Style.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter Property="Background" Value="#3a76d8"/>
+                                <Setter Property="Foreground" Value="Black"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter Property="Background" Value="#2a66c8"/>
+                                <Setter Property="Foreground" Value="Black"/>
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Background" Value="#666666"/>

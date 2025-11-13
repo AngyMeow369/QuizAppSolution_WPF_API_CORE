@@ -37,36 +37,26 @@ namespace QuizApp.WPF.ViewModels.Admin
 
             AssignQuizzesCommand = new RelayCommand(async () => await AssignQuizzesAsync(), CanAssignQuizzes);
 
-            // Load users and quizzes asynchronously
+            // Fire-and-forget async loading
             _ = LoadDataAsync();
         }
 
         private bool CanAssignQuizzes()
         {
-            return SelectedUser != null && SelectedQuizzes.Count > 0;
+            return SelectedUser != null && SelectedQuizzes.Any();
         }
 
-        public async Task LoadDataAsync()
+        private async Task LoadDataAsync()
         {
             try
             {
-                // Load users
                 var users = await _userService.GetUsersAsync();
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    Users.Clear();
-                    foreach (var u in users)
-                        Users.Add(u);
-                });
+                Users.Clear();
+                foreach (var u in users) Users.Add(u);
 
-                // Load quizzes
                 var quizzes = await _quizService.GetAllAsync();
-                await Application.Current.Dispatcher.InvokeAsync(() =>
-                {
-                    Quizzes.Clear();
-                    foreach (var q in quizzes)
-                        Quizzes.Add(q);
-                });
+                Quizzes.Clear();
+                foreach (var q in quizzes) Quizzes.Add(q);
             }
             catch (System.Exception ex)
             {
@@ -76,11 +66,10 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         private async Task AssignQuizzesAsync()
         {
-            if (SelectedUser == null || SelectedQuizzes.Count == 0) return;
+            if (SelectedUser == null || !SelectedQuizzes.Any()) return;
 
             try
             {
-                // Assign all selected quizzes in parallel
                 var tasks = SelectedQuizzes.Select(q => _userService.AssignQuizAsync(SelectedUser.Id, q.Id));
                 await Task.WhenAll(tasks);
 
@@ -90,8 +79,7 @@ namespace QuizApp.WPF.ViewModels.Admin
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
 
-                // Clear selected quizzes safely
-                await Application.Current.Dispatcher.InvokeAsync(() => SelectedQuizzes.Clear());
+                SelectedQuizzes.Clear();
                 OnPropertyChanged(nameof(SelectedQuizzes));
             }
             catch (System.Exception ex)
