@@ -14,142 +14,100 @@ namespace QuizApp.WPF.ViewModels.User
     public class QuizAttemptViewModel : BaseViewModel
     {
         private readonly UserQuizService _quizService;
-        private QuizTakeDto? _quiz;
-        private bool _isLoading;
-        private bool _isSubmitting;
-        private DispatcherTimer? _timer;
-        private TimeSpan _timeRemaining;
-        private Dictionary<int, int> _selectedAnswers = new(); // QuestionId -> OptionId
 
         public QuizAttemptViewModel(UserQuizService quizService)
         {
             _quizService = quizService;
-            SubmitCommand = new RelayCommand(async () => await SubmitQuizAsync(), () => !_isSubmitting && _quiz != null);
+            SelectedOptions = new Dictionary<int, int>();
+            SubmitCommand = new RelayCommand(async () => await SubmitQuizAsync());
         }
 
+        // Quiz data
+        private QuizTakeDto? _quiz;
         public QuizTakeDto? Quiz
         {
             get => _quiz;
             set => SetProperty(ref _quiz, value);
         }
 
-        public bool IsLoading
+        // Dictionary<QuestionId, OptionId>
+        public Dictionary<int, int> SelectedOptions { get; }
+
+        // Timer
+        private int _remainingSeconds;
+        public int RemainingSeconds
         {
-            get => _isLoading;
-            set => SetProperty(ref _isLoading, value);
+            get => _remainingSeconds;
+            set => SetProperty(ref _remainingSeconds, value);
         }
 
-        public bool IsSubmitting
-        {
-            get => _isSubmitting;
-            set
-            {
-                SetProperty(ref _isSubmitting, value);
-                (SubmitCommand as RelayCommand)?.RaiseCanExecuteChanged();
-            }
-        }
+        private DispatcherTimer? _timer;
 
-        public TimeSpan TimeRemaining
-        {
-            get => _timeRemaining;
-            set => SetProperty(ref _timeRemaining, value);
-        }
-
-        public Dictionary<int, int> SelectedAnswers
-        {
-            get => _selectedAnswers;
-            set => SetProperty(ref _selectedAnswers, value);
-        }
-
+        // Commands
         public ICommand SubmitCommand { get; }
 
+        // Load quiz
         public async Task LoadQuizAsync(int quizId)
         {
-            IsLoading = true;
             try
             {
                 Quiz = await _quizService.GetQuizForTakingAsync(quizId);
 
-                // Initialize selected answers
-                SelectedAnswers = Quiz.Questions.ToDictionary(q => q.Id, q => 0);
+                // Start countdown
+                var duration = (int)(Quiz.EndTime - Quiz.StartTime).TotalSeconds;
+                if (duration <= 0) duration = 60 * 5; // fallback 5 min
+                RemainingSeconds = duration;
 
-                // Initialize timer
-                TimeRemaining = Quiz.EndTime - DateTime.UtcNow;
-                _timer = new DispatcherTimer
-                {
-                    Interval = TimeSpan.FromSeconds(1)
-                };
+                _timer = new DispatcherTimer();
+                _timer.Interval = TimeSpan.FromSeconds(1);
                 _timer.Tick += Timer_Tick;
                 _timer.Start();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                IsLoading = false;
+                MessageBox.Show($"Failed to load quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        private void Timer_Tick(object? sender, EventArgs e)
+        private async void Timer_Tick(object? sender, EventArgs e)
         {
-            TimeRemaining = TimeRemaining - TimeSpan.FromSeconds(1);
-            if (TimeRemaining <= TimeSpan.Zero)
+            RemainingSeconds--;
+            if (RemainingSeconds <= 0)
             {
                 _timer?.Stop();
-                _ = SubmitQuizAsync(autoSubmit: true);
+                await SubmitQuizAsync();
             }
         }
 
-        public async Task SubmitQuizAsync(bool autoSubmit = false)
+        // Track option selection
+        public void SelectOption(int questionId, int optionId)
+        {
+            SelectedOptions[questionId] = optionId;
+        }
+
+        // Submit quiz
+        private async Task SubmitQuizAsync()
         {
             if (Quiz == null) return;
-            if (!_selectedAnswers.Any()) return;
 
-            IsSubmitting = true;
+            var submission = new QuizSubmissionDto
+            {
+                Answers = SelectedOptions.Select(kv => new QuestionSubmissionDto
+                {
+                    QuestionId = kv.Key,
+                    SelectedOptionId = kv.Value
+                }).ToList()
+            };
 
             try
             {
-                var submission = new QuizSubmissionDto
-                {
-                    Answers = SelectedAnswers
-                        .Where(kv => kv.Value != 0)
-                        .Select(kv => new QuestionSubmissionDto
-                        {
-                            QuestionId = kv.Key,
-                            SelectedOptionId = kv.Value
-                        })
-                        .ToList()
-                };
-
                 var result = await _quizService.SubmitQuizAsync(Quiz.Id, submission);
-
-                _timer?.Stop();
-
-                string message = $"You scored {result.Score}/{result.TotalQuestions}!";
-                if (autoSubmit) message = "Time's up! " + message;
-
-                MessageBox.Show(message, "Quiz Result", MessageBoxButton.OK, MessageBoxImage.Information);
-
-                // Optionally, navigate back to dashboard or results page here
+                MessageBox.Show($"Time's up! Your score: {result.Score}/{result.TotalQuestions}", "Quiz Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
+                // Optionally navigate back to quiz list
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error submitting quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
-            finally
-            {
-                IsSubmitting = false;
-            }
-        }
-
-        public void SelectOption(int questionId, int optionId)
-        {
-            if (SelectedAnswers.ContainsKey(questionId))
-            {
-                SelectedAnswers[questionId] = optionId;
-                OnPropertyChanged(nameof(SelectedAnswers));
+                MessageBox.Show($"Failed to submit quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

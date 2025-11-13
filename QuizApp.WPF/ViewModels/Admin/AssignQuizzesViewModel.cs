@@ -30,7 +30,6 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         public ICommand AssignQuizzesCommand { get; }
 
-
         public AssignQuizzesViewModel(UserService userService, QuizService quizService)
         {
             _userService = userService;
@@ -43,7 +42,6 @@ namespace QuizApp.WPF.ViewModels.Admin
 
             _ = LoadDataAsync();
         }
-
 
         private bool CanAssignQuizzes()
         {
@@ -59,11 +57,8 @@ namespace QuizApp.WPF.ViewModels.Admin
 
                 foreach (var u in users)
                 {
-                    // Skip admin users
-                    if (!string.Equals(u.Role, "admin", StringComparison.OrdinalIgnoreCase))
-                    {
+                    if (!string.Equals(u.Role, "admin", System.StringComparison.OrdinalIgnoreCase))
                         Users.Add(u);
-                    }
                 }
 
                 var quizzes = await _quizService.GetAllAsync();
@@ -76,18 +71,39 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
         }
 
-
         private async Task AssignQuizzesAsync()
         {
             if (SelectedUser == null || !SelectedQuizzes.Any()) return;
 
+            var validQuizzes = SelectedQuizzes
+                .Where(q => q.QuestionIds != null && q.QuestionIds.Count > 0)
+                .ToList();
+
+            if (!validQuizzes.Any())
+            {
+                MessageBox.Show("No quizzes with questions selected. Cannot assign empty quizzes.", "Warning", MessageBoxButton.OK, MessageBoxImage.Warning);
+                return;
+            }
+
             try
             {
-                var tasks = SelectedQuizzes.Select(q => _userService.AssignQuizAsync(SelectedUser.Id, q.Id));
-                await Task.WhenAll(tasks);
+                // Fetch user's current assignments
+                var assignedQuizzes = await _userService.GetAssignedQuizzesAsync(SelectedUser.Id);
+                var quizzesToAssign = validQuizzes.Where(q => !assignedQuizzes.Any(a => a.Id == q.Id)).ToList();
+
+                if (!quizzesToAssign.Any())
+                {
+                    MessageBox.Show("Selected quizzes are already assigned to this user.", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                    return;
+                }
+
+                foreach (var quiz in quizzesToAssign)
+                {
+                    await _userService.AssignQuizAsync(SelectedUser.Id, quiz.Id);
+                }
 
                 MessageBox.Show(
-                    $"Assigned {SelectedQuizzes.Count} quiz(es) to '{SelectedUser.Username}' successfully.",
+                    $"Assigned {quizzesToAssign.Count} quiz(es) to '{SelectedUser.Username}' successfully.",
                     "Success",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);
@@ -95,10 +111,11 @@ namespace QuizApp.WPF.ViewModels.Admin
                 SelectedQuizzes.Clear();
                 OnPropertyChanged(nameof(SelectedQuizzes));
             }
-            catch (System.Exception)
+            catch (System.Exception ex)
             {
-                MessageBox.Show($"QUIZ CONTAINS NO QUESTIONS YET!!!!");
+                MessageBox.Show($"Unexpected error during assignment: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
     }
 }
