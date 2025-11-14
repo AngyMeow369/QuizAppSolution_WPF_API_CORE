@@ -109,12 +109,13 @@
 
     <Grid Margin="20">
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="26.133"/>
+            <RowDefinition Height="76.4"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
         <!-- Loading Overlay -->
-        <Border Grid.Row="0" Grid.RowSpan="2"
+        <Border Grid.Row="0" Grid.RowSpan="3"
                 Background="#1E293B" 
                 Opacity="0.95"
                 Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
@@ -129,12 +130,12 @@
         </Border>
 
         <!-- Stats Cards -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" HorizontalAlignment="Stretch" Margin="0,0,0,30">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,30" Grid.RowSpan="2">
             <!-- Users Card -->
             <Button Style="{StaticResource DashboardCard}" 
-                    Tag="👥"
-                    Content="{Binding Users.Count}"
-                    Command="{Binding DataContext.NavigateToUsersCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+    Tag="👨‍💼"
+    Content="{Binding Users.Count}"
+    Command="{Binding DataContext.NavigateToUsersCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                         <GradientStop Color="#4F46E5" Offset="0.0"/>
@@ -145,9 +146,9 @@
 
             <!-- Quizzes Card -->
             <Button Style="{StaticResource DashboardCard}" 
-                    Tag="📝"
-                    Content="{Binding Quizzes.Count}"
-                    Command="{Binding DataContext.NavigateToManageQuizzesCommand, RelativeSource={RelativeSource AncestorType=Window}}">
+    Tag="📊"
+    Content="{Binding Quizzes.Count}"
+    Command="{Binding DataContext.NavigateToManageQuizzesCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                         <GradientStop Color="#10B981" Offset="0.0"/>
@@ -158,8 +159,9 @@
 
             <!-- Categories Card -->
             <Button Style="{StaticResource DashboardCard}" 
-                    Tag="📂"
-                    Content="{Binding Categories.Count}">
+    Tag="📁"
+    Content="{Binding Categories.Count}"
+    Command="{Binding DataContext.NavigateToQuizDetailsCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                         <GradientStop Color="#F59E0B" Offset="0.0"/>
@@ -170,8 +172,9 @@
 
             <!-- Questions Card -->
             <Button Style="{StaticResource DashboardCard}" 
-                    Tag="❓"
-                    Content="{Binding Questions.Count}">
+    Tag="❓"
+    Content="{Binding Questions.Count}"
+    Command="{Binding DataContext.NavigateToAssignQuizzesCommand, RelativeSource={RelativeSource AncestorType=Window}}">
                 <Button.Background>
                     <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                         <GradientStop Color="#EF4444" Offset="0.0"/>
@@ -182,7 +185,7 @@
         </StackPanel>
 
         <!-- Content Area -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="2">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="10"/>
@@ -191,21 +194,36 @@
 
             <!-- Recent Quizzes -->
             <Border Grid.Column="0" 
-                    Background="{StaticResource CardBackgroundBrush}" 
-                    Padding="20" 
-                    CornerRadius="12"
-                    BorderBrush="{StaticResource BorderBrush}" 
-                    BorderThickness="1"
-                    Effect="{StaticResource CardShadow}">
+        Background="{StaticResource CardBackgroundBrush}" 
+        Padding="20" 
+        CornerRadius="12"
+        BorderBrush="{StaticResource BorderBrush}" 
+        BorderThickness="1"
+        Effect="{StaticResource CardShadow}">
                 <StackPanel>
                     <!-- Header -->
-                    <Border Margin="0,0,0,15" Background="Transparent">
+                    <Border Margin="0,0,0,20" Background="Transparent">
                         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Rectangle Width="4" Height="20" Fill="#10B981" RadiusX="2" RadiusY="2" Margin="0,0,12,0"/>
-                            <TextBlock Text="Recent Quizzes" 
-                                       FontWeight="SemiBold" 
-                                       FontSize="16" 
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <Border Width="36" 
+                        Height="36" 
+                        Background="#10B981" 
+                        CornerRadius="8"
+                        Margin="0,0,12,0">
+                                <TextBlock Text="📝" 
+                               FontSize="16"
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Recent Quizzes" 
+                               FontWeight="Bold" 
+                               FontSize="18" 
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="Latest created quizzes" 
+                               Foreground="{StaticResource TextSecondaryBrush}" 
+                               FontSize="12"
+                               Margin="0,2,0,0"/>
+                            </StackPanel>
                         </StackPanel>
                     </Border>
 
@@ -215,15 +233,51 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Style="{StaticResource ListItemStyle}">
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding Title}" 
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}"/>
-                                            <TextBlock Text="{Binding StartTime, StringFormat='Starts: {0:dd MMM yyyy HH:mm}'}"
-                                                       Foreground="{StaticResource TextSecondaryBrush}" 
-                                                       FontSize="12"
-                                                       Margin="0,4,0,0"/>
-                                        </StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="32"/>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- Quiz Icon -->
+                                            <Border Grid.Column="0"
+                                        Width="24" 
+                                        Height="24" 
+                                        Background="#10B981" 
+                                        CornerRadius="6"
+                                        VerticalAlignment="Center"
+                                        Opacity="0.8">
+                                                <TextBlock Text="🧩" 
+                                               FontSize="10"
+                                               HorizontalAlignment="Center" 
+                                               VerticalAlignment="Center"/>
+                                            </Border>
+
+                                            <!-- Quiz Info -->
+                                            <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                                <TextBlock Text="{Binding Title}" 
+                                               FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding StartTime, StringFormat='Starts: {0:dd MMM yyyy • HH:mm}'}"
+                                               Foreground="{StaticResource TextSecondaryBrush}" 
+                                               FontSize="11"
+                                               Margin="0,2,0,0"/>
+                                            </StackPanel>
+
+                                            <!-- Status Indicator -->
+                                            <Border Grid.Column="2"
+                                        Background="#334155" 
+                                        CornerRadius="4" 
+                                        Padding="6,2"
+                                        VerticalAlignment="Center">
+                                                <TextBlock Text="Active" 
+                                               Foreground="#10B981" 
+                                               FontSize="9"
+                                               FontWeight="Bold"/>
+                                            </Border>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
@@ -253,26 +307,40 @@
                     </Border>
 
                     <!-- Users List -->
+                  
                     <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="400">
                         <ItemsControl ItemsSource="{Binding Users}">
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Style="{StaticResource ListItemStyle}">
-                                        <DockPanel LastChildFill="True">
-                                            <TextBlock Text="{Binding Username}" 
-                                                       FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}" 
-                                                       DockPanel.Dock="Left"/>
-                                            <Border Background="#334155" 
-                                                    CornerRadius="4" 
-                                                    Padding="4,2" 
-                                                    DockPanel.Dock="Right">
-                                                <TextBlock Text="{Binding Role}" 
-                                                           Foreground="{StaticResource TextSecondaryBrush}" 
-                                                           FontSize="10"
-                                                           FontWeight="SemiBold"/>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="32"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <!-- User Avatar -->
+                                            <Border Grid.Column="0"
+                                Width="28" 
+                                Height="28" 
+                                Background="#6366F1" 
+                                CornerRadius="14"
+                                VerticalAlignment="Center">
+                                                <TextBlock Text="👤" 
+                                       FontSize="12"
+                                       HorizontalAlignment="Center" 
+                                       VerticalAlignment="Center"/>
                                             </Border>
-                                        </DockPanel>
+
+                                            <!-- Username -->
+                                            <TextBlock Grid.Column="1" 
+                                   Text="{Binding Username}" 
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   VerticalAlignment="Center"
+                                   Margin="12,0,0,0"
+                                   TextTrimming="CharacterEllipsis"/>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>

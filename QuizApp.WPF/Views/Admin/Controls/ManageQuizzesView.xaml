@@ -4,7 +4,8 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              mc:Ignorable="d"
-             d:DesignHeight="600" d:DesignWidth="900">
+             d:DesignHeight="600" d:DesignWidth="900"
+             Background="#0F172A">
 
     <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -121,10 +122,17 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource BackgroundBrush}" Margin="16">
+<Grid Background="#0F172A" Margin="15">        
+    <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="111*"/>
+            <ColumnDefinition Width="65*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" MinHeight="105"/>
+            <RowDefinition Height="37*"/>
+            <RowDefinition Height="8*"/>
+            <RowDefinition Height="40*"/>
+            <RowDefinition Height="390*"/>
         </Grid.RowDefinitions>
 
         <!-- Header -->
@@ -132,10 +140,10 @@
                 Background="{StaticResource CardBrush}" 
                 CornerRadius="8" 
                 Padding="16" 
-                Margin="0,0,0,16"
+                Margin="0,0,0,12"
                 BorderBrush="{StaticResource BorderBrush}" 
                 BorderThickness="1"
-                Effect="{StaticResource CardShadow}">
+                Effect="{StaticResource CardShadow}" Grid.ColumnSpan="2">
             <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                 <TextBlock Text="📊" FontSize="20" Margin="0,0,12,0" Foreground="{StaticResource PrimaryBrush}"/>
                 <TextBlock Text="Manage Quizzes" 
@@ -145,7 +153,7 @@
             </StackPanel>
         </Border>
 
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Grid.ColumnSpan="2" Grid.RowSpan="4">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="3*"/>
                 <ColumnDefinition Width="16"/>
@@ -156,7 +164,7 @@
             <Border Grid.Column="0" 
                     Background="{StaticResource CardBrush}" 
                     CornerRadius="8" 
-                    Padding="16" 
+                    Padding="12" 
                     BorderBrush="{StaticResource BorderBrush}" 
                     BorderThickness="1"
                     Effect="{StaticResource CardShadow}">
@@ -207,7 +215,7 @@
             <Border Grid.Column="2" 
                     Background="{StaticResource CardBrush}" 
                     CornerRadius="8" 
-                    Padding="16" 
+                    Padding="12" 
                     BorderBrush="{StaticResource BorderBrush}" 
                     BorderThickness="1"
                     Effect="{StaticResource CardShadow}">
@@ -252,7 +260,7 @@
                     </StackPanel>
 
                     <!-- Overlay content placeholder -->
-                    
+
                 </StackPanel>
             </Border>
         </Grid>
