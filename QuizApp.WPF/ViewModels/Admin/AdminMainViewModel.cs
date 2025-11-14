@@ -15,6 +15,8 @@ namespace QuizApp.WPF.ViewModels.Admin
         private readonly UserService _userService;
         private readonly CategoryService _categoryService;
 
+        public string CurrentPageTitle { get; set; } = "Dashboard";
+
         private object? _currentView;
         public object? CurrentView
         {

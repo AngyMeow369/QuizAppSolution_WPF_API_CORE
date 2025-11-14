@@ -139,12 +139,134 @@
             </Grid>
         </Border>
 
-        <!-- Main Content -->
-        <Border Grid.Column="1" Background="White" CornerRadius="12" Padding="15" Margin="10" 
-                Effect="{DynamicResource DropShadowEffect}">
-            <ContentControl Content="{Binding CurrentView}" 
-                            HorizontalAlignment="Stretch" 
-                            VerticalAlignment="Stretch"/>
-        </Border>
+        <!-- Main Content Area -->
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <!-- Top Nav Bar -->
+                <RowDefinition Height="*"/>
+                <!-- Content Area -->
+            </Grid.RowDefinitions>
+
+            <!-- Top Navigation Bar -->
+            <Border Grid.Row="0" 
+            Background="White" 
+            CornerRadius="12,12,0,0" 
+            Margin="10,10,10,0"
+            BorderThickness="0"
+            Effect="{DynamicResource DropShadowEffect}">
+                <Grid Margin="20,15">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <!-- Page Title/Breadcrumb -->
+                    <TextBlock Grid.Column="0"
+                       Text="{Binding CurrentPageTitle, FallbackValue='Dashboard'}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       Foreground="#2C3E50"
+                       VerticalAlignment="Center"/>
+
+                    <!-- Spacer -->
+                    <Border Grid.Column="1" Background="Transparent"/>
+
+                    <!-- Search Icon -->
+                    <Button Grid.Column="2"
+                    Content="🔍"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    FontSize="16"
+                    Cursor="Hand"
+                    Margin="0,0,15,0"
+                    ToolTip="Search"
+                    Padding="8">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Foreground" Value="#7F8C8D"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="#34495E"/>
+                                        <Setter Property="Background" Value="#F8F9FA"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- Notifications -->
+                    <Button Grid.Column="3"
+                    Content="🔔"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    FontSize="16"
+                    Cursor="Hand"
+                    Margin="0,0,15,0"
+                    ToolTip="Notifications"
+                    Padding="8">
+                        <Button.Style>
+                            <Style TargetType="Button">
+                                <Setter Property="Foreground" Value="#7F8C8D"/>
+                                <Style.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter Property="Foreground" Value="#34495E"/>
+                                        <Setter Property="Background" Value="#F8F9FA"/>
+                                    </Trigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+
+                    <!-- User Profile -->
+                    <Border Grid.Column="4"
+                    Background="#F8F9FA"
+                    CornerRadius="8"
+                    Padding="10,6"
+                    Cursor="Hand">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse Width="32" Height="32" 
+                             VerticalAlignment="Center"
+                             Margin="0,0,8,0">
+                                <Ellipse.Fill>
+                                    <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                        <GradientStop Color="#3498DB" Offset="0.0"/>
+                                        <GradientStop Color="#2980B9" Offset="1.0"/>
+                                    </LinearGradientBrush>
+                                </Ellipse.Fill>
+                                <Ellipse.Effect>
+                                    <DropShadowEffect Color="#000000" Opacity="0.2" BlurRadius="4"/>
+                                </Ellipse.Effect>
+                            </Ellipse>
+                            <StackPanel VerticalAlignment="Center">
+                                <TextBlock Text="{Binding CurrentUsername, FallbackValue='Admin User'}"
+                                   FontWeight="SemiBold"
+                                   Foreground="#2C3E50"
+                                   FontSize="12"/>
+                                <TextBlock Text="{Binding UserRole, FallbackValue='Administrator'}"
+                                   Foreground="#7F8C8D"
+                                   FontSize="10"/>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+
+            <!-- Content Area -->
+            <Border Grid.Row="1" 
+            Background="White" 
+            CornerRadius="0,0,12,12" 
+            Margin="10,0,10,10"
+            Effect="{DynamicResource DropShadowEffect}">
+                <ContentControl Content="{Binding CurrentView}" 
+                        HorizontalAlignment="Stretch" 
+                        VerticalAlignment="Stretch"/>
+            </Border>
+        </Grid>
+
+
     </Grid>
 </Window>
