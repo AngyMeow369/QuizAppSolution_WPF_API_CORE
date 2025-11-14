@@ -26,7 +26,9 @@ namespace QuizApp.WPF.ViewModels.User
             LoadQuizzesCommand = new RelayCommand(async () => await LoadAssignedQuizzesAsync());
 
             // Command that receives QuizDto
+#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
             StartQuizCommand = new RelayCommand<QuizDto>(execute: StartQuiz);
+#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
 
             // Auto-load quizzes
             _ = LoadAssignedQuizzesAsync();

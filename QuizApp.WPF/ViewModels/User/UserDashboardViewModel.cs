@@ -9,7 +9,7 @@ namespace QuizApp.WPF.ViewModels.User
     public class UserDashboardViewModel : BaseViewModel
     {
         private readonly UserDashboardService _dashboardService;
-        private UserDashboardDto? _dashboardData; // Add ? to make it nullable
+        private UserDashboardDto? _dashboardData; 
         private bool _isLoading;
 
         public UserDashboardViewModel(UserDashboardService dashboardService)
@@ -18,7 +18,7 @@ namespace QuizApp.WPF.ViewModels.User
             _ = LoadDashboardDataAsync();
         }
 
-        public UserDashboardDto? DashboardData // Add ? here too
+        public UserDashboardDto? DashboardData 
         {
             get => _dashboardData;
             set => SetProperty(ref _dashboardData, value);
@@ -35,9 +35,7 @@ namespace QuizApp.WPF.ViewModels.User
             IsLoading = true;
             try
             {
-                Console.WriteLine("🔄 DEBUG: Starting to load dashboard data...");
                 DashboardData = await _dashboardService.GetDashboardSummaryAsync();
-                Console.WriteLine($"✅ DEBUG: Dashboard data loaded - Assigned: {DashboardData?.TotalAssignedQuizzes}, Completed: {DashboardData?.TotalCompletedQuizzes}");
             }
             catch (Exception ex)
             {

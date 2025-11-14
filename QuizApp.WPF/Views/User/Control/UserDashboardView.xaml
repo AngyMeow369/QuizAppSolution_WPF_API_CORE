@@ -1,103 +1,405 @@
 ﻿<UserControl x:Class="QuizApp.WPF.Views.User.UserDashboardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Height="600" Width="800">
+             Height="700" Width="900"
+             Background="#F8FAFC">
 
-    <ScrollViewer VerticalScrollBarVisibility="Auto">
+    <UserControl.Resources>
+        <!-- Gradient Background for Header -->
+        <LinearGradientBrush x:Key="DashboardHeaderBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#4F46E5" Offset="0.0"/>
+            <GradientStop Color="#7C3AED" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <!-- Card Shadow Effect -->
+        <DropShadowEffect x:Key="CardShadow" 
+                         BlurRadius="20" 
+                         ShadowDepth="0" 
+                         Color="#1F2937" 
+                         Opacity="0.1"/>
+
+        <!-- Simple Linear Gradient Brushes -->
+        <LinearGradientBrush x:Key="GreenGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#E8F5E8" Offset="0.0"/>
+            <GradientStop Color="#C8E6C9" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="BlueGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#E3F2FD" Offset="0.0"/>
+            <GradientStop Color="#BBDEFB" Offset="1.0"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="OrangeGradientBrush" StartPoint="0,0" EndPoint="1,1">
+            <GradientStop Color="#FFF3E0" Offset="0.0"/>
+            <GradientStop Color="#FFE0B2" Offset="1.0"/>
+        </LinearGradientBrush>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0">
         <StackPanel Margin="20">
-            <!-- Header -->
-            <TextBlock Text="📊 Your Quiz Dashboard" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
+            <!-- Header with gradient background -->
+            <Border Background="{StaticResource DashboardHeaderBrush}" 
+                    CornerRadius="12" 
+                    Padding="25,20" 
+                    Margin="0,0,0,25">
+                <StackPanel>
+                    <TextBlock Text="📊 Your Quiz Dashboard" 
+                              FontSize="32" 
+                              FontWeight="SemiBold" 
+                              Foreground="White"
+                              TextAlignment="Center"/>
+                    <TextBlock Text="Track your progress and upcoming quizzes" 
+                              FontSize="16" 
+                              Foreground="#E3F2FD"
+                              TextAlignment="Center"
+                              Margin="0,5,0,0"/>
+                </StackPanel>
+            </Border>
 
-            <!-- Loading Indicator -->
-            <TextBlock Text="Loading dashboard data..." 
-                       Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                       HorizontalAlignment="Center" FontSize="16" Foreground="#7F8C8D" Margin="0,20"/>
+            <!-- Loading Indicator with modern design -->
+            <Border Background="White" 
+                    CornerRadius="12" 
+                    Padding="30" 
+                    Margin="0,0,0,20"
+                    Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    HorizontalAlignment="Center">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True" 
+                                Width="60" 
+                                Height="6" 
+                                Margin="0,0,15,0"
+                                Background="#E3E8F2"
+                                Foreground="#4F46E5"/>
+                    <TextBlock Text="Loading your dashboard..." 
+                              FontSize="16" 
+                              Foreground="#64748B"
+                              VerticalAlignment="Center"/>
+                </StackPanel>
+            </Border>
 
-            <!-- Stats Cards -->
-            <StackPanel Orientation="Horizontal" Margin="0,0,0,20"
+            <!-- Stats Cards with modern design -->
+            <StackPanel Orientation="Horizontal" 
+                       Margin="0,0,0,25"
+                       HorizontalAlignment="Center"
                        Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                <Border Background="#4CAF50" Padding="20" Margin="0,0,15,0" Width="200">
+                
+                <!-- Assigned Quizzes Card -->
+                <Border Background="White" 
+                        CornerRadius="16" 
+                        Padding="25" 
+                        Margin="0,0,20,0"
+                        Width="220"
+                        BorderThickness="0"
+                        Effect="{StaticResource CardShadow}">
                     <StackPanel>
-                        <TextBlock Text="{Binding DashboardData.TotalAssignedQuizzes}" FontSize="32" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Text="Assigned Quizzes" FontSize="14" Foreground="White"/>
+                        <Border Background="{StaticResource GreenGradientBrush}" 
+                                CornerRadius="12" 
+                                Width="50" 
+                                Height="50"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="📋" 
+                                      FontSize="20" 
+                                      HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="{Binding DashboardData.TotalAssignedQuizzes}" 
+                                  FontSize="36" 
+                                  FontWeight="Bold" 
+                                  Foreground="#2E7D32"
+                                  Margin="0,15,0,5"/>
+                        <TextBlock Text="Assigned Quizzes" 
+                                  FontSize="14" 
+                                  Foreground="#666666"
+                                  FontWeight="Medium"/>
                     </StackPanel>
                 </Border>
 
-                <Border Background="#2196F3" Padding="20" Margin="0,0,15,0" Width="200">
+                <!-- Completed Quizzes Card -->
+                <Border Background="White" 
+                        CornerRadius="16" 
+                        Padding="25" 
+                        Margin="0,0,20,0"
+                        Width="220"
+                        BorderThickness="0"
+                        Effect="{StaticResource CardShadow}">
                     <StackPanel>
-                        <TextBlock Text="{Binding DashboardData.TotalCompletedQuizzes}" FontSize="32" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Text="Completed" FontSize="14" Foreground="White"/>
+                        <Border Background="{StaticResource BlueGradientBrush}" 
+                                CornerRadius="12" 
+                                Width="50" 
+                                Height="50"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="✅" 
+                                      FontSize="20" 
+                                      HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="{Binding DashboardData.TotalCompletedQuizzes}" 
+                                  FontSize="36" 
+                                  FontWeight="Bold" 
+                                  Foreground="#1565C0"
+                                  Margin="0,15,0,5"/>
+                        <TextBlock Text="Completed" 
+                                  FontSize="14" 
+                                  Foreground="#666666"
+                                  FontWeight="Medium"/>
                     </StackPanel>
                 </Border>
 
-                <Border Background="#FF9800" Padding="20" Width="200">
+                <!-- Average Score Card -->
+                <Border Background="White" 
+                        CornerRadius="16" 
+                        Padding="25" 
+                        Width="220"
+                        BorderThickness="0"
+                        Effect="{StaticResource CardShadow}">
                     <StackPanel>
-                        <TextBlock Text="{Binding DashboardData.AverageScore, StringFormat={}{0}%}" FontSize="32" FontWeight="Bold" Foreground="White"/>
-                        <TextBlock Text="Average Score" FontSize="14" Foreground="White"/>
+                        <Border Background="{StaticResource OrangeGradientBrush}" 
+                                CornerRadius="12" 
+                                Width="50" 
+                                Height="50"
+                                HorizontalAlignment="Left">
+                            <TextBlock Text="📈" 
+                                      FontSize="20" 
+                                      HorizontalAlignment="Center" 
+                                      VerticalAlignment="Center"/>
+                        </Border>
+                        <TextBlock Text="{Binding DashboardData.AverageScore, StringFormat={}{0}%}" 
+                                  FontSize="36" 
+                                  FontWeight="Bold" 
+                                  Foreground="#E65100"
+                                  Margin="0,15,0,5"/>
+                        <TextBlock Text="Average Score" 
+                                  FontSize="14" 
+                                  Foreground="#666666"
+                                  FontWeight="Medium"/>
                     </StackPanel>
                 </Border>
             </StackPanel>
 
-            <!-- Recent Results -->
-            <Border Background="White" Padding="20" Margin="0,0,0,20"
-                   Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                <StackPanel>
-                    <TextBlock Text="📝 Recent Results" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+            <!-- Content Grid -->
+            <Grid Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
+                  Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
 
-                    <ItemsControl ItemsSource="{Binding DashboardData.RecentResults}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
-                                    <TextBlock FontWeight="SemiBold">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0} - Score: {1}/{2}">
-                                                <Binding Path="QuizTitle"/>
-                                                <Binding Path="Score"/>
-                                                <Binding Path="TotalQuestions"/>
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                <!-- Recent Results Section -->
+                <Border Background="White" 
+                        CornerRadius="16" 
+                        Padding="25" 
+                        Grid.Column="0"
+                        BorderThickness="0"
+                        Effect="{StaticResource CardShadow}">
+                    <StackPanel>
+                        <!-- Section Header -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <Border Background="#4F46E5" 
+                                    CornerRadius="8" 
+                                    Width="40" 
+                                    Height="40"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="📝" 
+                                          FontSize="16" 
+                                          HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Recent Results" 
+                                          FontSize="20" 
+                                          FontWeight="SemiBold" 
+                                          Foreground="#1F2937"/>
+                                <TextBlock Text="Your latest quiz performances" 
+                                          FontSize="12" 
+                                          Foreground="#6B7280"/>
+                            </StackPanel>
+                        </StackPanel>
 
-                    <!-- Empty State -->
-                    <TextBlock Text="No recent results" 
-                               Visibility="{Binding DashboardData.RecentResults.Count, Converter={StaticResource CountToVisibilityConverter}}"
-                               HorizontalAlignment="Center" FontSize="14" Foreground="#BDC3C7" FontStyle="Italic" Margin="0,10"/>
-                </StackPanel>
-            </Border>
+                        <!-- Results List -->
+                        <ItemsControl ItemsSource="{Binding DashboardData.RecentResults}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#F8FAFC" 
+                                            CornerRadius="10" 
+                                            Padding="15" 
+                                            Margin="0,0,0,10"
+                                            BorderThickness="1" 
+                                            BorderBrush="#E5E7EB">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            
+                                            <StackPanel Grid.Column="0">
+                                                <TextBlock Text="{Binding QuizTitle}" 
+                                                          FontWeight="SemiBold" 
+                                                          FontSize="14"
+                                                          Foreground="#374151"
+                                                          TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock FontSize="12" 
+                                                          Foreground="#6B7280" 
+                                                          Margin="0,4,0,0">
+                                                    <Run Text="Completed on "/>
+                                                    <Run Text="{Binding CompletionDate, StringFormat={}{0:MMM dd, yyyy}}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                            
+                                            <Border Grid.Column="1" 
+                                                    Background="#4CAF50"
+                                                    CornerRadius="8" 
+                                                    Padding="8,4"
+                                                    VerticalAlignment="Center">
+                                                <TextBlock FontWeight="Bold" 
+                                                          Foreground="White" 
+                                                          FontSize="12"
+                                                          HorizontalAlignment="Center">
+                                                    <TextBlock.Text>
+                                                        <MultiBinding StringFormat="{}{0}/{1}">
+                                                            <Binding Path="Score"/>
+                                                            <Binding Path="TotalQuestions"/>
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
 
-            <!-- Upcoming Quizzes -->
-            <Border Background="White" Padding="20"
-                   Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                <StackPanel>
-                    <TextBlock Text="🆕 Upcoming Quizzes" FontSize="20" FontWeight="Bold" Margin="0,0,0,15"/>
+                        <!-- Empty State -->
+                        <Border Background="#F3F4F6" 
+                                CornerRadius="10" 
+                                Padding="30" 
+                                Margin="0,10"
+                                Visibility="{Binding DashboardData.RecentResults.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="📊" 
+                                          FontSize="24" 
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,0,8"/>
+                                <TextBlock Text="No recent results" 
+                                          FontSize="14" 
+                                          Foreground="#6B7280" 
+                                          FontStyle="Italic"
+                                          HorizontalAlignment="Center"/>
+                                <TextBlock Text="Complete some quizzes to see your results here!" 
+                                          FontSize="12" 
+                                          Foreground="#9CA3AF"
+                                          HorizontalAlignment="Center"
+                                          TextAlignment="Center"
+                                          Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
 
-                    <ItemsControl ItemsSource="{Binding DashboardData.UpcomingQuizzes}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border BorderBrush="#ECF0F1" BorderThickness="0,0,0,1" Padding="0,10">
-                                    <TextBlock FontWeight="SemiBold">
-                                        <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0} - Due: {1}">
-                                                <Binding Path="Title"/>
-                                                <Binding Path="DueDate" StringFormat="{}{0:MMM dd, yyyy}"/>
-                                            </MultiBinding>
-                                        </TextBlock.Text>
-                                    </TextBlock>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                <!-- Upcoming Quizzes Section -->
+                <Border Background="White" 
+                        CornerRadius="16" 
+                        Padding="25" 
+                        Grid.Column="2"
+                        BorderThickness="0"
+                        Effect="{StaticResource CardShadow}">
+                    <StackPanel>
+                        <!-- Section Header -->
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                            <Border Background="#10B981" 
+                                    CornerRadius="8" 
+                                    Width="40" 
+                                    Height="40"
+                                    Margin="0,0,12,0">
+                                <TextBlock Text="🆕" 
+                                          FontSize="16" 
+                                          HorizontalAlignment="Center" 
+                                          VerticalAlignment="Center"/>
+                            </Border>
+                            <StackPanel>
+                                <TextBlock Text="Upcoming Quizzes" 
+                                          FontSize="20" 
+                                          FontWeight="SemiBold" 
+                                          Foreground="#1F2937"/>
+                                <TextBlock Text="Quizzes waiting for you" 
+                                          FontSize="12" 
+                                          Foreground="#6B7280"/>
+                            </StackPanel>
+                        </StackPanel>
 
-                    <!-- Empty State -->
-                    <TextBlock Text="No upcoming quizzes" 
-                               Visibility="{Binding DashboardData.UpcomingQuizzes.Count, Converter={StaticResource CountToVisibilityConverter}}"
-                               HorizontalAlignment="Center" FontSize="14" Foreground="#BDC3C7" FontStyle="Italic" Margin="0,10"/>
-                </StackPanel>
-            </Border>
+                        <!-- Upcoming Quizzes List -->
+                        <ItemsControl ItemsSource="{Binding DashboardData.UpcomingQuizzes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#F0F9FF" 
+                                            CornerRadius="10" 
+                                            Padding="15" 
+                                            Margin="0,0,0,10"
+                                            BorderThickness="1" 
+                                            BorderBrush="#BAE6FD">
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+                                            
+                                            <TextBlock Text="{Binding Title}" 
+                                                      FontWeight="SemiBold" 
+                                                      FontSize="14"
+                                                      Foreground="#0369A1"
+                                                      TextTrimming="CharacterEllipsis"
+                                                      Grid.Row="0"/>
+                                            
+                                            <StackPanel Orientation="Horizontal" 
+                                                       Grid.Row="1" 
+                                                       Margin="0,8,0,0">
+                                                <Border Background="#FEF3C7" 
+                                                        CornerRadius="6" 
+                                                        Padding="4,2"
+                                                        Margin="0,0,8,0">
+                                                    <TextBlock Text="⏰" 
+                                                              FontSize="10" 
+                                                              Foreground="#92400E"/>
+                                                </Border>
+                                                <TextBlock FontSize="12" 
+                                                          Foreground="#6B7280">
+                                                    <Run Text="Due: "/>
+                                                    <Run Text="{Binding DueDate, StringFormat={}{0:MMM dd, yyyy 'at' hh:mm tt}}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- Empty State -->
+                        <Border Background="#F3F4F6" 
+                                CornerRadius="10" 
+                                Padding="30" 
+                                Margin="0,10"
+                                Visibility="{Binding DashboardData.UpcomingQuizzes.Count, Converter={StaticResource CountToVisibilityConverter}}">
+                            <StackPanel HorizontalAlignment="Center">
+                                <TextBlock Text="🎯" 
+                                          FontSize="24" 
+                                          HorizontalAlignment="Center"
+                                          Margin="0,0,0,8"/>
+                                <TextBlock Text="No upcoming quizzes" 
+                                          FontSize="14" 
+                                          Foreground="#6B7280" 
+                                          FontStyle="Italic"
+                                          HorizontalAlignment="Center"/>
+                                <TextBlock Text="All caught up! New quizzes will appear here." 
+                                          FontSize="12" 
+                                          Foreground="#9CA3AF"
+                                          HorizontalAlignment="Center"
+                                          TextAlignment="Center"
+                                          Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </StackPanel>
     </ScrollViewer>
 </UserControl>
