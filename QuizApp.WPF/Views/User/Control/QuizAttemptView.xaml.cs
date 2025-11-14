@@ -12,5 +12,4 @@ namespace QuizApp.WPF.Views.User
             DataContext = new QuizAttemptViewModel(quizService);
         }
     }
-
 }

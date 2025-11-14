@@ -5,15 +5,12 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
-            <!-- Header -->
             <TextBlock Text="📝 My Assigned Quizzes" FontSize="28" FontWeight="Bold" Margin="0,0,0,20"/>
 
-            <!-- Loading Indicator -->
             <TextBlock Text="Loading quizzes..." 
                        Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
                        HorizontalAlignment="Center" FontSize="16" Foreground="#7F8C8D" Margin="0,20"/>
 
-            <!-- Quiz List -->
             <ItemsControl ItemsSource="{Binding AssignedQuizzes}" 
                          Visibility="{Binding IsLoading, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                 <ItemsControl.ItemTemplate>
@@ -27,10 +24,8 @@
 
                                 <StackPanel Grid.Column="0">
                                     <TextBlock Text="{Binding Title}" FontSize="18" FontWeight="SemiBold" Foreground="#2C3E50"/>
-                                    <TextBlock Text="{Binding CategoryName, StringFormat='Category: {0}'}" 
-                                               FontSize="12" Foreground="#7F8C8D" Margin="0,5,0,0"/>
-                                    <TextBlock Text="{Binding EndTime, StringFormat='Due: {0:MMM dd, yyyy - h:mm tt}'}" 
-                                               FontSize="11" Foreground="#E74C3C" Margin="0,5,0,0"/>
+                                    <TextBlock Text="{Binding CategoryName, StringFormat='Category: {0}'}" FontSize="12" Foreground="#7F8C8D" Margin="0,5,0,0"/>
+                                    <TextBlock Text="{Binding EndTime, StringFormat='Due: {0:MMM dd, yyyy - h:mm tt}'}" FontSize="11" Foreground="#E74C3C" Margin="0,5,0,0"/>
                                 </StackPanel>
 
                                 <Button Grid.Column="1" Content="Start Quiz" 
@@ -38,14 +33,12 @@
                                         Padding="20,10" FontWeight="SemiBold"
                                         Command="{Binding DataContext.StartQuizCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                         CommandParameter="{Binding}"/>
-
                             </Grid>
                         </Border>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
 
-            <!-- Empty State -->
             <TextBlock Text="No quizzes assigned at the moment" 
                        Visibility="{Binding AssignedQuizzes.Count, Converter={StaticResource CountToInverseVisibilityConverter}}"
                        HorizontalAlignment="Center" VerticalAlignment="Center" 
