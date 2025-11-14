@@ -3,6 +3,13 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Height="600" Width="800">
 
+	<UserControl.Resources>
+		<!-- Helper object so we can pass both QuestionId + OptionId -->
+		<Style x:Key="OptionRadioButtonStyle" TargetType="RadioButton">
+			<EventSetter Event="Checked" Handler="Option_Checked"/>
+		</Style>
+	</UserControl.Resources>
+
 	<Grid Margin="20">
 		<Grid.RowDefinitions>
 			<RowDefinition Height="Auto"/>
@@ -10,33 +17,64 @@
 			<RowDefinition Height="Auto"/>
 		</Grid.RowDefinitions>
 
-		<!-- Header -->
+		<!-- HEADER -->
 		<StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,20">
-			<TextBlock Text="{Binding Quiz.Title}" FontSize="24" FontWeight="Bold"/>
-			<TextBlock Text="   Time Remaining: " FontSize="16" VerticalAlignment="Center"/>
-			<TextBlock Text="{Binding RemainingTimeFormatted}" FontSize="16" FontWeight="SemiBold" Foreground="Red" VerticalAlignment="Center"/>
+			<TextBlock Text="{Binding Quiz.Title}"
+                       FontSize="24" FontWeight="Bold"/>
+
+			<TextBlock Text="   Time Remaining: "
+                       Margin="15,0,0,0"
+                       FontSize="16" VerticalAlignment="Center"/>
+
+			<TextBlock Text="{Binding RemainingTimeFormatted}"
+                       FontSize="16"
+                       FontWeight="SemiBold"
+                       Foreground="Red"
+                       VerticalAlignment="Center"/>
 		</StackPanel>
 
-		<!-- Question Section -->
+		<!-- QUESTION + OPTIONS -->
 		<StackPanel Grid.Row="1">
-			<TextBlock Text="{Binding CurrentQuestion.Text}" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,0,0,10"/>
+
+			<TextBlock Text="{Binding CurrentQuestion.Text}"
+                       FontSize="18"
+                       FontWeight="SemiBold"
+                       TextWrapping="Wrap"
+                       Margin="0,0,0,15"/>
+
 			<ItemsControl ItemsSource="{Binding CurrentQuestion.Options}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
 						<RadioButton Content="{Binding Text}"
-                                     GroupName="OptionsGroup"
-                                     Command="{Binding DataContext.SelectOptionCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                     CommandParameter="{Binding Id}"/>
+                                     GroupName="QuestionOptions"
+                                     Margin="0,5,0,5"
+                                     Style="{StaticResource OptionRadioButtonStyle}"/>
 					</DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 		</StackPanel>
 
-		<!-- Navigation & Submit -->
-		<StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
-			<Button Content="Previous" Command="{Binding PreviousQuestionCommand}" Width="120" Margin="0,0,10,0"/>
-			<Button Content="Next" Command="{Binding NextQuestionCommand}" Width="120" Margin="0,0,10,0"/>
-			<Button Content="Submit" Command="{Binding SubmitCommand}" Width="120" Background="Green" Foreground="White"/>
+		<!-- BUTTONS -->
+		<StackPanel Grid.Row="2"
+                    Orientation="Horizontal"
+                    HorizontalAlignment="Center"
+                    Margin="0,20,0,0">
+
+			<Button Content="Previous"
+                    Width="120"
+                    Margin="0,0,10,0"
+                    Command="{Binding PreviousQuestionCommand}"/>
+
+			<Button Content="Next"
+                    Width="120"
+                    Margin="0,0,10,0"
+                    Command="{Binding NextQuestionCommand}"/>
+
+			<Button Content="Submit"
+                    Width="120"
+                    Background="Green"
+                    Foreground="White"
+                    Command="{Binding SubmitCommand}"/>
 		</StackPanel>
 	</Grid>
 </UserControl>

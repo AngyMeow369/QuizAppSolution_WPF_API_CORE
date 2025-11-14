@@ -1,15 +1,25 @@
-﻿using QuizApp.WPF.Services.User;
-using QuizApp.WPF.ViewModels.User;
+﻿using QuizApp.WPF.ViewModels.User;
+using System.Windows;
 using System.Windows.Controls;
 
 namespace QuizApp.WPF.Views.User
 {
     public partial class QuizAttemptView : UserControl
     {
-        public QuizAttemptView(UserQuizService quizService)
+        public QuizAttemptView()
         {
             InitializeComponent();
-            DataContext = new QuizAttemptViewModel(quizService);
+        }
+
+        private void Option_Checked(object sender, RoutedEventArgs e)
+        {
+            if (sender is RadioButton rb &&
+                rb.DataContext is OptionDto option &&
+                DataContext is QuizAttemptViewModel vm &&
+                vm.CurrentQuestion != null)
+            {
+                vm.SelectOption(vm.CurrentQuestion.Id, option.Id);
+            }
         }
     }
 }

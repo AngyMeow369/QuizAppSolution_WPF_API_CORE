@@ -18,11 +18,18 @@ namespace QuizApp.WPF.ViewModels.User
         public QuizAttemptViewModel(UserQuizService quizService)
         {
             _quizService = quizService;
+
             SelectedOptions = new Dictionary<int, int>();
+
+            NextQuestionCommand = new RelayCommand(NextQuestion, () => CurrentQuestionIndex < Questions.Count - 1);
+            PreviousQuestionCommand = new RelayCommand(PreviousQuestion, () => CurrentQuestionIndex > 0);
             SubmitCommand = new RelayCommand(async () => await SubmitQuizAsync());
         }
 
-        // Quiz data
+        // ============================================================
+        // QUIZ DATA
+        // ============================================================
+
         private QuizTakeDto? _quiz;
         public QuizTakeDto? Quiz
         {
@@ -30,48 +37,122 @@ namespace QuizApp.WPF.ViewModels.User
             set => SetProperty(ref _quiz, value);
         }
 
+        // Must match QuizTakeDto.Questions --> List<QuestionTakeDto>
+        public ObservableCollection<QuestionTakeDto> Questions { get; } = new();
+
         // Dictionary<QuestionId, OptionId>
         public Dictionary<int, int> SelectedOptions { get; }
 
-        // Timer
+        // ============================================================
+        // QUESTION NAVIGATION
+        // ============================================================
+
+        private int _currentQuestionIndex;
+        public int CurrentQuestionIndex
+        {
+            get => _currentQuestionIndex;
+            set
+            {
+                if (SetProperty(ref _currentQuestionIndex, value))
+                {
+                    OnPropertyChanged(nameof(CurrentQuestion));
+                    (NextQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    (PreviousQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
+        public QuestionTakeDto? CurrentQuestion =>
+            (Questions.Count > 0 &&
+             CurrentQuestionIndex >= 0 &&
+             CurrentQuestionIndex < Questions.Count)
+            ? Questions[CurrentQuestionIndex]
+            : null;
+
+        public ICommand NextQuestionCommand { get; }
+        public ICommand PreviousQuestionCommand { get; }
+
+        private void NextQuestion()
+        {
+            if (CurrentQuestionIndex < Questions.Count - 1)
+                CurrentQuestionIndex++;
+        }
+
+        private void PreviousQuestion()
+        {
+            if (CurrentQuestionIndex > 0)
+                CurrentQuestionIndex--;
+        }
+
+        // ============================================================
+        // TIMER
+        // ============================================================
+
         private int _remainingSeconds;
         public int RemainingSeconds
         {
             get => _remainingSeconds;
-            set => SetProperty(ref _remainingSeconds, value);
+            set
+            {
+                if (SetProperty(ref _remainingSeconds, value))
+                    OnPropertyChanged(nameof(RemainingTimeFormatted));
+            }
         }
+
+        public string RemainingTimeFormatted =>
+            TimeSpan.FromSeconds(RemainingSeconds).ToString(@"mm\:ss");
 
         private DispatcherTimer? _timer;
 
-        // Commands
+        // ============================================================
+        // COMMANDS
+        // ============================================================
+
         public ICommand SubmitCommand { get; }
 
-        // Load quiz
+        // ============================================================
+        // LOAD QUIZ
+        // ============================================================
+
         public async Task LoadQuizAsync(int quizId)
         {
             try
             {
                 Quiz = await _quizService.GetQuizForTakingAsync(quizId);
 
-                // Start countdown
+                Questions.Clear();
+                foreach (var q in Quiz.Questions)
+                    Questions.Add(q);
+
+                CurrentQuestionIndex = 0;
+
                 var duration = (int)(Quiz.EndTime - Quiz.StartTime).TotalSeconds;
-                if (duration <= 0) duration = 60 * 5; // fallback 5 min
+                if (duration <= 0) duration = 300;
+
                 RemainingSeconds = duration;
 
-                _timer = new DispatcherTimer();
-                _timer.Interval = TimeSpan.FromSeconds(1);
-                _timer.Tick += Timer_Tick;
+                _timer = new DispatcherTimer
+                {
+                    Interval = TimeSpan.FromSeconds(1)
+                };
+                _timer.Tick += TimerTick;
                 _timer.Start();
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to load quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    $"Failed to load quiz: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
 
-        private async void Timer_Tick(object? sender, EventArgs e)
+        private async void TimerTick(object? sender, EventArgs e)
         {
             RemainingSeconds--;
+
             if (RemainingSeconds <= 0)
             {
                 _timer?.Stop();
@@ -79,16 +160,23 @@ namespace QuizApp.WPF.ViewModels.User
             }
         }
 
-        // Track option selection
+        // ============================================================
+        // OPTION SELECTION
+        // ============================================================
+
         public void SelectOption(int questionId, int optionId)
         {
             SelectedOptions[questionId] = optionId;
         }
 
-        // Submit quiz
+        // ============================================================
+        // SUBMIT QUIZ
+        // ============================================================
+
         private async Task SubmitQuizAsync()
         {
-            if (Quiz == null) return;
+            if (Quiz == null)
+                return;
 
             var submission = new QuizSubmissionDto
             {
@@ -102,12 +190,24 @@ namespace QuizApp.WPF.ViewModels.User
             try
             {
                 var result = await _quizService.SubmitQuizAsync(Quiz.Id, submission);
-                MessageBox.Show($"Time's up! Your score: {result.Score}/{result.TotalQuestions}", "Quiz Submitted", MessageBoxButton.OK, MessageBoxImage.Information);
-                // Optionally navigate back to quiz list
+
+                _timer?.Stop();
+
+                MessageBox.Show(
+                    $"Your score: {result.Score}/{result.TotalQuestions}",
+                    "Quiz Submitted",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information
+                );
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Failed to submit quiz: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    $"Failed to submit quiz: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
         }
     }

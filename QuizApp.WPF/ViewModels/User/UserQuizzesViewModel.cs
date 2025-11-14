@@ -12,38 +12,29 @@ namespace QuizApp.WPF.ViewModels.User
     public class UserQuizzesViewModel : BaseViewModel
     {
         private readonly UserQuizService _quizService;
-        private ObservableCollection<QuizDto> _assignedQuizzes;
-        public ICommand StartQuizCommand { get; }
 
+        public ICommand StartQuizCommand { get; }
+        public ICommand LoadQuizzesCommand { get; }
+
+        private ObservableCollection<QuizDto> _assignedQuizzes = new();
         private bool _isLoading;
 
         public UserQuizzesViewModel(UserQuizService quizService)
         {
             _quizService = quizService;
-            _assignedQuizzes = new ObservableCollection<QuizDto>();
 
             LoadQuizzesCommand = new RelayCommand(async () => await LoadAssignedQuizzesAsync());
 
-            StartQuizCommand = new RelayCommand<QuizDto>(StartQuiz);
+            // Command that receives QuizDto
+            StartQuizCommand = new RelayCommand<QuizDto>(execute: StartQuiz);
 
+            // Auto-load quizzes
             _ = LoadAssignedQuizzesAsync();
         }
-        private void StartQuiz(QuizDto quiz)
-        {
-            // Create the QuizAttemptView
-            var quizAttemptView = new QuizAttemptView(_quizService);
 
-            // Pass the quiz ID to its ViewModel
-            if (quizAttemptView.DataContext is QuizAttemptViewModel vm)
-            {
-                _ = vm.LoadQuizAsync(quiz.Id);
-            }
-
-            // Navigate by replacing main window content (adjust if you use Frame or region navigation)
-            Application.Current.MainWindow.Content = quizAttemptView;
-        }
-
-
+        // ============================================================
+        // PROPERTIES
+        // ============================================================
 
         public ObservableCollection<QuizDto> AssignedQuizzes
         {
@@ -57,7 +48,9 @@ namespace QuizApp.WPF.ViewModels.User
             set => SetProperty(ref _isLoading, value);
         }
 
-        public ICommand LoadQuizzesCommand { get; }
+        // ============================================================
+        // LOAD QUIZZES
+        // ============================================================
 
         private async Task LoadAssignedQuizzesAsync()
         {
@@ -69,13 +62,36 @@ namespace QuizApp.WPF.ViewModels.User
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Error loading quizzes: {ex.Message}", "Error",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading quizzes: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally
             {
                 IsLoading = false;
             }
+        }
+
+        // ============================================================
+        // START QUIZ (VIEW NAVIGATION)
+        // ============================================================
+
+        private void StartQuiz(QuizDto quiz)
+        {
+            if (quiz == null)
+                return;
+
+            // Create view & viewmodel manually
+            var vm = new QuizAttemptViewModel(_quizService);
+            var view = new QuizAttemptView
+            {
+                DataContext = vm
+            };
+
+            // Load quiz
+            _ = vm.LoadQuizAsync(quiz.Id);
+
+            // Replace MainWindow content (or use region navigation)
+            Application.Current.MainWindow.Content = view;
         }
     }
 }
