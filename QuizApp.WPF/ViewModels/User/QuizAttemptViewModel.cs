@@ -132,6 +132,10 @@ namespace QuizApp.WPF.ViewModels.User
             {
                 Quiz = await _quizService.GetQuizForTakingAsync(quizId);
 
+
+                MessageBox.Show($"Loaded quiz '{Quiz.Title}' with {Quiz.Questions.Count} questions");
+
+
                 Questions.Clear();
                 foreach (var q in Quiz.Questions)
                     Questions.Add(q);
