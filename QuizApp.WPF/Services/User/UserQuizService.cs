@@ -12,7 +12,12 @@ namespace QuizApp.WPF.Services.User
         public UserQuizService(IAuthService authService)
         {
             _authService = authService;
-            _quizApi = RestService.For<IUserQuizApi>("https://localhost:7016");
+
+            // ✔ USE SHARED CLIENT + SHARED REFiT SETTINGS
+            _quizApi = RestService.For<IUserQuizApi>(
+                App.SharedHttpClient,
+                App.SharedRefitSettings
+            );
         }
 
         private string GetToken()
@@ -20,13 +25,15 @@ namespace QuizApp.WPF.Services.User
             var token = _authService.GetToken();
             if (string.IsNullOrWhiteSpace(token))
                 throw new UnauthorizedAccessException("User is not authenticated");
+
             return $"Bearer {token}";
         }
 
         public async Task<List<QuizDto>> GetMyAssignedQuizzesAsync()
         {
             var response = await _quizApi.GetMyAssignedQuizzesAsync(GetToken());
-            if (!response.Success) throw new Exception(response.Message ?? "Failed to load assigned quizzes");
+            if (!response.Success)
+                throw new Exception(response.Message ?? "Failed to load assigned quizzes");
             return response.Data ?? new List<QuizDto>();
         }
 

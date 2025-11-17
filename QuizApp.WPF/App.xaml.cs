@@ -15,38 +15,46 @@ namespace QuizApp.WPF
         public static IQuizApi QuizApi { get; private set; } = null!;
         public static QuizService QuizService { get; private set; } = null!;
 
+        // ✅ Shared client for ALL Refit services
+        public static HttpClient SharedHttpClient { get; private set; } = null!;
+        public static RefitSettings SharedRefitSettings { get; private set; } = null!;
+
         protected override void OnStartup(StartupEventArgs e)
         {
             base.OnStartup(e);
 
-            const string quizApiBaseUrl = "https://localhost:7016";
+            const string apiBaseUrl = "https://localhost:7016";
 
-            // Create HttpClientHandler to bypass SSL validation for development
+            // SSL bypass for dev
             var handler = new HttpClientHandler
             {
                 ServerCertificateCustomValidationCallback =
                     HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
             };
 
-            // HttpClient for Refit
-            var httpClient = new HttpClient(handler)
+            // ✅ Assign global HttpClient
+            SharedHttpClient = new HttpClient(handler)
             {
-                BaseAddress = new Uri(quizApiBaseUrl)
+                BaseAddress = new Uri(apiBaseUrl)
             };
 
-            // Refit settings with System.Text.Json serializer
-            var refitSettings = new RefitSettings
+            // ✅ Assign global Refit settings
+            SharedRefitSettings = new RefitSettings
             {
                 ContentSerializer = new SystemTextJsonContentSerializer(
-                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true })
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    })
             };
 
-            // Initialize services
+            // Global services
             AuthService = new AuthService();
-            QuizApi = RestService.For<IQuizApi>(httpClient, refitSettings);
+
+            QuizApi = RestService.For<IQuizApi>(SharedHttpClient, SharedRefitSettings);
             QuizService = new QuizService(QuizApi, AuthService);
 
-            // 🚀 **OPEN LOGIN WINDOW HERE**
+            // Start login window
             var loginWindow = new LoginWindow();
             Application.Current.MainWindow = loginWindow;
             loginWindow.Show();
