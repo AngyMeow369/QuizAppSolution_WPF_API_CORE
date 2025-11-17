@@ -119,7 +119,8 @@ namespace QuizApp.WPF.ViewModels.Admin
                 var usersFromService = await _userService.GetUsersAsync();
 
                 Users.Clear();
-                foreach (var u in usersFromService)
+
+                foreach (var u in usersFromService.Where(x => x.Role != "Admin"))
                 {
                     Users.Add(new UserDto
                     {
@@ -134,9 +135,11 @@ namespace QuizApp.WPF.ViewModels.Admin
             }
             catch (System.Exception ex)
             {
-                MessageBox.Show($"Error loading users: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Error loading users: {ex.Message}", "Error",
+                    MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private async Task LoadCategoriesAsync()
         {

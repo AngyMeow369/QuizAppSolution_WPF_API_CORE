@@ -15,15 +15,28 @@ namespace QuizApp.WPF.ViewModels.User
     {
         private readonly UserQuizService _quizService;
 
+        private bool _quizSubmitted = false; // ⛔ Prevent multiple submissions
+
         public QuizAttemptViewModel(UserQuizService quizService)
         {
             _quizService = quizService;
 
             SelectedOptions = new Dictionary<int, int>();
 
-            NextQuestionCommand = new RelayCommand(NextQuestion, () => CurrentQuestionIndex < Questions.Count - 1);
-            PreviousQuestionCommand = new RelayCommand(PreviousQuestion, () => CurrentQuestionIndex > 0);
-            SubmitCommand = new RelayCommand(async () => await SubmitQuizAsync());
+            NextQuestionCommand = new RelayCommand(
+                NextQuestion,
+                () => !_quizSubmitted && CurrentQuestionIndex < Questions.Count - 1
+            );
+
+            PreviousQuestionCommand = new RelayCommand(
+                PreviousQuestion,
+                () => !_quizSubmitted && CurrentQuestionIndex > 0
+            );
+
+            SubmitCommand = new RelayCommand(
+                async () => await SubmitQuizAsync(),
+                () => !_quizSubmitted
+            );
         }
 
         // ============================================================
@@ -38,7 +51,6 @@ namespace QuizApp.WPF.ViewModels.User
         }
 
         public ObservableCollection<QuestionTakeDto> Questions { get; } = new();
-
         public Dictionary<int, int> SelectedOptions { get; }
 
         // ============================================================
@@ -73,12 +85,14 @@ namespace QuizApp.WPF.ViewModels.User
 
         private void NextQuestion()
         {
+            if (_quizSubmitted) return;
             if (CurrentQuestionIndex < Questions.Count - 1)
                 CurrentQuestionIndex++;
         }
 
         private void PreviousQuestion()
         {
+            if (_quizSubmitted) return;
             if (CurrentQuestionIndex > 0)
                 CurrentQuestionIndex--;
         }
@@ -98,27 +112,10 @@ namespace QuizApp.WPF.ViewModels.User
             }
         }
 
-        public string RemainingTimeFormatted
-        {
-            get
-            {
-                var ts = TimeSpan.FromSeconds(RemainingSeconds);
-
-                if (ts < TimeSpan.Zero)
-                    return "00:00";
-
-                return ts.ToString(@"mm\:ss");
-            }
-        }
-
-
-
+        public string RemainingTimeFormatted =>
+            TimeSpan.FromSeconds(Math.Max(RemainingSeconds, 0)).ToString(@"mm\:ss");
 
         private DispatcherTimer? _timer;
-
-        // ============================================================
-        // COMMANDS
-        // ============================================================
 
         public ICommand SubmitCommand { get; }
 
@@ -132,9 +129,7 @@ namespace QuizApp.WPF.ViewModels.User
             {
                 Quiz = await _quizService.GetQuizForTakingAsync(quizId);
 
-
                 MessageBox.Show($"Loaded quiz '{Quiz.Title}' with {Quiz.Questions.Count} questions");
-
 
                 Questions.Clear();
                 foreach (var q in Quiz.Questions)
@@ -143,7 +138,6 @@ namespace QuizApp.WPF.ViewModels.User
                 OnPropertyChanged(nameof(Questions));
                 OnPropertyChanged(nameof(CurrentQuestion));
 
-
                 CurrentQuestionIndex = 0;
 
                 var duration = (int)(Quiz.EndTime - Quiz.StartTime).TotalSeconds;
@@ -151,21 +145,14 @@ namespace QuizApp.WPF.ViewModels.User
 
                 RemainingSeconds = duration;
 
-                _timer = new DispatcherTimer
-                {
-                    Interval = TimeSpan.FromSeconds(1)
-                };
+                _timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
                 _timer.Tick += TimerTick;
                 _timer.Start();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Failed to load quiz: {ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                MessageBox.Show($"Failed to load quiz: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
@@ -181,25 +168,34 @@ namespace QuizApp.WPF.ViewModels.User
         }
 
         // ============================================================
-        // OPTION SELECTION  (used by Option_Checked event)
+        // OPTION SELECTION
         // ============================================================
 
         public void SelectOption(int questionId, int optionId)
         {
+            if (_quizSubmitted) return;
+
             SelectedOptions[questionId] = optionId;
 
-            // Tell UI to refresh the current question binding
             OnPropertyChanged(nameof(CurrentQuestion));
         }
 
         // ============================================================
-        // SUBMIT QUIZ
+        // SUBMIT QUIZ (ONE-TIME ONLY)
         // ============================================================
 
         private async Task SubmitQuizAsync()
         {
-            if (Quiz == null)
-                return;
+            if (Quiz == null) return;
+            if (_quizSubmitted) return;        // ⛔ Again prevent re-submit
+
+            _quizSubmitted = true;             // 🔒 LOCK
+            _timer?.Stop();
+
+            // Disable buttons
+            (NextQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (PreviousQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+            (SubmitCommand as RelayCommand)?.RaiseCanExecuteChanged();
 
             var submission = new QuizSubmissionDto
             {
@@ -214,23 +210,32 @@ namespace QuizApp.WPF.ViewModels.User
             {
                 var result = await _quizService.SubmitQuizAsync(Quiz.Id, submission);
 
-                _timer?.Stop();
-
                 MessageBox.Show(
                     $"Your score: {result.Score}/{result.TotalQuestions}",
                     "Quiz Submitted",
                     MessageBoxButton.OK,
-                    MessageBoxImage.Information
-                );
+                    MessageBoxImage.Information);
+
+                NavigateBackToDashboard();
             }
             catch (Exception ex)
             {
-                MessageBox.Show(
-                    $"Failed to submit quiz: {ex.Message}",
-                    "Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Error
-                );
+                MessageBox.Show($"Failed to submit quiz: {ex.Message}",
+                    "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        // ============================================================
+        // NAVIGATION
+        // ============================================================
+
+        private void NavigateBackToDashboard()
+        {
+            var mw = Application.Current.MainWindow;
+
+            if (mw?.DataContext is MainWindowViewModel mainVm)
+            {
+                mainVm.NavigateToDashboardCommand.Execute(null);
             }
         }
     }
