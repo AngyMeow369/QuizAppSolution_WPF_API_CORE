@@ -10,9 +10,8 @@ namespace QuizApp.WPF.Views.Auth
         {
             InitializeComponent();
 
-            // Access LoginView inside the Window
-            if (Content is LoginView loginView &&
-                loginView.DataContext is LoginViewModel vm)
+            // Correctly reference LoginView inside this Window
+            if (RootLoginView?.DataContext is LoginViewModel vm)
             {
                 vm.OnLoginSuccess += HandleLoginSuccess;
             }
@@ -21,6 +20,10 @@ namespace QuizApp.WPF.Views.Auth
         private void HandleLoginSuccess(string username, string token, string role, AuthService auth)
         {
             Window nextWindow;
+
+            // DEBUG INFO
+            MessageBox.Show("Before setting: MainWindow = " +
+                (Application.Current.MainWindow?.GetType().Name ?? "NULL"));
 
             if (role == "Admin")
             {
@@ -31,9 +34,15 @@ namespace QuizApp.WPF.Views.Auth
                 nextWindow = new MainWindow(username, token, auth);
             }
 
+            // Set the global MainWindow
             Application.Current.MainWindow = nextWindow;
+
+            MessageBox.Show("After setting: MainWindow = " +
+                (Application.Current.MainWindow?.GetType().Name ?? "NULL"));
+
             nextWindow.Show();
 
+            // Close login window
             this.Close();
         }
     }

@@ -8,5 +8,7 @@
         Background="#1a1a1a"
         ResizeMode="NoResize">
 
-    <views:LoginView />
+    <!-- IMPORTANT: Give LoginView a NAME so code-behind can find it -->
+    <views:LoginView x:Name="RootLoginView" />
+
 </Window>

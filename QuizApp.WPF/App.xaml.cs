@@ -1,5 +1,6 @@
 ﻿using QuizApp.WPF.Services;
 using QuizApp.WPF.Services.Interfaces;
+using QuizApp.WPF.Views.Auth;
 using Refit;
 using System;
 using System.Net.Http;
@@ -44,6 +45,11 @@ namespace QuizApp.WPF
             AuthService = new AuthService();
             QuizApi = RestService.For<IQuizApi>(httpClient, refitSettings);
             QuizService = new QuizService(QuizApi, AuthService);
+
+            // 🚀 **OPEN LOGIN WINDOW HERE**
+            var loginWindow = new LoginWindow();
+            Application.Current.MainWindow = loginWindow;
+            loginWindow.Show();
         }
     }
 }

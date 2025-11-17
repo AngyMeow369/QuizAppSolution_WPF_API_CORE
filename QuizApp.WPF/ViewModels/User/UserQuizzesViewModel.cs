@@ -6,6 +6,8 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
+using QuizApp.WPF.ViewModels.User;
+
 
 namespace QuizApp.WPF.ViewModels.User
 {
@@ -79,24 +81,37 @@ namespace QuizApp.WPF.ViewModels.User
 
         private void StartQuiz(QuizDto quiz)
         {
-            MessageBox.Show("StartQuiz VM instance: " + this.GetHashCode());
+            MessageBox.Show("StartQuiz fired.");
 
             if (quiz == null)
-                return;
-
-            // Search ALL open windows to find the one containing MainWindowViewModel
-            var realMainWindow = Application.Current.Windows
-                .OfType<Window>()
-                .FirstOrDefault(w => w.DataContext is MainWindowViewModel);
-
-            if (realMainWindow?.DataContext is MainWindowViewModel mainVm)
             {
+                MessageBox.Show("Quiz is NULL");
+                return;
+            }
+
+            var mw = Application.Current.MainWindow;
+            MessageBox.Show("Current.MainWindow: " + (mw?.GetType().Name ?? "NULL"));
+
+            if (mw?.DataContext == null)
+            {
+                MessageBox.Show("MainWindow.DataContext is NULL");
+            }
+            else
+            {
+                MessageBox.Show("MainWindow.DataContext = " + mw.DataContext.GetType().Name);
+            }
+
+            if (mw?.DataContext is QuizApp.WPF.ViewModels.User.MainWindowViewModel mainVm)
+            {
+                MessageBox.Show("FOUND MainWindowViewModel → navigating");
                 mainVm.NavigateToQuizAttempt(quiz.Id);
                 return;
             }
 
             MessageBox.Show("Could not locate the main user window.");
         }
+
+
 
 
 

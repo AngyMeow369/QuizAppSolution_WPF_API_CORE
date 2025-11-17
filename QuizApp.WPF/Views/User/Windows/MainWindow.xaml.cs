@@ -1,5 +1,5 @@
 ﻿using QuizApp.WPF.Services.Interfaces;
-using QuizApp.WPF.ViewModels.Admin;
+using QuizApp.WPF.ViewModels.User;
 using System.Windows;
 
 namespace QuizApp.WPF
@@ -9,10 +9,14 @@ namespace QuizApp.WPF
 
     public partial class MainWindow : Window
     {
-        public MainWindow(string username, string token, IAuthService authService) // Add authService parameter
+        public MainWindow(string username, string token, IAuthService authService)
         {
             InitializeComponent();
-            this.DataContext = new MainWindowViewModel(username, token, authService); // Pass authService
+
+            MessageBox.Show("MainWindow constructor HIT. Hash = " + this.GetHashCode());
+
+            this.DataContext = new MainWindowViewModel(username, token, authService);
         }
+
     }
 }
