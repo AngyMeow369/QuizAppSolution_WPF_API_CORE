@@ -1,6 +1,7 @@
-﻿using QuizApp.WPF.ViewModels.User;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
+using QuizApp.Shared.DTOs;
+using QuizApp.WPF.ViewModels.User;
 
 namespace QuizApp.WPF.Views.User
 {

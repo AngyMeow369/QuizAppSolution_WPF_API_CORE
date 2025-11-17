@@ -37,10 +37,8 @@ namespace QuizApp.WPF.ViewModels.User
             set => SetProperty(ref _quiz, value);
         }
 
-        // Must match QuizTakeDto.Questions --> List<QuestionTakeDto>
         public ObservableCollection<QuestionTakeDto> Questions { get; } = new();
 
-        // Dictionary<QuestionId, OptionId>
         public Dictionary<int, int> SelectedOptions { get; }
 
         // ============================================================
@@ -56,6 +54,7 @@ namespace QuizApp.WPF.ViewModels.User
                 if (SetProperty(ref _currentQuestionIndex, value))
                 {
                     OnPropertyChanged(nameof(CurrentQuestion));
+
                     (NextQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
                     (PreviousQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
                 }
@@ -100,7 +99,7 @@ namespace QuizApp.WPF.ViewModels.User
         }
 
         public string RemainingTimeFormatted =>
-            TimeSpan.FromSeconds(RemainingSeconds).ToString(@"mm\:ss");
+            TimeSpan.FromSeconds(RemainingSeconds).ToString(@"mm\\:ss");
 
         private DispatcherTimer? _timer;
 
@@ -161,12 +160,15 @@ namespace QuizApp.WPF.ViewModels.User
         }
 
         // ============================================================
-        // OPTION SELECTION
+        // OPTION SELECTION  (used by Option_Checked event)
         // ============================================================
 
         public void SelectOption(int questionId, int optionId)
         {
             SelectedOptions[questionId] = optionId;
+
+            // Tell UI to refresh the current question binding
+            OnPropertyChanged(nameof(CurrentQuestion));
         }
 
         // ============================================================

@@ -79,21 +79,31 @@ namespace QuizApp.WPF.ViewModels.User
 
         private void StartQuiz(QuizDto quiz)
         {
+            MessageBox.Show("StartQuiz VM instance: " + this.GetHashCode());
+
             if (quiz == null)
                 return;
 
-            // Create view & viewmodel manually
-            var vm = new QuizAttemptViewModel(_quizService);
-            var view = new QuizAttemptView
+            // Search ALL open windows to find the one containing MainWindowViewModel
+            var realMainWindow = Application.Current.Windows
+                .OfType<Window>()
+                .FirstOrDefault(w => w.DataContext is MainWindowViewModel);
+
+            if (realMainWindow?.DataContext is MainWindowViewModel mainVm)
             {
-                DataContext = vm
-            };
+                mainVm.NavigateToQuizAttempt(quiz.Id);
+                return;
+            }
 
-            // Load quiz
-            _ = vm.LoadQuizAsync(quiz.Id);
-
-            // Replace MainWindow content (or use region navigation)
-            Application.Current.MainWindow.Content = view;
+            MessageBox.Show("Could not locate the main user window.");
         }
+
+
+
+
+
+
+
+
     }
 }

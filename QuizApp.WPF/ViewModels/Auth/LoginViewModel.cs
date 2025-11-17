@@ -3,9 +3,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using QuizApp.WPF.Services;
+using QuizApp.WPF.ViewModels.Admin;
 using QuizApp.WPF.Views.Admin;
 
-namespace QuizApp.WPF.ViewModels.Admin
+namespace QuizApp.WPF.ViewModels.Auth
 {
     public class LoginViewModel : ObservableObject
     {
@@ -96,22 +97,28 @@ namespace QuizApp.WPF.ViewModels.Admin
 
                         if (loginData.Role == "Admin")
                         {
-                            // ✅ Pass the same AuthService instance into the AdminMainWindow constructor
-                            var adminWindow = new AdminMainWindow(_authService);
-                            mainWindow = adminWindow;
+                            // Create admin window
+                            mainWindow = new AdminMainWindow(_authService);
+
+                            // ⭐ IMPORTANT: Register as the actual main window
+                            Application.Current.MainWindow = mainWindow;
                         }
                         else if (loginData.Role == "User")
                         {
-                            // Pass token and username if needed for user main window
+                            // Create user window
                             mainWindow = new MainWindow(loginData.Username, loginData.Token, _authService);
+
+                            // ⭐ IMPORTANT: Register as the actual main window
+                            Application.Current.MainWindow = mainWindow;
                         }
                         else
                         {
-                            MessageBox.Show($"Unknown role: {loginData.Role}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                            MessageBox.Show($"Unknown role: {loginData.Role}",
+                                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                             return;
                         }
 
-
+                        // Show the new main window
                         mainWindow.Show();
 
                         // Close login window
@@ -127,7 +134,11 @@ namespace QuizApp.WPF.ViewModels.Admin
                 }
                 else
                 {
-                    MessageBox.Show(response.Message ?? "Invalid credentials!", "Login Failed", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show(response.Message ?? "Invalid credentials!",
+                                    "Login Failed",
+                                    MessageBoxButton.OK,
+                                    MessageBoxImage.Error);
+
                     Password = string.Empty;
                 }
             }
@@ -140,7 +151,9 @@ namespace QuizApp.WPF.ViewModels.Admin
                 IsLoading = false;
             }
         }
+
+
+
+
     }
-
-
 }

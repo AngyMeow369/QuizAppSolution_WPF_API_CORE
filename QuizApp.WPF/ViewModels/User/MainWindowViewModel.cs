@@ -23,6 +23,8 @@ namespace QuizApp.WPF.ViewModels.User
         // Update constructor to accept IAuthService
         public MainWindowViewModel(string username, string token, IAuthService authService)
         {
+           
+
             _currentUsername = username;
             _authService = authService; // Store the auth service
             _navigationService = new Services.NavigationService();
@@ -32,6 +34,8 @@ namespace QuizApp.WPF.ViewModels.User
 
             // Then navigate to dashboard
             NavigateToDashboard();
+            MessageBox.Show("MainWindowViewModel instance: " + this.GetHashCode());
+
         }
 
         public object CurrentView
