@@ -21,9 +21,6 @@ namespace QuizApp.WPF.Views.Auth
         {
             Window nextWindow;
 
-            // DEBUG INFO
-            MessageBox.Show("Before setting: MainWindow = " +
-                (Application.Current.MainWindow?.GetType().Name ?? "NULL"));
 
             if (role == "Admin")
             {
@@ -37,8 +34,7 @@ namespace QuizApp.WPF.Views.Auth
             // Set the global MainWindow
             Application.Current.MainWindow = nextWindow;
 
-            MessageBox.Show("After setting: MainWindow = " +
-                (Application.Current.MainWindow?.GetType().Name ?? "NULL"));
+           
 
             nextWindow.Show();
 

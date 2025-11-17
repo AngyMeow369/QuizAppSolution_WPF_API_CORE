@@ -13,8 +13,6 @@ namespace QuizApp.WPF
         {
             InitializeComponent();
 
-            MessageBox.Show("MainWindow constructor HIT. Hash = " + this.GetHashCode());
-
             this.DataContext = new MainWindowViewModel(username, token, authService);
         }
 

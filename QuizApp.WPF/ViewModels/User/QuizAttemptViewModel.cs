@@ -98,8 +98,21 @@ namespace QuizApp.WPF.ViewModels.User
             }
         }
 
-        public string RemainingTimeFormatted =>
-            TimeSpan.FromSeconds(RemainingSeconds).ToString(@"mm\\:ss");
+        public string RemainingTimeFormatted
+        {
+            get
+            {
+                var ts = TimeSpan.FromSeconds(RemainingSeconds);
+
+                if (ts < TimeSpan.Zero)
+                    return "00:00";
+
+                return ts.ToString(@"mm\:ss");
+            }
+        }
+
+
+
 
         private DispatcherTimer? _timer;
 

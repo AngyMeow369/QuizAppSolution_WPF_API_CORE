@@ -34,7 +34,6 @@ namespace QuizApp.WPF.ViewModels.User
 
             // Then navigate to dashboard
             NavigateToDashboard();
-            MessageBox.Show("MainWindowViewModel instance: " + this.GetHashCode());
 
         }
 

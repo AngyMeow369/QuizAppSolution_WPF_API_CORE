@@ -81,41 +81,19 @@ namespace QuizApp.WPF.ViewModels.User
 
         private void StartQuiz(QuizDto quiz)
         {
-            MessageBox.Show("StartQuiz fired.");
-
             if (quiz == null)
-            {
-                MessageBox.Show("Quiz is NULL");
                 return;
-            }
 
             var mw = Application.Current.MainWindow;
-            MessageBox.Show("Current.MainWindow: " + (mw?.GetType().Name ?? "NULL"));
-
-            if (mw?.DataContext == null)
-            {
-                MessageBox.Show("MainWindow.DataContext is NULL");
-            }
-            else
-            {
-                MessageBox.Show("MainWindow.DataContext = " + mw.DataContext.GetType().Name);
-            }
 
             if (mw?.DataContext is QuizApp.WPF.ViewModels.User.MainWindowViewModel mainVm)
             {
-                MessageBox.Show("FOUND MainWindowViewModel → navigating");
                 mainVm.NavigateToQuizAttempt(quiz.Id);
                 return;
             }
 
             MessageBox.Show("Could not locate the main user window.");
         }
-
-
-
-
-
-
 
 
 
