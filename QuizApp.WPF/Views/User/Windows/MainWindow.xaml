@@ -157,23 +157,10 @@
         <!-- Main Content Area -->
         <Grid Grid.Column="1" Margin="20">
             <!-- Dynamic Content with Smooth Transitions -->
-            <ContentControl Content="{Binding CurrentView}">
-                <ContentControl.Resources>
-                    <Style TargetType="ContentControl">
-                        <Setter Property="ContentTemplate">
-                            <Setter.Value>
-                                <DataTemplate>
-                                    <ContentPresenter Content="{Binding}">
-                                        <ContentPresenter.RenderTransform>
-                                            <TranslateTransform x:Name="TranslateTransform"/>
-                                        </ContentPresenter.RenderTransform>
-                                    </ContentPresenter>
-                                </DataTemplate>
-                            </Setter.Value>
-                        </Setter>
-                    </Style>
-                </ContentControl.Resources>
-            </ContentControl>
+            <ContentControl 
+    Content="{Binding CurrentView}"/>
+
+
         </Grid>
     </Grid>
 </Window>

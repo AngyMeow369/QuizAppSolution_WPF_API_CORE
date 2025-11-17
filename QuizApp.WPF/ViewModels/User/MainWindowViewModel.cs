@@ -119,14 +119,14 @@ namespace QuizApp.WPF.ViewModels.User
 
             var view = new QuizAttemptView
             {
-                DataContext = vm
+                DataContext = vm // <-- REQUIRED
             };
 
-            // load quiz
-            _ = vm.LoadQuizAsync(quizId);
-
             CurrentView = view;
+
+            _ = vm.LoadQuizAsync(quizId);
         }
+
 
 
         private void Logout()

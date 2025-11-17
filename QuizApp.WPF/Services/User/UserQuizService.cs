@@ -29,13 +29,15 @@ namespace QuizApp.WPF.Services.User
             return $"Bearer {token}";
         }
 
-        public async Task<List<QuizDto>> GetMyAssignedQuizzesAsync()
+        public async Task<List<UserAssignedQuizDto>> GetMyAssignedQuizzesAsync()
         {
             var response = await _quizApi.GetMyAssignedQuizzesAsync(GetToken());
             if (!response.Success)
                 throw new Exception(response.Message ?? "Failed to load assigned quizzes");
-            return response.Data ?? new List<QuizDto>();
+
+            return response.Data ?? new List<UserAssignedQuizDto>();
         }
+
 
         public async Task<QuizTakeDto> GetQuizForTakingAsync(int quizId)
         {

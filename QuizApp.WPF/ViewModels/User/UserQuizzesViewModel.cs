@@ -6,8 +6,6 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using QuizApp.WPF.ViewModels.User;
-
 
 namespace QuizApp.WPF.ViewModels.User
 {
@@ -18,7 +16,7 @@ namespace QuizApp.WPF.ViewModels.User
         public ICommand StartQuizCommand { get; }
         public ICommand LoadQuizzesCommand { get; }
 
-        private ObservableCollection<QuizDto> _assignedQuizzes = new();
+        private ObservableCollection<UserAssignedQuizDto> _assignedQuizzes = new();
         private bool _isLoading;
 
         public UserQuizzesViewModel(UserQuizService quizService)
@@ -27,20 +25,12 @@ namespace QuizApp.WPF.ViewModels.User
 
             LoadQuizzesCommand = new RelayCommand(async () => await LoadAssignedQuizzesAsync());
 
-            // Command that receives QuizDto
-#pragma warning disable CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
-            StartQuizCommand = new RelayCommand<QuizDto>(execute: StartQuiz);
-#pragma warning restore CS8622 // Nullability of reference types in type of parameter doesn't match the target delegate (possibly because of nullability attributes).
+            StartQuizCommand = new RelayCommand<UserAssignedQuizDto>(execute: StartQuiz);
 
-            // Auto-load quizzes
             _ = LoadAssignedQuizzesAsync();
         }
 
-        // ============================================================
-        // PROPERTIES
-        // ============================================================
-
-        public ObservableCollection<QuizDto> AssignedQuizzes
+        public ObservableCollection<UserAssignedQuizDto> AssignedQuizzes
         {
             get => _assignedQuizzes;
             set => SetProperty(ref _assignedQuizzes, value);
@@ -52,17 +42,13 @@ namespace QuizApp.WPF.ViewModels.User
             set => SetProperty(ref _isLoading, value);
         }
 
-        // ============================================================
-        // LOAD QUIZZES
-        // ============================================================
-
         private async Task LoadAssignedQuizzesAsync()
         {
             IsLoading = true;
             try
             {
                 var quizzes = await _quizService.GetMyAssignedQuizzesAsync();
-                AssignedQuizzes = new ObservableCollection<QuizDto>(quizzes);
+                AssignedQuizzes = new ObservableCollection<UserAssignedQuizDto>(quizzes);
             }
             catch (Exception ex)
             {
@@ -75,11 +61,7 @@ namespace QuizApp.WPF.ViewModels.User
             }
         }
 
-        // ============================================================
-        // START QUIZ (VIEW NAVIGATION)
-        // ============================================================
-
-        private void StartQuiz(QuizDto quiz)
+        private void StartQuiz(UserAssignedQuizDto quiz)
         {
             if (quiz == null)
                 return;
@@ -94,9 +76,5 @@ namespace QuizApp.WPF.ViewModels.User
 
             MessageBox.Show("Could not locate the main user window.");
         }
-
-
-
-
     }
 }

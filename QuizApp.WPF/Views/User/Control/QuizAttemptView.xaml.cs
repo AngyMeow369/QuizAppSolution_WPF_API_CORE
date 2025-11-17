@@ -15,12 +15,13 @@ namespace QuizApp.WPF.Views.User
         private void Option_Checked(object sender, RoutedEventArgs e)
         {
             if (sender is RadioButton rb &&
-                rb.DataContext is OptionTakeDto option &&
-                DataContext is QuizAttemptViewModel vm &&
-                vm.CurrentQuestion != null)
+                 rb.DataContext is OptionTakeDto option &&
+                 DataContext is QuizAttemptViewModel vm &&
+                 vm.CurrentQuestion != null)
             {
                 vm.SelectOption(vm.CurrentQuestion.Id, option.Id);
             }
+
         }
     }
 }

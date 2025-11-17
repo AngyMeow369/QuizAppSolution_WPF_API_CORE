@@ -12,14 +12,24 @@ namespace QuizApp.WPF.Services.Interfaces
     public interface IUserQuizApi
     {
         [Get("/api/user/quizzes/my-assigned")]
-        Task<Shared.DTOs.ApiResponse<List<QuizDto>>> GetMyAssignedQuizzesAsync([Header("Authorization")] string authorization);
+        Task<Shared.DTOs.ApiResponse<List<UserAssignedQuizDto>>> GetMyAssignedQuizzesAsync(
+            [Header("Authorization")] string authorization
+        );
 
         [Get("/api/user/quizzes/{id}/take")]
-        Task<Shared.DTOs.ApiResponse<QuizTakeDto>> GetQuizForTakingAsync(int id, [Header("Authorization")] string authorization);
+        Task<Shared.DTOs.ApiResponse<QuizTakeDto>> GetQuizForTakingAsync(
+            int id,
+            [Header("Authorization")] string authorization
+        );
 
         [Post("/api/user/quizzes/{id}/submit")]
-        Task<Shared.DTOs.ApiResponse<QuizResultDto>> SubmitQuizAsync(int id, [Body] QuizSubmissionDto submission, [Header("Authorization")] string authorization);
+        Task<Shared.DTOs.ApiResponse<QuizResultDto>> SubmitQuizAsync(
+            int id,
+            [Body] QuizSubmissionDto submission,
+            [Header("Authorization")] string authorization
+        );
     }
+
 
     public interface IUserResultsApi
     {

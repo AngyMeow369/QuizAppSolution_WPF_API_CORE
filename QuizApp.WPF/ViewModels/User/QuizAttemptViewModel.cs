@@ -140,6 +140,10 @@ namespace QuizApp.WPF.ViewModels.User
                 foreach (var q in Quiz.Questions)
                     Questions.Add(q);
 
+                OnPropertyChanged(nameof(Questions));
+                OnPropertyChanged(nameof(CurrentQuestion));
+
+
                 CurrentQuestionIndex = 0;
 
                 var duration = (int)(Quiz.EndTime - Quiz.StartTime).TotalSeconds;
