@@ -55,7 +55,7 @@ namespace QuizApp.WPF.ViewModels.Admin
         {
             Question.Options.Add(new OptionDto
             {
-                Text = "New Option",
+                Text = "Options",
                 IsCorrect = false
             });
             OnPropertyChanged(nameof(Question));
