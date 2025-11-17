@@ -1,29 +1,31 @@
-﻿using System;
+﻿using QuizApp.WPF.Services;
+using QuizApp.WPF.ViewModels.Admin;
+using System;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using QuizApp.WPF.Services;
-using QuizApp.WPF.ViewModels.Admin;
-using QuizApp.WPF.Views.Admin;
 
 namespace QuizApp.WPF.ViewModels.Auth
 {
     public class LoginViewModel : ObservableObject
     {
         private readonly AuthService _authService;
+
         private string _username = string.Empty;
         private string _password = string.Empty;
         private bool _isLoading;
         private string _loadingText = "Signing you in...";
 
-
-    public LoginViewModel()
+        public LoginViewModel()
         {
             _authService = new AuthService();
             LoginCommand = new RelayCommand(async () => await LoginAsync(), CanLogin);
-            RegisterCommand = new RelayCommand(() => { /* Register logic here */ });
+            RegisterCommand = new RelayCommand(() => { });
         }
 
+        // ================================
+        // PROPERTIES
+        // ================================
         public string Username
         {
             get => _username;
@@ -69,6 +71,9 @@ namespace QuizApp.WPF.ViewModels.Auth
 
         public string LoginButtonText => IsLoading ? "Please wait..." : "Sign In";
 
+        // ================================
+        // COMMANDS
+        // ================================
         public ICommand LoginCommand { get; }
         public ICommand RegisterCommand { get; }
 
@@ -79,6 +84,9 @@ namespace QuizApp.WPF.ViewModels.Auth
                    !string.IsNullOrWhiteSpace(Password);
         }
 
+        // ================================
+        // LOGIN LOGIC
+        // ================================
         private async Task LoginAsync()
         {
             IsLoading = true;
@@ -87,64 +95,36 @@ namespace QuizApp.WPF.ViewModels.Auth
             {
                 var response = await _authService.LoginAsync(Username, Password);
 
-                if (response.Success && response.Data != null)
+                if (!response.Success || response.Data == null)
                 {
-                    var loginData = response.Data;
-
-                    Application.Current.Dispatcher.Invoke(() =>
-                    {
-                        Window mainWindow;
-
-                        if (loginData.Role == "Admin")
-                        {
-                            // Create admin window
-                            mainWindow = new AdminMainWindow(_authService);
-
-                            // ⭐ IMPORTANT: Register as the actual main window
-                            Application.Current.MainWindow = mainWindow;
-                        }
-                        else if (loginData.Role == "User")
-                        {
-                            // Create user window
-                            mainWindow = new MainWindow(loginData.Username, loginData.Token, _authService);
-
-                            // ⭐ IMPORTANT: Register as the actual main window
-                            Application.Current.MainWindow = mainWindow;
-                        }
-                        else
-                        {
-                            MessageBox.Show($"Unknown role: {loginData.Role}",
-                                            "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-                            return;
-                        }
-
-                        // Show the new main window
-                        mainWindow.Show();
-
-                        // Close login window
-                        foreach (Window window in Application.Current.Windows)
-                        {
-                            if (window.DataContext == this)
-                            {
-                                window.Close();
-                                break;
-                            }
-                        }
-                    });
-                }
-                else
-                {
-                    MessageBox.Show(response.Message ?? "Invalid credentials!",
-                                    "Login Failed",
-                                    MessageBoxButton.OK,
-                                    MessageBoxImage.Error);
-
+                    MessageBox.Show(
+                        response.Message ?? "Invalid credentials!",
+                        "Login Failed",
+                        MessageBoxButton.OK,
+                        MessageBoxImage.Error
+                    );
                     Password = string.Empty;
+                    return;
                 }
+
+                var data = response.Data;
+
+                // 🔥 Raise event instead of opening windows here
+                OnLoginSuccess?.Invoke(
+                    data.Username,
+                    data.Token,
+                    data.Role,
+                    _authService
+                );
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Connection error: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show(
+                    $"Connection error: {ex.Message}",
+                    "Error",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Error
+                );
             }
             finally
             {
@@ -152,8 +132,9 @@ namespace QuizApp.WPF.ViewModels.Auth
             }
         }
 
-
-
-
+        // ===========================================
+        // EVENT — LoginWindow will subscribe to this.
+        // ===========================================
+        public event Action<string, string, string, AuthService>? OnLoginSuccess;
     }
 }

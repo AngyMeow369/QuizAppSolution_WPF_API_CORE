@@ -135,36 +135,33 @@ namespace QuizApp.WPF.ViewModels.User
             var result = MessageBox.Show("Are you sure you want to logout?", "Logout",
                 MessageBoxButton.YesNo, MessageBoxImage.Question);
 
-            if (result == MessageBoxResult.Yes)
+            if (result != MessageBoxResult.Yes)
+                return;
+
+            // Find actual LoginWindow (not LoginView)
+            var loginWindow = Application.Current.Windows
+                .OfType<LoginWindow>()
+                .FirstOrDefault();
+
+            if (loginWindow == null)
             {
-                // Find existing login window or create new one
-                var loginWindow = Application.Current.Windows.OfType<LoginView>().FirstOrDefault();
-
-                if (loginWindow == null)
-                {
-                    loginWindow = new LoginView();
-                    loginWindow.Show();
-                }
-                else
-                {
-                    loginWindow.Show();
-                    loginWindow.Focus();
-                }
-
-                // Clear any user data from auth service if needed
-                // _authService.Logout(); // If you implement this method
-
-                // Close current window
-                foreach (Window window in Application.Current.Windows)
-                {
-                    if (window is MainWindow)
-                    {
-                        window.Close();
-                        break;
-                    }
-                }
+                loginWindow = new LoginWindow();
+                loginWindow.Show();
             }
+            else
+            {
+                loginWindow.Show();
+                loginWindow.Focus();
+            }
+
+            // Close the MainWindow
+            var main = Application.Current.Windows
+                .OfType<MainWindow>()
+                .FirstOrDefault();
+
+            main?.Close();
         }
+
 
         public event PropertyChangedEventHandler? PropertyChanged;
         protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)

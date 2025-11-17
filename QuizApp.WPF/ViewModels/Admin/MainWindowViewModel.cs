@@ -117,11 +117,11 @@ namespace QuizApp.WPF.ViewModels.Admin
             if (result == MessageBoxResult.Yes)
             {
                 // Find existing login window or create new one
-                var loginWindow = Application.Current.Windows.OfType<LoginView>().FirstOrDefault();
+                var loginWindow = Application.Current.Windows.OfType<LoginWindow>().FirstOrDefault();
 
                 if (loginWindow == null)
                 {
-                    loginWindow = new LoginView();
+                    loginWindow = new LoginWindow();
                     loginWindow.Show();
                 }
                 else

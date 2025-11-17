@@ -1,18 +1,12 @@
-﻿<Window x:Class="QuizApp.WPF.Views.Auth.LoginView"
-        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:viewModels="clr-namespace:QuizApp.WPF.ViewModels"
-        Title="QuizApp - Login" 
-        Height="600" Width="600"
-        MinHeight="500" MinWidth="400"
-        WindowState="Normal"
-        ResizeMode="CanResize"
-        Background="#1a1a1a"
-        WindowStartupLocation="CenterScreen">
+﻿<UserControl x:Class="QuizApp.WPF.Views.Auth.LoginView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="clr-namespace:QuizApp.WPF.Converters"
+             Background="#1a1a1a">
 
-    <Window.Resources>
+    <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-    </Window.Resources>
+    </UserControl.Resources>
 
     <Border Background="#2d2d2d" 
             CornerRadius="15" 
@@ -81,6 +75,7 @@
                     <TextBlock Text="Password" Foreground="#e0e0e0" FontSize="12" FontWeight="SemiBold" Margin="0,0,0,5"/>
                     <TextBlock Grid.Column="1" Text="Forgot?" Foreground="#4a86e8" FontSize="11" Cursor="Hand" Margin="0,0,0,5"/>
                 </Grid>
+
                 <PasswordBox x:Name="PasswordBox"
                              Height="40" 
                              Background="#3d3d3d" 
@@ -104,7 +99,6 @@
                 </PasswordBox>
             </StackPanel>
 
-            <!-- Remember Me -->
             <CheckBox Grid.Row="4" 
                       Content="Remember me" 
                       Foreground="#a0a0a0" 
@@ -113,15 +107,15 @@
 
             <!-- Login Button -->
             <Button Grid.Row="5" 
-        Content="{Binding LoginButtonText}" 
-        Height="45" 
-        Background="#4a86e8" 
-        Foreground="Black" 
-        BorderThickness="0"
-        FontSize="14" 
-        FontWeight="SemiBold"
-        Cursor="Hand"
-        Command="{Binding LoginCommand}">
+                    Content="{Binding LoginButtonText}" 
+                    Height="45" 
+                    Background="#4a86e8" 
+                    Foreground="Black" 
+                    BorderThickness="0"
+                    FontSize="14" 
+                    FontWeight="SemiBold"
+                    Cursor="Hand"
+                    Command="{Binding LoginCommand}">
                 <Button.Style>
                     <Style TargetType="Button">
                         <Setter Property="Background" Value="#4a86e8"/>
@@ -146,12 +140,12 @@
 
             <!-- Loading Text -->
             <TextBlock Grid.Row="6" 
-                      Text="{Binding LoadingText}" 
-                      Foreground="#4a86e8" 
-                      FontSize="12" 
-                      HorizontalAlignment="Center"
-                      Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
-                      Margin="0,10,0,0"/>
+                       Text="{Binding LoadingText}" 
+                       Foreground="#4a86e8" 
+                       FontSize="12" 
+                       HorizontalAlignment="Center"
+                       Visibility="{Binding IsLoading, Converter={StaticResource BooleanToVisibilityConverter}}"
+                       Margin="0,10,0,0"/>
 
             <!-- Register Link -->
             <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
@@ -162,6 +156,8 @@
                           FontWeight="SemiBold" 
                           Cursor="Hand"/>
             </StackPanel>
+
         </Grid>
     </Border>
-</Window>
+
+</UserControl>

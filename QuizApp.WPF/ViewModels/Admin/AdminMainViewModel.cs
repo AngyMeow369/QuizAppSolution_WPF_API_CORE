@@ -103,7 +103,7 @@ namespace QuizApp.WPF.ViewModels.Admin
 
         private void Logout()
         {
-            var login = new QuizApp.WPF.Views.Auth.LoginView();
+            var login = new QuizApp.WPF.Views.Auth.LoginWindow();
             login.Show();
 
             foreach (var win in System.Windows.Application.Current.Windows)
