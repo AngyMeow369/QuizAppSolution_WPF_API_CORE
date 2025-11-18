@@ -61,7 +61,7 @@ namespace QuizApp.WPF.ViewModels.User
             }
         }
 
-        private void StartQuiz(UserAssignedQuizDto quiz)
+        private void StartQuiz(UserAssignedQuizDto? quiz)
         {
             if (quiz == null)
                 return;
