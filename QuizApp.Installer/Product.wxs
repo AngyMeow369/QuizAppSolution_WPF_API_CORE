@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+
+	<Product
+		Id="*"
+		Name="QuizApp"
+		Language="1033"
+		Version="1.0.0.0"
+		Manufacturer="QuizApp Technologies"
+		UpgradeCode="185554ff-ffcb-4ddd-9f74-887540f3e826">
+
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+
+		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
+		<MediaTemplate />
+
+		<!-- MAIN FEATURE -->
+		<Feature Id="MainFeature" Title="QuizApp Installer" Level="1">
+			<ComponentGroupRef Id="WPFComponents" />
+			<ComponentGroupRef Id="APIComponents" />
+		</Feature>
+
+	</Product>
+
+	<!-- INSTALL LOCATION -->
+	<Fragment>
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="ProgramFilesFolder">
+				<Directory Id="INSTALLFOLDER" Name="QuizApp" >
+					<Directory Id="WPFDir" Name="WPF" />
+					<Directory Id="APIDir" Name="API" />
+				</Directory>
+			</Directory>
+		</Directory>
+	</Fragment>
+
+	<!-- EMPTY PLACE-HOLDER FRAGMENT (NOT NEEDED ANYMORE)
+  <Fragment>
+    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
+    </ComponentGroup>
+  </Fragment>
+  -->
+
+</Wix>

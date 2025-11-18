@@ -1,0 +1,211 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <DirectoryRef Id="WPFDir">
+            <Component Id="cmp80B65716687F7A4E2D182C57E9E0D6C9" Guid="{C37A9C40-48F3-4E48-9E0F-748DABEE5743}">
+                <File Id="fil0604D1607AC87EB1790ED89D194AFA3B" KeyPath="yes" Source="$(var.WpfSource)\MaterialDesignColors.dll" />
+            </Component>
+            <Component Id="cmp166460A3CCE8CBD6E4F5051AF5A2AF56" Guid="{DD0E3CB5-2B15-4D1E-8019-F430ADC2690C}">
+                <File Id="filB12E25C14DDC9191CCD4131396C00D6A" KeyPath="yes" Source="$(var.WpfSource)\MaterialDesignThemes.Wpf.dll" />
+            </Component>
+            <Component Id="cmp8F9FD7B311466D9B22D4EA312C509663" Guid="{E755672C-B246-4E39-B3F1-949712DA3ED0}">
+                <File Id="filBB2E6BA29E122FBB259FFF779B6FBCA2" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Configuration.Abstractions.dll" />
+            </Component>
+            <Component Id="cmp123C6E4A57114E6CDCEDAE5984EDB436" Guid="{C019AB92-241A-4DAE-A252-D47BF2BFCC17}">
+                <File Id="fil7BDB8D82886170DFC2189875EFA77C40" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Configuration.Binder.dll" />
+            </Component>
+            <Component Id="cmpFCEA587D50EE489C8A3E824C5B9C58EB" Guid="{350DD204-EDBA-40CE-BA9C-550A154EF833}">
+                <File Id="filDD04DEF8FD6F403B5986543BE1E2B994" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Configuration.dll" />
+            </Component>
+            <Component Id="cmp6B8E5A90F064B8E3080EE164669E3A19" Guid="{C5384137-1593-4052-AB24-C926992150C2}">
+                <File Id="filB019828E91CE6341A6867338956EA9D9" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.DependencyInjection.Abstractions.dll" />
+            </Component>
+            <Component Id="cmpD41B8D234DB321D301191ABDD81C6CB1" Guid="{94BDC040-41D2-4C65-B032-A5C2710AFA2D}">
+                <File Id="filAC6A4829162725247A138A037851D800" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.DependencyInjection.dll" />
+            </Component>
+            <Component Id="cmp2DCC79BDE37F524ADBE027E04CC6C653" Guid="{D128EAFC-3957-4E27-98D9-3AFEEEFD40D5}">
+                <File Id="fil8DDC830CB433E548752466666DD3C41C" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Diagnostics.Abstractions.dll" />
+            </Component>
+            <Component Id="cmp0D740445633509AF944C9ED3C6E6462F" Guid="{39995764-FD79-44B0-8009-9FF0F468CC62}">
+                <File Id="fil41D681D44CDE628610F9B92FA889E51B" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Diagnostics.dll" />
+            </Component>
+            <Component Id="cmpF3003AF0FFA1653A308F3280AE572D2C" Guid="{F02AFCFF-C1E1-4C64-BD88-5B87E26055B2}">
+                <File Id="fil0A1AA3844B10CD3A9696015F2EE2FA12" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Http.dll" />
+            </Component>
+            <Component Id="cmpC7CE1C63E5306A99611D81E230B6DC38" Guid="{5DAA9E2C-DA32-4D3F-8576-E51D4687F402}">
+                <File Id="filEF3228CF316F58C9C06DF75988CC5A4B" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Logging.Abstractions.dll" />
+            </Component>
+            <Component Id="cmpC69EEE542B2E1727BA145F2CB95D4B65" Guid="{2B0A164E-2B09-4E67-B26F-DD519447139F}">
+                <File Id="filDC4D0566E27125EF54791657D26808C3" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Logging.dll" />
+            </Component>
+            <Component Id="cmp48ADF7CD9C55191607B95833DC1A6FE9" Guid="{801721D3-2F6F-4A3F-8D42-12916AA3FDB4}">
+                <File Id="fil32492E6B53ED32D933F9CAA760455D74" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Options.ConfigurationExtensions.dll" />
+            </Component>
+            <Component Id="cmp44AA91EA4D2F34C3B5CA673F17A229AF" Guid="{D7F12DD9-E662-43B1-9E54-F71D1FEFE80D}">
+                <File Id="filE6002A8E3E53D002C3B16BA864CF0345" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Options.dll" />
+            </Component>
+            <Component Id="cmpC9B0FC8232EA04193B4A2A21C3071DC9" Guid="{84BAD607-7367-4F46-B214-FAC5660A9E2C}">
+                <File Id="fil5623B746EA07B28DDB3E39630F7492AD" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Extensions.Primitives.dll" />
+            </Component>
+            <Component Id="cmp374DD1601946C86E670D2C8C7A21BDC6" Guid="{61E8EDED-AAEC-4FBA-A2A7-7D656A78E4A3}">
+                <File Id="fil731991B31302B561FA61F4FCB9C76156" KeyPath="yes" Source="$(var.WpfSource)\Microsoft.Xaml.Behaviors.dll" />
+            </Component>
+            <Component Id="cmpACD625FCCE6663525581DCEE31E8C205" Guid="{C731870B-E40C-4D16-96A1-403E212F60ED}">
+                <File Id="filB9BE5F2B7B8FC54819FA3C37D97045D9" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.Shared.dll" />
+            </Component>
+            <Component Id="cmp1A2A314CA83195EAA79ECDE964DE52C9" Guid="{7D19565A-5D70-488F-A3C2-924FAB27CD70}">
+                <File Id="fil950BC0C7D28C6815F0DB8A1E2E4D2DD3" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.Shared.pdb" />
+            </Component>
+            <Component Id="cmp66EAFB9053F4EB01A8B2A85184A99BB3" Guid="{A47D63F1-A1CB-4967-B5BD-CB817A50D998}">
+                <File Id="fil83CC38E4454FE83398FA39271EE78C3C" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.deps.json" />
+            </Component>
+            <Component Id="cmpD74AE7729191336D28C0DEA6A98CAB5D" Guid="{A00512A8-88A3-4DAD-A511-EE640F5F79E7}">
+                <File Id="fil3DCD59926091399C89C4CC5AF655E382" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.dll" />
+            </Component>
+            <Component Id="cmp8ED9E26FAF751A184D70C2F62AFAC95B" Guid="{6457D1ED-B84D-4073-8DE3-15ECD10B255B}">
+                <File Id="filF81F5E51D15CF925589D1862407251A1" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.dll.config" />
+            </Component>
+            <Component Id="cmpCA2D5153E9661A5D0BA89141AC0525BF" Guid="{814F6027-F424-438F-BE93-29F1D66CB063}">
+                <File Id="filEBB8669E8926F70BBFBE4AFEA83A0FF3" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.exe" />
+            </Component>
+            <Component Id="cmpA203A09C8CC6D9735C2883AB9101090D" Guid="{AAB9750B-F9E0-4F54-895A-D3C12AF9772B}">
+                <File Id="fil5C174C056C5E30B1D0F05D8C4353BE7A" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.exe - Shortcut.lnk" />
+            </Component>
+            <Component Id="cmp4D89A34057C29508753240A2B5CC4EFC" Guid="{F7DD9DF7-4FA2-4E30-AE8E-42ADC723357E}">
+                <File Id="fil4B10D548405FFE25B189D091551832AE" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.pdb" />
+            </Component>
+            <Component Id="cmp062B6B3BAFE80F0C9042CD5F3B922528" Guid="{D8A81D49-6D85-4506-891F-175D897C06BD}">
+                <File Id="fil3E4FDC10F9AD1C1DA70251ACCA77A75B" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.runtimeconfig.json" />
+            </Component>
+            <Component Id="cmp490556713637DE52627F4FD188CE7946" Guid="{02B716DF-3A22-4415-9062-D9A70E8558BD}">
+                <File Id="filD939542300B037955EEBE1B89E61A124" KeyPath="yes" Source="$(var.WpfSource)\Refit.dll" />
+            </Component>
+            <Component Id="cmpAAD207A593BBD0D59B8DA69E737F954C" Guid="{404C1367-2317-4236-A38A-F8775E9572D8}">
+                <File Id="filE9D44AE103D909EDEDCE64AB0E423BF7" KeyPath="yes" Source="$(var.WpfSource)\Refit.HttpClientFactory.dll" />
+            </Component>
+            <Component Id="cmp798EBCC20F5FC7F91CCFB61624FB6DC1" Guid="{E94A8DCB-9D23-43D8-AD49-495D4D2BE0DF}">
+                <File Id="filA31850864404AF1CFD8469F9897FFD6B" KeyPath="yes" Source="$(var.WpfSource)\Xceed.Wpf.AvalonDock.dll" />
+            </Component>
+            <Component Id="cmpB2CC5471BEC1C4F433E600E397BC5913" Guid="{E3CA16AF-6910-47FA-8940-31E6CFC25B73}">
+                <File Id="filF4AEACF8D9C525E965F40852C385AF7B" KeyPath="yes" Source="$(var.WpfSource)\Xceed.Wpf.AvalonDock.Themes.Aero.dll" />
+            </Component>
+            <Component Id="cmp5422C23FB7BCAAC381EF6F25BB09977C" Guid="{468F9572-CA53-45D3-89B5-DE55C426603A}">
+                <File Id="fil05DB4E3433C91154EAF91B8472704958" KeyPath="yes" Source="$(var.WpfSource)\Xceed.Wpf.AvalonDock.Themes.Metro.dll" />
+            </Component>
+            <Component Id="cmp04942D82E19B81DDF64552ED4FD289EE" Guid="{E02304D5-5FE4-4AFF-A948-E6907C209B7A}">
+                <File Id="filCF75EBD45C1243B3ED3B3816CF1F5D28" KeyPath="yes" Source="$(var.WpfSource)\Xceed.Wpf.AvalonDock.Themes.VS2010.dll" />
+            </Component>
+            <Component Id="cmpB91E6A078FB44AA6EA5A8FBA64DB46BA" Guid="{9EFE8660-1C17-4BD9-9CA9-22FCF4B8A481}">
+                <File Id="fil6558ECFD6D7B67154453EAF2ACF0E3A2" KeyPath="yes" Source="$(var.WpfSource)\Xceed.Wpf.Toolkit.dll" />
+            </Component>
+            <Directory Id="dir3E0E6F77C60E391E39306C4A79A32342" Name="cs-CZ">
+                <Component Id="cmpB335FA2170926A6E24A3DC168860BD0E" Guid="{2883FC4C-C972-47A8-9F61-A925DB90BB2D}">
+                    <File Id="filD2470237DA46C4EB8E0D6BCA51096865" KeyPath="yes" Source="$(var.WpfSource)\cs-CZ\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dirB6222643C5C3651C5758D18EC07DBE30" Name="de">
+                <Component Id="cmp333F0AE3D895D78211A8102000141352" Guid="{FCF52D2D-6AE0-4D43-AC47-B6A001967B15}">
+                    <File Id="fil8E00E09246A29972B120D65578B1659B" KeyPath="yes" Source="$(var.WpfSource)\de\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir81E219C4BB31925DD78F7E6D683BEE81" Name="es">
+                <Component Id="cmp7E97FDB9B4CDCBDE8464E98D51E1D033" Guid="{BD9512BD-0B95-4185-91CE-38DE1FFA5A21}">
+                    <File Id="fil09418C733831BCFB19142F6992D38A83" KeyPath="yes" Source="$(var.WpfSource)\es\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir6B48A6A757D2A54716447246FBEE8713" Name="fr">
+                <Component Id="cmpD21598D04D2B68A97E76944ACC004C93" Guid="{F889F7DE-C5A9-4A02-88F7-9D01496A899F}">
+                    <File Id="fil8340EE90960CEC7A0CFB12A1B239A5F3" KeyPath="yes" Source="$(var.WpfSource)\fr\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir9C278E14714431208B001D19574AE45C" Name="hu">
+                <Component Id="cmp0DF82D028984BD0A697EC1BDBCF971FB" Guid="{52303925-B3D1-48B4-A5EB-BC2ACC21061D}">
+                    <File Id="fil448C8936CDEA9BA5F09FF5CC414516D3" KeyPath="yes" Source="$(var.WpfSource)\hu\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dirB2A79473516B4733020482D633C9B4F7" Name="it">
+                <Component Id="cmp0F0DDCD46DC1DA10518188B6B5069776" Guid="{7A10FFD9-7654-4FE2-9F4A-60C78F1A8016}">
+                    <File Id="fil505927378F016E87649B86691C561052" KeyPath="yes" Source="$(var.WpfSource)\it\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir776C41FD72AE90CEBCE1303A7718418F" Name="ja-JP">
+                <Component Id="cmpB54F1E795D57906CDE6CE5186F5D04FC" Guid="{0AE3C069-4CD4-4CAB-930E-8C88CEF97348}">
+                    <File Id="fil44E0F4AE1C6DA09237A52A7C8C90E5E2" KeyPath="yes" Source="$(var.WpfSource)\ja-JP\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir35083A9EAC70C518D9E2C13984D3840C" Name="pt-BR">
+                <Component Id="cmp7B5785EDC674996AFC4507667ED22480" Guid="{DF021753-809F-48F5-A99C-F162D9CE33CC}">
+                    <File Id="fil7128100BA273D7C017FC737AD4531C13" KeyPath="yes" Source="$(var.WpfSource)\pt-BR\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dirC6F7D82434BC362A01EB08DD0C44144B" Name="ro">
+                <Component Id="cmp22C5DF4D92DB46599E9FA8A8A0735F41" Guid="{6C15421A-11F1-4036-9467-B2942361CA94}">
+                    <File Id="filA5148F9AFB29B43FC2107B69B8C679E2" KeyPath="yes" Source="$(var.WpfSource)\ro\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dir4093A3C571FBFE322FE55E7109C3C08D" Name="ru">
+                <Component Id="cmp607EE453963C65E82F5CC8B0E3C69C7C" Guid="{C6FB5E3E-69D8-4F1C-B10F-173ABD8CE8C3}">
+                    <File Id="filB69F816AFC417EAD8B9ECF01BA2DE78F" KeyPath="yes" Source="$(var.WpfSource)\ru\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dirB16BFAA92E13665D55ACABF78E30E6EC" Name="sv">
+                <Component Id="cmp7CD7CBB00BD258454A383A7B88D060CE" Guid="{24857881-3563-4CBC-8CF0-203C4B5A8FD2}">
+                    <File Id="fil0FBAB63C001BA49983B6D799628BDA58" KeyPath="yes" Source="$(var.WpfSource)\sv\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+            <Directory Id="dirA21CFAD416A212924757D53D5ED5F14C" Name="zh-Hans">
+                <Component Id="cmpB3A3BBE83426D1A4EF5018361A996D37" Guid="{D8422661-F652-42A7-8BCF-F9EDC6D61720}">
+                    <File Id="fil32E693F62EC8E36CFC4035EFAFF58BF8" KeyPath="yes" Source="$(var.WpfSource)\zh-Hans\Xceed.Wpf.AvalonDock.resources.dll" />
+                </Component>
+            </Directory>
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="WPFComponents">
+            <ComponentRef Id="cmp80B65716687F7A4E2D182C57E9E0D6C9" />
+            <ComponentRef Id="cmp166460A3CCE8CBD6E4F5051AF5A2AF56" />
+            <ComponentRef Id="cmp8F9FD7B311466D9B22D4EA312C509663" />
+            <ComponentRef Id="cmp123C6E4A57114E6CDCEDAE5984EDB436" />
+            <ComponentRef Id="cmpFCEA587D50EE489C8A3E824C5B9C58EB" />
+            <ComponentRef Id="cmp6B8E5A90F064B8E3080EE164669E3A19" />
+            <ComponentRef Id="cmpD41B8D234DB321D301191ABDD81C6CB1" />
+            <ComponentRef Id="cmp2DCC79BDE37F524ADBE027E04CC6C653" />
+            <ComponentRef Id="cmp0D740445633509AF944C9ED3C6E6462F" />
+            <ComponentRef Id="cmpF3003AF0FFA1653A308F3280AE572D2C" />
+            <ComponentRef Id="cmpC7CE1C63E5306A99611D81E230B6DC38" />
+            <ComponentRef Id="cmpC69EEE542B2E1727BA145F2CB95D4B65" />
+            <ComponentRef Id="cmp48ADF7CD9C55191607B95833DC1A6FE9" />
+            <ComponentRef Id="cmp44AA91EA4D2F34C3B5CA673F17A229AF" />
+            <ComponentRef Id="cmpC9B0FC8232EA04193B4A2A21C3071DC9" />
+            <ComponentRef Id="cmp374DD1601946C86E670D2C8C7A21BDC6" />
+            <ComponentRef Id="cmpACD625FCCE6663525581DCEE31E8C205" />
+            <ComponentRef Id="cmp1A2A314CA83195EAA79ECDE964DE52C9" />
+            <ComponentRef Id="cmp66EAFB9053F4EB01A8B2A85184A99BB3" />
+            <ComponentRef Id="cmpD74AE7729191336D28C0DEA6A98CAB5D" />
+            <ComponentRef Id="cmp8ED9E26FAF751A184D70C2F62AFAC95B" />
+            <ComponentRef Id="cmpCA2D5153E9661A5D0BA89141AC0525BF" />
+            <ComponentRef Id="cmpA203A09C8CC6D9735C2883AB9101090D" />
+            <ComponentRef Id="cmp4D89A34057C29508753240A2B5CC4EFC" />
+            <ComponentRef Id="cmp062B6B3BAFE80F0C9042CD5F3B922528" />
+            <ComponentRef Id="cmp490556713637DE52627F4FD188CE7946" />
+            <ComponentRef Id="cmpAAD207A593BBD0D59B8DA69E737F954C" />
+            <ComponentRef Id="cmp798EBCC20F5FC7F91CCFB61624FB6DC1" />
+            <ComponentRef Id="cmpB2CC5471BEC1C4F433E600E397BC5913" />
+            <ComponentRef Id="cmp5422C23FB7BCAAC381EF6F25BB09977C" />
+            <ComponentRef Id="cmp04942D82E19B81DDF64552ED4FD289EE" />
+            <ComponentRef Id="cmpB91E6A078FB44AA6EA5A8FBA64DB46BA" />
+            <ComponentRef Id="cmpB335FA2170926A6E24A3DC168860BD0E" />
+            <ComponentRef Id="cmp333F0AE3D895D78211A8102000141352" />
+            <ComponentRef Id="cmp7E97FDB9B4CDCBDE8464E98D51E1D033" />
+            <ComponentRef Id="cmpD21598D04D2B68A97E76944ACC004C93" />
+            <ComponentRef Id="cmp0DF82D028984BD0A697EC1BDBCF971FB" />
+            <ComponentRef Id="cmp0F0DDCD46DC1DA10518188B6B5069776" />
+            <ComponentRef Id="cmpB54F1E795D57906CDE6CE5186F5D04FC" />
+            <ComponentRef Id="cmp7B5785EDC674996AFC4507667ED22480" />
+            <ComponentRef Id="cmp22C5DF4D92DB46599E9FA8A8A0735F41" />
+            <ComponentRef Id="cmp607EE453963C65E82F5CC8B0E3C69C7C" />
+            <ComponentRef Id="cmp7CD7CBB00BD258454A383A7B88D060CE" />
+            <ComponentRef Id="cmpB3A3BBE83426D1A4EF5018361A996D37" />
+        </ComponentGroup>
+    </Fragment>
+</Wix>
