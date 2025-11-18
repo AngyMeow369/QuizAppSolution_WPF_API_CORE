@@ -9,6 +9,20 @@ using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // HTTP (same port as Visual Studio)
+    options.ListenLocalhost(5130);
+
+    // HTTPS (same port as Visual Studio)
+    options.ListenLocalhost(7016, listenOptions =>
+    {
+        listenOptions.UseHttps(); // Uses default dev certificate
+    });
+});
+
+
 // -------------------------
 // Configure Services
 // -------------------------
