@@ -7,12 +7,14 @@
         mc:Ignorable="d"
         Title="QuizApp - User Dashboard" Height="700" Width="1200"
         WindowStartupLocation="CenterScreen"
-        Background="#F5F6FA">
+        Background="#F3F4F6">
 
     <Window.Resources>
+
         <!-- Modern Button Style -->
         <Style x:Key="ModernButton" TargetType="Button">
-            <Setter Property="Background" Value="#4CAF50"/>
+            <Setter Property="Background" Value="#10B981"/>
+            <!-- Modern Green -->
             <Setter Property="Foreground" Value="White"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="15,10"/>
@@ -32,17 +34,18 @@
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#45a049"/>
+                    <Setter Property="Background" Value="#059669"/>
+                    <!-- darker hover -->
                 </Trigger>
             </Style.Triggers>
         </Style>
 
         <!-- Navigation Button Style -->
         <Style x:Key="NavButton" TargetType="Button">
-            <Setter Property="Background" Value="#34495E"/>
-            <!-- Add default background -->
-            <Setter Property="Foreground" Value="White"/>
-            <!-- Light text for dark background -->
+            <Setter Property="Background" Value="#1F2937"/>
+            <!-- Dark modern slate -->
+            <Setter Property="Foreground" Value="#E5E7EB"/>
+            <!-- Light gray text -->
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Padding" Value="20,15"/>
             <Setter Property="FontSize" Value="14"/>
@@ -51,45 +54,46 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}" 
-                        CornerRadius="8">
+                                CornerRadius="8">
                             <ContentPresenter HorizontalAlignment="Left" 
-                                      VerticalAlignment="Center"
-                                      Margin="15,0,0,0"/>
+                                              VerticalAlignment="Center"
+                                              Margin="15,0,0,0"/>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#E8F5E8"/>
-                    <Setter Property="Foreground" Value="#2C3E50"/>
-                    <!-- Dark text on light background -->
+                    <Setter Property="Background" Value="#374151"/>
+                    <!-- Hover Slate -->
+                    <Setter Property="Foreground" Value="White"/>
                 </Trigger>
             </Style.Triggers>
         </Style>
+
         <!-- Card Style -->
         <Style x:Key="DashboardCard" TargetType="Border">
-            <Setter Property="Background" Value="White"/>
+            <Setter Property="Background" Value="#FFFFFF"/>
             <Setter Property="CornerRadius" Value="12"/>
             <Setter Property="Padding" Value="20"/>
             <Setter Property="Effect">
                 <Setter.Value>
-                    <DropShadowEffect BlurRadius="10" Opacity="0.1" ShadowDepth="2"/>
+                    <DropShadowEffect BlurRadius="14" Opacity="0.12" ShadowDepth="2"/>
                 </Setter.Value>
             </Setter>
         </Style>
+
     </Window.Resources>
 
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="280"/>
-            <!-- Sidebar -->
             <ColumnDefinition Width="*"/>
-            <!-- Main Content -->
         </Grid.ColumnDefinitions>
 
         <!-- Sidebar -->
-        <Border Grid.Column="0" Background="#2C3E50">
+        <Border Grid.Column="0" Background="#111827">
+            <!-- Modern Deep Navy -->
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -98,14 +102,14 @@
                 </Grid.RowDefinitions>
 
                 <!-- Logo/Header -->
-                <Border Grid.Row="0" Background="#1A2530" Padding="20" CornerRadius="0,0,12,12">
+                <Border Grid.Row="0" Background="#1F2937" Padding="20" CornerRadius="0,0,12,12">
                     <StackPanel>
                         <TextBlock Text="🎯 QuizApp" 
                                    Foreground="White" 
                                    FontSize="20" 
                                    FontWeight="Bold"/>
                         <TextBlock Text="User Dashboard" 
-                                   Foreground="#BDC3C7" 
+                                   Foreground="#9CA3AF" 
                                    FontSize="12" 
                                    Margin="0,5,0,0"/>
                     </StackPanel>
@@ -114,9 +118,8 @@
                 <!-- Navigation -->
                 <StackPanel Grid.Row="1" Margin="15,30,15,0">
                     <Button Content="📊 Dashboard" 
-                    Style="{StaticResource NavButton}"
-                    Command="{Binding NavigateToDashboardCommand}"/>
-                    <!-- Remove: Background="#E8F5E8" Foreground="#2C3E50" -->
+                            Style="{StaticResource NavButton}"
+                            Command="{Binding NavigateToDashboardCommand}"/>
 
                     <Button Content="📝 My Quizzes" 
                             Style="{StaticResource NavButton}"
@@ -135,32 +138,30 @@
                 </StackPanel>
 
                 <!-- User Info & Logout -->
-                <Border Grid.Row="2" Background="#1A2530" Padding="15" CornerRadius="12,12,0,0">
+                <Border Grid.Row="2" Background="#1F2937" Padding="15" CornerRadius="12,12,0,0">
                     <StackPanel>
                         <TextBlock Text="{Binding CurrentUsername}" 
                                    Foreground="White" 
                                    FontWeight="SemiBold"
                                    TextTrimming="CharacterEllipsis"/>
                         <TextBlock Text="{Binding UserRole}" 
-                                   Foreground="#BDC3C7" 
+                                   Foreground="#9CA3AF" 
                                    FontSize="11"
                                    Margin="0,2,0,10"/>
+
                         <Button Content="🚪 Logout" 
                                 Command="{Binding LogoutCommand}"
                                 Style="{StaticResource NavButton}"
-                                Background="#E74C3C" Foreground="White"/>
+                                Background="#EF4444" 
+                                Foreground="White"/>
                     </StackPanel>
                 </Border>
             </Grid>
         </Border>
 
-        <!-- Main Content Area -->
+        <!-- Main Content -->
         <Grid Grid.Column="1" Margin="20">
-            <!-- Dynamic Content with Smooth Transitions -->
-            <ContentControl 
-    Content="{Binding CurrentView}"/>
-
-
+            <ContentControl Content="{Binding CurrentView}"/>
         </Grid>
     </Grid>
 </Window>
