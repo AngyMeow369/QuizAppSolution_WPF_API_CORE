@@ -13,6 +13,25 @@
         WindowStartupLocation="CenterScreen"
         Background="#F5F6FA">
 
+    <Window.Icon>
+        <DrawingImage>
+            <DrawingImage.Drawing>
+                <DrawingGroup>
+                    <!-- Red circle background -->
+                    <GeometryDrawing Brush="Black">
+                        <GeometryDrawing.Geometry>
+                            <EllipseGeometry Center="16,16" RadiusX="20" RadiusY="20"/>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+
+                    <!-- White star -->
+                    <GeometryDrawing Brush="white"
+             Geometry="M 16,4 L 20,12 L 28,12 L 22,18 L 24,26 L 16,22 L 8,26 L 10,18 L 4,12 L 12,12 Z"/>
+                </DrawingGroup>
+            </DrawingImage.Drawing>
+        </DrawingImage>
+    </Window.Icon>
+
     <Window.Resources>
         <!-- Sidebar Button Style -->
         <Style x:Key="NavButton" TargetType="Button">
