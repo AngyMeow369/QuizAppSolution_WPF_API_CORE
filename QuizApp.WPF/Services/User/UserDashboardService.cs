@@ -1,5 +1,4 @@
-﻿using QuizApp.API.Models;
-using QuizApp.Shared.DTOs;
+﻿using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services.Interfaces;
 using Refit;
 

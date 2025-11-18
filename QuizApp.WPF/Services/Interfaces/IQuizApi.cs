@@ -1,5 +1,4 @@
-﻿using QuizApp.API.Models;
-using QuizApp.Shared.DTOs;
+﻿using QuizApp.Shared.DTOs;
 using Refit;
 
 namespace QuizApp.WPF.Services.Interfaces
@@ -22,7 +21,7 @@ namespace QuizApp.WPF.Services.Interfaces
         Task<Shared.DTOs.ApiResponse<object>> DeleteQuizAsync(int id, [Header("Authorization")] string authorization);
 
         [Post("/api/quizzes/{quizId}/assign/{userId}")]
-        Task<Shared.DTOs.ApiResponse<QuizAssignment>> AssignQuizAsync(int quizId, int userId, [Header("Authorization")] string authorization);
+        Task<Shared.DTOs.ApiResponse<Object>> AssignQuizAsync(int quizId, int userId, [Header("Authorization")] string authorization);
 
         [Delete("/api/quizzes/{quizId}/assign/{userId}")]
         Task<Shared.DTOs.ApiResponse<object>> RemoveAssignmentAsync(int quizId, int userId, [Header("Authorization")] string authorization);

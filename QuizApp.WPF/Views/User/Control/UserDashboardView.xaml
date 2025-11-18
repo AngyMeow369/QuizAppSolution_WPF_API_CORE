@@ -239,11 +239,16 @@
                                                           Foreground="#374151"
                                                           TextTrimming="CharacterEllipsis"/>
                                                 <TextBlock FontSize="12" 
-                                                          Foreground="#6B7280" 
-                                                          Margin="0,4,0,0">
-                                                    <Run Text="Completed on "/>
-                                                    <Run Text="{Binding CompletionDate, StringFormat={}{0:MMM dd, yyyy}}"/>
+                                                           Foreground="#6B7280" 
+                                                           Margin="0,4,0,0">
+                                                    <Run Text="Completed on " />
+                                                    <Run>
+                                                        <Run.Text>
+                                                            <![CDATA[{Binding CompletionDate, StringFormat={}{0:MMM dd, yyyy}}]]>
+                                                        </Run.Text>
+                                                    </Run>
                                                 </TextBlock>
+
                                             </StackPanel>
                                             
                                             <Border Grid.Column="1" 
@@ -361,11 +366,16 @@
                                                               FontSize="10" 
                                                               Foreground="#92400E"/>
                                                 </Border>
-                                                <TextBlock FontSize="12" 
-                                                          Foreground="#6B7280">
-                                                    <Run Text="Due: "/>
-                                                    <Run Text="{Binding DueDate, StringFormat={}{0:MMM dd, yyyy 'at' hh:mm tt}}"/>
+                                                <TextBlock FontSize="12"
+                                                               Foreground="#6B7280">
+                                                        <Run Text="Due: " />
+                                                        <Run>
+                                                            <Run.Text>
+                                                                <![CDATA[{Binding DueDate, StringFormat={}{0:MMM dd, yyyy 'at' hh:mm tt}}]]>
+                                                            </Run.Text>
+                                                        </Run>
                                                 </TextBlock>
+
                                             </StackPanel>
                                         </Grid>
                                     </Border>
