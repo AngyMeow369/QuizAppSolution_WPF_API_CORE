@@ -25,10 +25,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="Product.wxs" />
-    <Compile Include="WPF.wxs" />
-    <Compile Include="API.wxs" />
-  </ItemGroup>
+  <Compile Include="Product.wxs" />
+  <Compile Include="WPF.wxs" />
+  <Compile Include="API.wxs" />
+  <WixExtension Include="WixUIExtension" />
+</ItemGroup>
+
+
 
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" 

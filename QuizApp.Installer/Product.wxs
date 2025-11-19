@@ -14,7 +14,10 @@
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate />
 
-		<!-- MAIN FEATURE -->
+		<!-- REQUIRED TO SHOW INSTALLER UI -->
+		<UIRef Id="WixUI_InstallDir" />
+		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
 		<Feature Id="MainFeature" Title="QuizApp Installer" Level="1">
 			<ComponentGroupRef Id="WPFComponents" />
 			<ComponentGroupRef Id="APIComponents" />
@@ -22,23 +25,15 @@
 
 	</Product>
 
-	<!-- INSTALL LOCATION -->
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFilesFolder">
-				<Directory Id="INSTALLFOLDER" Name="QuizApp" >
-					<Directory Id="WPFDir" Name="WPF" />
-					<Directory Id="APIDir" Name="API" />
+			<Directory Id="D_DRIVE" Name="D">
+				<Directory Id="INSTALLFOLDER" Name="QuizApp">
+					<Directory Id="WPFDir" Name="WPF"/>
+					<Directory Id="APIDir" Name="API"/>
 				</Directory>
 			</Directory>
 		</Directory>
 	</Fragment>
-
-	<!-- EMPTY PLACE-HOLDER FRAGMENT (NOT NEEDED ANYMORE)
-  <Fragment>
-    <ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
-    </ComponentGroup>
-  </Fragment>
-  -->
 
 </Wix>

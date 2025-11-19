@@ -161,8 +161,8 @@
         </DirectoryRef>
     </Fragment>
     <Fragment>
-        <ComponentGroup Id="WPFComponents">
-            <ComponentRef Id="cmp80B65716687F7A4E2D182C57E9E0D6C9" />
+		<ComponentGroup Id="WPFComponents" Directory="WPFDir">
+			<ComponentRef Id="cmp80B65716687F7A4E2D182C57E9E0D6C9" />
             <ComponentRef Id="cmp166460A3CCE8CBD6E4F5051AF5A2AF56" />
             <ComponentRef Id="cmp8F9FD7B311466D9B22D4EA312C509663" />
             <ComponentRef Id="cmp123C6E4A57114E6CDCEDAE5984EDB436" />

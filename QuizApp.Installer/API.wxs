@@ -928,8 +928,8 @@
         </DirectoryRef>
     </Fragment>
     <Fragment>
-        <ComponentGroup Id="APIComponents">
-            <ComponentRef Id="cmp863B37122244E749D0C41B31BD05AA67" />
+		<ComponentGroup Id="APIComponents" Directory="APIDir">
+			<ComponentRef Id="cmp863B37122244E749D0C41B31BD05AA67" />
             <ComponentRef Id="cmp7789070611E72DF17B98BAAA444C3E93" />
             <ComponentRef Id="cmp669BBFFFAE337EA1A25B80D262C646CE" />
             <ComponentRef Id="cmp7AEF17BE9E76189F3C218728C44F4F76" />
