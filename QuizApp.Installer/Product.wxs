@@ -2,21 +2,23 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
 	<Product
-		Id="*"
-		Name="QuizApp"
-		Language="1033"
-		Version="1.0.0.0"
-		Manufacturer="QuizApp Technologies"
-		UpgradeCode="185554ff-ffcb-4ddd-9f74-887540f3e826">
+	  Id="*"
+	  Name="QuizApp"
+	  Language="1033"
+	  Version="1.0.0.0"
+	  Manufacturer="QuizApp Technologies"
+	  UpgradeCode="185554ff-ffcb-4ddd-9f74-887540f3e826">
 
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate />
 
-		<!-- REQUIRED TO SHOW INSTALLER UI -->
 		<UIRef Id="WixUI_InstallDir" />
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+		<!-- Force installation to D drive -->
+		<Property Id="ROOTDRIVE" Value="D:\" />
 
 		<Feature Id="MainFeature" Title="QuizApp Installer" Level="1">
 			<ComponentGroupRef Id="WPFComponents" />
@@ -27,10 +29,10 @@
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="D_DRIVE" Name="D">
+			<Directory Id="D_DRIVE" Name=".">
 				<Directory Id="INSTALLFOLDER" Name="QuizApp">
-					<Directory Id="WPFDir" Name="WPF"/>
-					<Directory Id="APIDir" Name="API"/>
+					<Directory Id="WPFDir" Name="WPF" />
+					<Directory Id="APIDir" Name="API" />
 				</Directory>
 			</Directory>
 		</Directory>
