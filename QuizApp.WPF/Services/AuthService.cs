@@ -1,6 +1,7 @@
-﻿using QuizApp.Shared.DTOs;
+﻿using System;
+using System.Threading.Tasks;
+using QuizApp.Shared.DTOs;
 using QuizApp.WPF.Services.Interfaces;
-
 using Refit;
 
 namespace QuizApp.WPF.Services
@@ -14,6 +15,7 @@ namespace QuizApp.WPF.Services
 
         public AuthService()
         {
+            // update base url if your API host/port differ
             _authApi = RestService.For<IAuthApi>("https://localhost:7016");
         }
 
@@ -25,6 +27,7 @@ namespace QuizApp.WPF.Services
 
         public bool IsAuthenticated() => !string.IsNullOrEmpty(_jwtToken);
 
+        // LOGIN: returns ApiResponse<LoginResponse>
         public async Task<Shared.DTOs.ApiResponse<LoginResponse>> LoginAsync(string username, string password)
         {
             try
@@ -32,18 +35,18 @@ namespace QuizApp.WPF.Services
                 var request = new LoginRequest { Username = username, Password = password };
                 var response = await _authApi.LoginAsync(request);
 
-                if (response?.Success == true && response.Data != null)
+                if (response != null && response.Success && response.Data != null)
                 {
-                    _jwtToken = response.Data.Token;
-                    _role = response.Data.Role;
-                    _username = response.Data.Username;
+                    _jwtToken = response.Data.Token ?? string.Empty;
+                    _role = response.Data.Role ?? string.Empty;
+                    _username = response.Data.Username ?? string.Empty;
                 }
 
                 return response ?? Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure("Null response from API.");
             }
-            catch (ApiException ex)
+            catch (ApiException apiEx)
             {
-                return Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure($"Login failed: {ex.Message}");
+                return Shared.DTOs.ApiResponse<LoginResponse>.CreateFailure($"Login failed: {apiEx.Message}");
             }
             catch (Exception ex)
             {
@@ -51,22 +54,43 @@ namespace QuizApp.WPF.Services
             }
         }
 
-        public async Task<Shared.DTOs.ApiResponse<object>> RegisterAsync(string username, string password, string role = "User")
+        // REGISTER - primary API method (consume RegisterRequest)
+        public async Task<Shared.DTOs.ApiResponse<object>> RegisterAsync(RegisterRequest req)
         {
+            if (req is null)
+                return Shared.DTOs.ApiResponse<object>.CreateFailure("RegisterRequest is null.");
+
             try
             {
-                var request = new RegisterRequest { Username = username, Password = password, Role = role };
-                var response = await _authApi.RegisterAsync(request);
-                return response;
+                var response = await _authApi.RegisterAsync(req);
+                return response ?? Shared.DTOs.ApiResponse<object>.CreateFailure("Null response from API.");
             }
-            catch (ApiException ex)
+            catch (ApiException apiEx)
             {
-                return Shared.DTOs.ApiResponse<object>.CreateFailure($"Registration failed: {ex.Message}");
+                return Shared.DTOs.ApiResponse<object>.CreateFailure($"Registration failed: {apiEx.Message}");
             }
             catch (Exception ex)
             {
                 return Shared.DTOs.ApiResponse<object>.CreateFailure($"Unexpected error: {ex.Message}");
             }
+        }
+
+        // Optional convenience overload
+        public async Task<Shared.DTOs.ApiResponse<object>> RegisterAsync(string username, string password, string role = "User")
+        {
+            var req = new RegisterRequest
+            {
+                Username = username,
+                Password = password,
+                Role = role
+            };
+
+            return await RegisterAsync(req);
+        }
+
+        Task<Shared.DTOs.ApiResponse<object>> IAuthService.RegisterAsync(string username, string password, string role)
+        {
+            throw new NotImplementedException();
         }
     }
 }

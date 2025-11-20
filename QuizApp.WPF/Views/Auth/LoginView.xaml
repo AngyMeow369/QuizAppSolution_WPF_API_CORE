@@ -152,10 +152,12 @@
             <StackPanel Grid.Row="7" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,20,0,0">
                 <TextBlock Text="Don't have an account? " Foreground="#a0a0a0" FontSize="12"/>
                 <TextBlock Text="Sign up" 
-                          Foreground="#4a86e8" 
-                          FontSize="12" 
-                          FontWeight="SemiBold" 
-                          Cursor="Hand"/>
+                Foreground="#4a86e8" 
+                FontSize="12" 
+                FontWeight="SemiBold" 
+                Cursor="Hand"
+                MouseLeftButtonUp="SignUp_Click"/>    
+
             </StackPanel>
 
         </Grid>

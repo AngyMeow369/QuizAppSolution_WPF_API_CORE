@@ -34,5 +34,16 @@ namespace QuizApp.WPF.Views.Auth
                 vm.LoginCommand.Execute(null);
             }
         }
+
+        private void SignUp_Click(object sender, MouseButtonEventArgs e)
+        {
+            // Open registration window
+            var registerWindow = new RegisterWindow();
+            registerWindow.Show();
+
+            // Close login window
+            Window.GetWindow(this)?.Close();
+        }
+
     }
 }
