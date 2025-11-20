@@ -45,11 +45,15 @@
 			<ItemsControl ItemsSource="{Binding CurrentQuestion.Options}">
 				<ItemsControl.ItemTemplate>
 					<DataTemplate>
-						<RadioButton Content="{Binding Text}"
-                                     GroupName="QuestionOptions"
-                                     Margin="0,5,0,5"
-                                     Style="{StaticResource OptionRadioButtonStyle}"/>
-					</DataTemplate>
+                        <RadioButton Content="{Binding Text}"
+             Margin="0,5,0,5"
+             GroupName="{Binding DataContext.CurrentQuestion.Id,
+                         RelativeSource={RelativeSource AncestorType=UserControl}}"
+             IsChecked="{Binding IsSelected, Mode=TwoWay}"
+             Style="{StaticResource OptionRadioButtonStyle}"/>
+
+
+                    </DataTemplate>
 				</ItemsControl.ItemTemplate>
 			</ItemsControl>
 		</StackPanel>

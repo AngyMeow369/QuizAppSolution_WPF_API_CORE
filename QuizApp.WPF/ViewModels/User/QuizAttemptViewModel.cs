@@ -15,15 +15,7 @@ namespace QuizApp.WPF.ViewModels.User
     {
         private readonly UserQuizService _quizService;
 
-        private bool _quizSubmitted = false; // ⛔ Prevent multiple submissions
-
-        private bool _hasNoQuestions;
-        public bool HasNoQuestions
-        {
-            get => _hasNoQuestions;
-            set => SetProperty(ref _hasNoQuestions, value);
-        }
-
+        private bool _quizSubmitted = false; // Prevent multiple submissions
 
         public QuizAttemptViewModel(UserQuizService quizService)
         {
@@ -74,12 +66,11 @@ namespace QuizApp.WPF.ViewModels.User
                 if (SetProperty(ref _currentQuestionIndex, value))
                 {
                     OnPropertyChanged(nameof(CurrentQuestion));
-
-                    (NextQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
-                    (PreviousQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                    OnPropertyChanged(nameof(Questions));
                 }
             }
         }
+
 
         public QuestionTakeDto? CurrentQuestion =>
             (Questions.Count > 0 &&
@@ -137,16 +128,22 @@ namespace QuizApp.WPF.ViewModels.User
             {
                 Quiz = await _quizService.GetQuizForTakingAsync(quizId);
 
-
                 Questions.Clear();
                 foreach (var q in Quiz.Questions)
                     Questions.Add(q);
 
+                // 🔥 REQUIRED FOR UI TO SHOW FIRST QUESTION
                 OnPropertyChanged(nameof(Questions));
                 OnPropertyChanged(nameof(CurrentQuestion));
 
                 CurrentQuestionIndex = 0;
 
+                // 🔥 Refresh button availability now that questions exist
+                (NextQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (PreviousQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
+                (SubmitCommand as RelayCommand)?.RaiseCanExecuteChanged();
+
+                // Timer setup
                 var duration = (int)(Quiz.EndTime - Quiz.StartTime).TotalSeconds;
                 if (duration <= 0) duration = 300;
 
@@ -162,6 +159,7 @@ namespace QuizApp.WPF.ViewModels.User
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
+
 
         private async void TimerTick(object? sender, EventArgs e)
         {
@@ -184,22 +182,30 @@ namespace QuizApp.WPF.ViewModels.User
 
             SelectedOptions[questionId] = optionId;
 
+            var q = Questions.FirstOrDefault(q => q.Id == questionId);
+            if (q != null)
+            {
+                foreach (var option in q.Options)
+                    option.IsSelected = (option.Id == optionId);
+            }
+
             OnPropertyChanged(nameof(CurrentQuestion));
+            OnPropertyChanged(nameof(Questions));
         }
 
+
         // ============================================================
-        // SUBMIT QUIZ (ONE-TIME ONLY)
+        // SUBMIT QUIZ
         // ============================================================
 
         private async Task SubmitQuizAsync()
         {
             if (Quiz == null) return;
-            if (_quizSubmitted) return;        // ⛔ Again prevent re-submit
+            if (_quizSubmitted) return;
 
-            _quizSubmitted = true;             // 🔒 LOCK
+            _quizSubmitted = true;
             _timer?.Stop();
 
-            // Disable buttons
             (NextQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (PreviousQuestionCommand as RelayCommand)?.RaiseCanExecuteChanged();
             (SubmitCommand as RelayCommand)?.RaiseCanExecuteChanged();
