@@ -29,9 +29,7 @@
             <Component Id="cmpDC21D33245C54F42F4F743004AE61D7D" Guid="{A59EC88F-BF70-4478-BA74-6107D22F601A}">
                 <File Id="fil503B6D1BA382298D35F23C4B5E2B6A77" KeyPath="yes" Source="$(var.ApiSource)\Microsoft.Data.SqlClient.dll" />
             </Component>
-            <Component Id="cmpDBAF8344B9B7835C7CCFFAFE083B71FF" Guid="{57107555-163A-4F98-9E7A-EC6910B416E7}">
-                <File Id="fil09CE528D784234077C4276822D7B17F3" KeyPath="yes" Source="$(var.ApiSource)\Microsoft.Data.SqlClient.SNI.dll" />
-            </Component>
+           
             <Component Id="cmp43EAA4809D5751B7D75C75FBCF913F7F" Guid="{1A9415C4-097D-45B2-92A3-FF5299E730A7}">
                 <File Id="fil33819DAB5E293944A9BE5F46D6322FA9" KeyPath="yes" Source="$(var.ApiSource)\Microsoft.EntityFrameworkCore.Abstractions.dll" />
             </Component>
@@ -938,7 +936,6 @@
             <ComponentRef Id="cmpEADBD604A115EF0537324F269960FE6C" />
             <ComponentRef Id="cmp657D18EE06D2C9A92D3C9D5376629631" />
             <ComponentRef Id="cmpDC21D33245C54F42F4F743004AE61D7D" />
-            <ComponentRef Id="cmpDBAF8344B9B7835C7CCFFAFE083B71FF" />
             <ComponentRef Id="cmp43EAA4809D5751B7D75C75FBCF913F7F" />
             <ComponentRef Id="cmp2E9D5B6BAC88E6D7F8D1D2CAA520A555" />
             <ComponentRef Id="cmp3799D739BF01DE03D42A7EF29CE384AB" />

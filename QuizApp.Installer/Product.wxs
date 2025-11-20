@@ -14,10 +14,16 @@
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate />
 
-		<UIRef Id="WixUI_InstallDir" />
+		<!-- USE A UI THAT HAS A LICENSE PAGE -->
+		<UIRef Id="WixUI_FeatureTree" />
+
+		<!-- SHOW LICENSE -->
+		<Property Id="WixUILicenseRtf" Value="License.rtf" />
+
+		<!-- INSTALL DIR -->
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
-		<!-- Force installation to D drive -->
+		<!-- FORCE INSTALL TO D: -->
 		<Property Id="ROOTDRIVE" Value="D:\" />
 
 		<Feature Id="MainFeature" Title="QuizApp Installer" Level="1">

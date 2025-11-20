@@ -68,9 +68,7 @@
             <Component Id="cmpCA2D5153E9661A5D0BA89141AC0525BF" Guid="{814F6027-F424-438F-BE93-29F1D66CB063}">
                 <File Id="filEBB8669E8926F70BBFBE4AFEA83A0FF3" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.exe" />
             </Component>
-            <Component Id="cmpA203A09C8CC6D9735C2883AB9101090D" Guid="{AAB9750B-F9E0-4F54-895A-D3C12AF9772B}">
-                <File Id="fil5C174C056C5E30B1D0F05D8C4353BE7A" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.exe - Shortcut.lnk" />
-            </Component>
+            
             <Component Id="cmp4D89A34057C29508753240A2B5CC4EFC" Guid="{F7DD9DF7-4FA2-4E30-AE8E-42ADC723357E}">
                 <File Id="fil4B10D548405FFE25B189D091551832AE" KeyPath="yes" Source="$(var.WpfSource)\QuizApp.WPF.pdb" />
             </Component>
@@ -184,7 +182,6 @@
             <ComponentRef Id="cmpD74AE7729191336D28C0DEA6A98CAB5D" />
             <ComponentRef Id="cmp8ED9E26FAF751A184D70C2F62AFAC95B" />
             <ComponentRef Id="cmpCA2D5153E9661A5D0BA89141AC0525BF" />
-            <ComponentRef Id="cmpA203A09C8CC6D9735C2883AB9101090D" />
             <ComponentRef Id="cmp4D89A34057C29508753240A2B5CC4EFC" />
             <ComponentRef Id="cmp062B6B3BAFE80F0C9042CD5F3B922528" />
             <ComponentRef Id="cmp490556713637DE52627F4FD188CE7946" />
