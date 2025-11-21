@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi"
+     xmlns:bal="http://schemas.microsoft.com/wix/BalExtension">
+
+  <Bundle Name="QuizApp Setup"
+          Version="1.0.0.0"
+          Manufacturer="YourCompany"
+          UpgradeCode="{E3F7C2F2-AAAA-4D44-9C10-123456789ABC}">
+
+    <!-- RtfLicense BA requires a valid LicenseFile -->
+    <BootstrapperApplicationRef Id="WixStandardBootstrapperApplication.RtfLicense">
+      <bal:WixStandardBootstrapperApplication
+          LicenseFile="license.rtf"
+          SuppressOptionsUI="yes"
+          ShowVersion="yes" />
+    </BootstrapperApplicationRef>
+
+    <Chain>
+      <MsiPackage SourceFile="QuizApp.Installer.msi" />
+    </Chain>
+
+  </Bundle>
+</Wix>
