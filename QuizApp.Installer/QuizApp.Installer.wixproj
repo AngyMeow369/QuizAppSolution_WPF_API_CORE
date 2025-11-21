@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>3.10</ProductVersion>
-    <ProjectGuid>f2b76af7-1253-4a26-8a9e-ee8c1fa6a87e</ProjectGuid>
+    <ProjectGuid>13929e6e-eb5c-49ca-a3c9-8c594a49b091</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
     <OutputName>QuizApp.Installer</OutputName>
     <OutputType>Package</OutputType>
-
-    <!-- Define folder paths -->
-    <DefineConstants>
-        WpfSource=D:\WPF-Build;
-        ApiSource=D:\API-Build
-    </DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>$(DefineConstants);Debug</DefineConstants>
+    <DefineConstants>Debug</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>$(DefineConstants)</DefineConstants>
+  </PropertyGroup>
+
+  <!-- Our custom constants for heat-generated files -->
+  <PropertyGroup>
+    <DefineConstants>
+      API_SOURCE=D:\API-Build;
+      WPF_SOURCE=D:\WPF-Build;
+    </DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="API_Files.wxs" />
     <Compile Include="Product.wxs" />
-    <Compile Include="WPF.wxs" />
-    <Compile Include="API.wxs" />
+    <Compile Include="WPF_Files.wxs" />
 
+    <!-- ADD: Enable UI extension -->
     <WixExtension Include="WixUIExtension">
-      <HintPath>WixUIExtension</HintPath>
-      <Name>WixUIExtension</Name>
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
     </WixExtension>
   </ItemGroup>
 
-  <ItemGroup>
-    <Content Include="License.rtf" />
-  </ItemGroup>
-
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets"
+          Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
 
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
-    <Error Text="The WiX Toolset v3.11 build tools must be installed to build this project." />
+    <Error Text="The WiX Toolset v3.11 build tools must be installed to build this project. To download the WiX Toolset, see https://wixtoolset.org/releases/v3.11/stable" />
   </Target>
+
 </Project>

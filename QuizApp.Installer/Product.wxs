@@ -1,47 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 
-	<Product
-	  Id="*"
-	  Name="QuizApp"
-	  Language="1033"
-	  Version="1.0.0.0"
-	  Manufacturer="QuizApp Technologies"
-	  UpgradeCode="185554ff-ffcb-4ddd-9f74-887540f3e826">
+	<?define API_SOURCE="D:\API-Build" ?>
+	<?define WPF_SOURCE="D:\WPF-Build" ?>
 
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+	<Product Id="*"
+			 Name="QuizApp Installer"
+			 Language="1033"
+			 Version="1.0.0.0"
+			 Manufacturer="YourCompany"
+			 UpgradeCode="{8F381BCB-5E6E-4934-B6A0-B260E08676EE}">
 
-		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
-		<MediaTemplate />
+		<Package InstallerVersion="500"
+				 Compressed="yes"
+				 InstallScope="perMachine" />
 
-		<!-- USE A UI THAT HAS A LICENSE PAGE -->
-		<UIRef Id="WixUI_FeatureTree" />
+		<!-- Fix the install directory to D:\QuizApp -->
+		<Property Id="INSTALLDIR" Value="D:\QuizApp" />
 
-		<!-- SHOW LICENSE -->
-		<Property Id="WixUILicenseRtf" Value="License.rtf" />
+		<Media Id="1" Cabinet="cab1.cab" EmbedCab="yes" />
 
-		<!-- INSTALL DIR -->
-		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+		<!-- Folder Structure -->
+		<Directory Id="TARGETDIR" Name="SourceDir">
+			<Directory Id="INSTALLDIR" Name="QuizApp">
+				<Directory Id="APIFolder" Name="API" />
+				<Directory Id="WPFFolder" Name="WPF" />
+			</Directory>
+		</Directory>
 
-		<!-- FORCE INSTALL TO D: -->
-		<Property Id="ROOTDRIVE" Value="D:\" />
-
-		<Feature Id="MainFeature" Title="QuizApp Installer" Level="1">
-			<ComponentGroupRef Id="WPFComponents" />
-			<ComponentGroupRef Id="APIComponents" />
+		<!-- Features include all harvested components -->
+		<Feature Id="MainFeature" Title="QuizApp" Level="1">
+			<ComponentGroupRef Id="API_GROUP"/>
+			<ComponentGroupRef Id="WPF_GROUP"/>
 		</Feature>
 
 	</Product>
-
-	<Fragment>
-		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="D_DRIVE" Name=".">
-				<Directory Id="INSTALLFOLDER" Name="QuizApp">
-					<Directory Id="WPFDir" Name="WPF" />
-					<Directory Id="APIDir" Name="API" />
-				</Directory>
-			</Directory>
-		</Directory>
-	</Fragment>
-
 </Wix>
