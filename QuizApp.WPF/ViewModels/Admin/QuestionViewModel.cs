@@ -3,7 +3,7 @@ using System.Collections.ObjectModel;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
-    public class QuestionViewModel : ObservableObject
+    public class QuestionViewModel : BaseViewModel
     {
         private string _text = string.Empty;
         private int _categoryId;

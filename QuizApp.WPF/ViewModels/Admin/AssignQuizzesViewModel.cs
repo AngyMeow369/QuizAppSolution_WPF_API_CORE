@@ -8,7 +8,7 @@ using System.Windows.Input;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
-    public class AssignQuizzesViewModel : ObservableObject
+    public class AssignQuizzesViewModel : BaseViewModel
     {
         private readonly UserService _userService;
         private readonly QuizService _quizService;

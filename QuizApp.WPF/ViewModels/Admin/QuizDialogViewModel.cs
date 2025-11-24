@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
-    public class QuizDialogViewModel : ObservableObject
+    public class QuizDialogViewModel : BaseViewModel
     {
         private readonly QuizService _quizService;
 

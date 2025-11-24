@@ -7,7 +7,7 @@ using System.Windows;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
-    public class QuizDetailsViewModel : ObservableObject
+    public class QuizDetailsViewModel : BaseViewModel
     {
         private readonly QuizService _quizService;
 

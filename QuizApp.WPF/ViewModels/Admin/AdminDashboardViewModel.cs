@@ -9,7 +9,7 @@ using QuizApp.WPF.Views.Admin;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
-    public class AdminDashboardViewModel : ObservableObject
+    public class AdminDashboardViewModel : BaseViewModel
     {
         private readonly AuthService _authService;
         private readonly UserService _userService;

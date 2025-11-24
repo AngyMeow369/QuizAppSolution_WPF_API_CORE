@@ -6,7 +6,7 @@ using System.Windows.Input;
 
 namespace QuizApp.WPF.ViewModels.Admin
 {
-    public class QuestionDialogViewModel : ObservableObject
+    public class QuestionDialogViewModel : BaseViewModel
     {
         public QuestionViewModel Question { get; }
 

@@ -7,9 +7,8 @@ using System.Windows;
 
 namespace QuizApp.WPF.ViewModels.Auth
 {
-    public class RegisterViewModel : INotifyPropertyChanged
+    public class RegisterViewModel : BaseViewModel
     {
-        public event PropertyChangedEventHandler? PropertyChanged;
 
         private readonly AuthService _auth;
         private readonly Action _navigateToLogin;
@@ -81,7 +80,6 @@ namespace QuizApp.WPF.ViewModels.Auth
             });
         }
 
-        private void OnPropertyChanged([CallerMemberName] string? name = null)
-            => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+        
     }
 }

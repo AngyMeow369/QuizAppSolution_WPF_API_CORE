@@ -7,7 +7,7 @@ using System.Windows.Input;
 
 namespace QuizApp.WPF.ViewModels.Auth
 {
-    public class LoginViewModel : ObservableObject
+    public class LoginViewModel : BaseViewModel
     {
         private readonly AuthService _authService;
 

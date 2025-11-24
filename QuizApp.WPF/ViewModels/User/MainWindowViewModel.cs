@@ -12,7 +12,7 @@ using System.Windows.Input;
 namespace QuizApp.WPF.ViewModels.User
 
 {
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : BaseViewModel
     {
         private readonly NavigationService _navigationService;
         private readonly IAuthService _authService; // Add this field
@@ -162,10 +162,6 @@ namespace QuizApp.WPF.ViewModels.User
         }
 
 
-        public event PropertyChangedEventHandler? PropertyChanged;
-        protected virtual void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+       
     }
 }
